@@ -29,6 +29,7 @@ import {
   SeasonalMitigationWindow,
   HistoricalTrendAINarrative
 } from '../../types/index.ts';
+import { useLanguage } from '../../context/LanguageContext.tsx';
 
 interface HistoricalDisasterTrendsProps {
   provinceId?: string;
@@ -47,6 +48,9 @@ export const HistoricalDisasterTrends: React.FC<HistoricalDisasterTrendsProps> =
   onGenerateNarrative,
   isGeneratingNarrative = false
 }) => {
+  const { language } = useLanguage();
+  const isEn = language === 'en';
+
   const [viewMode, setViewMode] = useState<'monthly' | 'yearly' | 'mitigation' | 'narrative'>('monthly');
   const [metricFocus, setMetricFocus] = useState<'both' | 'fire' | 'flood'>('both');
   const [hoveredMonth, setHoveredMonth] = useState<MonthlyHistoricalTrend | null>(null);
@@ -109,14 +113,16 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
           <div className="flex items-center gap-2 mb-1">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
             <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
-              Analitika Historis & Siklus Musiman Bencana
+              {isEn ? 'Historical Analytics & Disaster Climatology' : 'Analitika Historis & Siklus Musiman Bencana'}
             </span>
           </div>
           <h3 className="text-lg font-black text-white">
-            Tren Potensi Kebakaran Hutan & Banjir - {provinceName}
+            {isEn ? `Wildfire & Flood Vulnerability Trends - ${provinceName}` : `Tren Potensi Kebakaran Hutan & Banjir - ${provinceName}`}
           </h3>
           <p className="text-xs text-slate-400 max-w-xl">
-            Visualisasi pola 12 bulan dan 5 tahun terakhir yang terintegrasi dengan <strong className="text-blue-400">Analisis Naratif Gemini AI</strong> untuk memandu koordinator melakukan tindakan mitigasi dini sebelum bencana memuncak.
+            {isEn 
+              ? 'Multi-year climatological cycles combined with Gemini AI Narrative Intelligence to guide preemptive prepositioning before peak hazard onset.'
+              : 'Visualisasi pola 12 bulan dan 5 tahun terakhir yang terintegrasi dengan Analisis Naratif Gemini AI untuk memandu koordinator melakukan tindakan mitigasi dini sebelum bencana memuncak.'}
           </p>
         </div>
 
@@ -128,7 +134,7 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
               viewMode === 'monthly' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
             }`}
           >
-            Siklus 12 Bulan
+            {isEn ? '12-Month Cycle' : 'Siklus 12 Bulan'}
           </button>
           <button
             onClick={() => setViewMode('yearly')}
@@ -136,7 +142,7 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
               viewMode === 'yearly' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
             }`}
           >
-            Tren 5 Tahun
+            {isEn ? '5-Year Trend' : 'Tren 5 Tahun'}
           </button>
           <button
             onClick={() => setViewMode('mitigation')}
@@ -144,7 +150,7 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
               viewMode === 'mitigation' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
             }`}
           >
-            Jendela Aksi ({mitigationWindows.length})
+            {isEn ? `Action Windows (${mitigationWindows.length})` : `Jendela Aksi (${mitigationWindows.length})`}
           </button>
           <button
             onClick={() => {
@@ -160,7 +166,7 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
             }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-blue-300 animate-pulse" />
-            <span>Analisis Naratif AI</span>
+            <span>{isEn ? 'AI Narrative Intelligence' : 'Analisis Naratif AI'}</span>
             {narrativeReport && (
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
             )}
@@ -172,14 +178,14 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
       {viewMode !== 'mitigation' && viewMode !== 'narrative' && (
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-slate-400 font-medium">Fokus Metrik:</span>
+            <span className="text-slate-400 font-medium">{isEn ? 'Metric Focus:' : 'Fokus Metrik:'}</span>
             <button
               onClick={() => setMetricFocus('both')}
               className={`px-2.5 py-1 rounded font-semibold transition-colors ${
                 metricFocus === 'both' ? 'bg-slate-700 text-white' : 'bg-slate-950 text-slate-400 hover:text-slate-200'
               }`}
             >
-              Komparasi Karhutla vs Banjir
+              {isEn ? 'Fire vs Flood Comparison' : 'Komparasi Karhutla vs Banjir'}
             </button>
             <button
               onClick={() => setMetricFocus('fire')}
@@ -187,7 +193,7 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
                 metricFocus === 'fire' ? 'bg-orange-600 text-white' : 'bg-slate-950 text-slate-400 hover:text-slate-200'
               }`}
             >
-              <span>🔥</span> Karhutla & Hotspot
+              <span>🔥</span> {isEn ? 'Wildfire & Hotspots' : 'Karhutla & Hotspot'}
             </button>
             <button
               onClick={() => setMetricFocus('flood')}
@@ -195,22 +201,22 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
                 metricFocus === 'flood' ? 'bg-cyan-600 text-white' : 'bg-slate-950 text-slate-400 hover:text-slate-200'
               }`}
             >
-              <span>🌊</span> Banjir & Curah Hujan
+              <span>🌊</span> {isEn ? 'Floods & Rainfall' : 'Banjir & Curah Hujan'}
             </button>
           </div>
 
           <div className="flex items-center gap-3 text-[11px] text-slate-400">
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded bg-orange-500 inline-block"></span>
-              <span>Hotspot Karhutla</span>
+              <span>{isEn ? 'Fire Hotspots' : 'Hotspot Karhutla'}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded bg-cyan-500 inline-block"></span>
-              <span>Curah Hujan / Banjir</span>
+              <span>{isEn ? 'Rainfall / Flood' : 'Curah Hujan / Banjir'}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full border border-amber-400 bg-amber-400/30 inline-block"></span>
-              <span>Bulan Berjalan (Okt)</span>
+              <span>{isEn ? 'Current Month (Oct)' : 'Bulan Berjalan (Okt)'}</span>
             </div>
           </div>
         </div>
@@ -391,28 +397,36 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
             {hoveredMonth ? (
               <div className="mt-3 p-3 bg-slate-900 border border-slate-700 rounded-lg text-xs grid grid-cols-2 sm:grid-cols-4 gap-3 shadow-lg animate-in fade-in">
                 <div>
-                  <div className="text-[10px] text-slate-400">Bulan:</div>
+                  <div className="text-[10px] text-slate-400">{isEn ? 'Month:' : 'Bulan:'}</div>
                   <div className="font-bold text-white text-sm">{hoveredMonth.monthFull}</div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-orange-400">Hotspot Karhutla:</div>
-                  <div className="font-bold text-orange-400 text-sm">{hoveredMonth.fireHotspots} Titik (Skor: {hoveredMonth.fireRiskScore}/100)</div>
+                  <div className="text-[10px] text-orange-400">{isEn ? 'Fire Hotspots:' : 'Hotspot Karhutla:'}</div>
+                  <div className="font-bold text-orange-400 text-sm">
+                    {hoveredMonth.fireHotspots} {isEn ? 'Spots' : 'Titik'} ({isEn ? 'Score' : 'Skor'}: {hoveredMonth.fireRiskScore}/100)
+                  </div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-cyan-400">Curah Hujan & Banjir:</div>
-                  <div className="font-bold text-cyan-400 text-sm">{hoveredMonth.rainfallMm} mm • {hoveredMonth.floodIncidents} Kejadian</div>
+                  <div className="text-[10px] text-cyan-400">{isEn ? 'Rainfall & Floods:' : 'Curah Hujan & Banjir:'}</div>
+                  <div className="font-bold text-cyan-400 text-sm">
+                    {hoveredMonth.rainfallMm} mm • {hoveredMonth.floodIncidents} {isEn ? 'Events' : 'Kejadian'}
+                  </div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-slate-400">Ancaman Dominan:</div>
+                  <div className="text-[10px] text-slate-400">{isEn ? 'Dominant Threat:' : 'Ancaman Dominan:'}</div>
                   <div className="font-bold text-white text-sm capitalize">
-                    {hoveredMonth.dominantThreat === 'fire' ? '🔥 Karhutla' : hoveredMonth.dominantThreat === 'flood' ? '🌊 Banjir' : 'Relatif Aman'}
+                    {hoveredMonth.dominantThreat === 'fire' 
+                      ? (isEn ? '🔥 Wildfire' : '🔥 Karhutla') 
+                      : hoveredMonth.dominantThreat === 'flood' 
+                      ? (isEn ? '🌊 Flood' : '🌊 Banjir') 
+                      : (isEn ? 'Relatively Safe' : 'Relatif Aman')}
                   </div>
                 </div>
               </div>
             ) : (
               <div className="mt-3 p-2 bg-slate-900/60 border border-slate-800/80 rounded-lg text-[11px] text-slate-400 flex items-center justify-between">
-                <span>📍 <strong>Bulan Berjalan: Oktober</strong> — Berada pada masa transisi akhir musim kemarau menuju musim hujan basah.</span>
-                <span className="text-amber-400 font-semibold">Waktu Emas Tindakan Mitigasi Dini</span>
+                <span>📍 <strong>{isEn ? 'Current Month: October' : 'Bulan Berjalan: Oktober'}</strong> — {isEn ? 'Late dry season transition into wet monsoon season.' : 'Berada pada masa transisi akhir musim kemarau menuju musim hujan basah.'}</span>
+                <span className="text-amber-400 font-semibold">{isEn ? 'Golden Window for Preemptive Mitigation' : 'Waktu Emas Tindakan Mitigasi Dini'}</span>
               </div>
             )}
           </div>
@@ -424,8 +438,8 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
         <div className="space-y-4">
           <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
             <div className="text-xs text-slate-400 mb-3 flex items-center justify-between">
-              <span>Trajektori Dampak Bencana Tahunan (2022 - 2026)</span>
-              <span className="text-[11px] text-slate-500">Lonjakan 2023 dipengaruhi fenomena iklim El Niño Kuat</span>
+              <span>{isEn ? 'Annual Disaster Impact Trajectory (2022 - 2026)' : 'Trajektori Dampak Bencana Tahunan (2022 - 2026)'}</span>
+              <span className="text-[11px] text-slate-500">{isEn ? '2023 spike driven by Strong El Niño cycle' : 'Lonjakan 2023 dipengaruhi fenomena iklim El Niño Kuat'}</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
@@ -456,20 +470,20 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
 
                     <div className="space-y-2 text-xs">
                       <div>
-                        <div className="text-[10px] text-slate-400">Luas Karhutla</div>
+                        <div className="text-[10px] text-slate-400">{isEn ? 'Wildfire Burn Area' : 'Luas Karhutla'}</div>
                         <div className="font-bold text-orange-400">{yr.fireHectaresBurned.toLocaleString()} Ha</div>
-                        <div className="text-[10px] text-slate-400">({yr.fireHotspotCount} Hotspot)</div>
+                        <div className="text-[10px] text-slate-400">({yr.fireHotspotCount} {isEn ? 'Hotspots' : 'Hotspot'})</div>
                       </div>
 
                       <div className="pt-1 border-t border-slate-800/60">
-                        <div className="text-[10px] text-slate-400">Kejadian Banjir</div>
-                        <div className="font-bold text-cyan-400">{yr.floodDisasterCount} Kali</div>
-                        <div className="text-[10px] text-slate-400">{yr.floodAffectedPeople.toLocaleString()} Pengungsi</div>
+                        <div className="text-[10px] text-slate-400">{isEn ? 'Flood Events' : 'Kejadian Banjir'}</div>
+                        <div className="font-bold text-cyan-400">{yr.floodDisasterCount} {isEn ? 'Events' : 'Kali'}</div>
+                        <div className="text-[10px] text-slate-400">{yr.floodAffectedPeople.toLocaleString()} {isEn ? 'Displaced' : 'Pengungsi'}</div>
                       </div>
 
                       <div className="pt-1 border-t border-slate-800/60">
-                        <div className="text-[10px] text-slate-400">Estimasi Kerugian</div>
-                        <div className="font-semibold text-slate-300">Rp {yr.economicLossBillionsIDR} M</div>
+                        <div className="text-[10px] text-slate-400">{isEn ? 'Estimated Economic Loss' : 'Estimasi Kerugian'}</div>
+                        <div className="font-semibold text-slate-300">Rp {yr.economicLossBillionsIDR} {isEn ? 'B' : 'M'}</div>
                       </div>
                     </div>
                   </div>
@@ -484,7 +498,9 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
       {viewMode === 'mitigation' && (
         <div className="space-y-4">
           <div className="text-xs text-slate-400 mb-1">
-            Jendela aksi dini adalah periode kritis 30–60 hari sebelum bencana terjadi, di mana tindakan preventif koordinator memberikan dampak penyelamatan tertinggi dengan biaya logistik terendah.
+            {isEn
+              ? 'Early action windows are critical 30-60 day periods before peak disaster hazard, where preemptive coordinator action delivers the greatest life-saving impact at lowest cost.'
+              : 'Jendela aksi dini adalah periode kritis 30–60 hari sebelum bencana terjadi, di mana tindakan preventif koordinator memberikan dampak penyelamatan tertinggi dengan biaya logistik terendah.'}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -508,26 +524,30 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
                       <span className="text-lg">{isFire ? '🔥' : '🌊'}</span>
                       <div>
                         <h4 className="font-bold text-sm text-white">{win.title}</h4>
-                        <span className="text-[10px] text-slate-400 font-mono">Puncak Bahaya: {win.peakRiskPeriod}</span>
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          {isEn ? 'Peak Risk Period: ' : 'Puncak Bahaya: '}{win.peakRiskPeriod}
+                        </span>
                       </div>
                     </div>
 
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
                       isActive ? 'bg-emerald-950 text-emerald-400 border border-emerald-800 animate-pulse' : 'bg-slate-800 text-slate-400'
                     }`}>
-                      {isActive ? 'Jendela Aktif' : 'Mendatang'}
+                      {isActive ? (isEn ? 'Active Window' : 'Jendela Aktif') : (isEn ? 'Upcoming' : 'Mendatang')}
                     </span>
                   </div>
 
                   <div className="bg-slate-900/90 p-2.5 rounded-lg border border-slate-800 text-xs mb-3">
                     <div className="text-[10px] text-amber-400 font-bold uppercase flex items-center gap-1 mb-0.5">
-                      <Clock className="w-3 h-3" /> Periode Wajib Aksi Dini:
+                      <Clock className="w-3 h-3" /> {isEn ? 'Mandatory Early Action Window:' : 'Periode Wajib Aksi Dini:'}
                     </div>
                     <div className="font-bold text-white text-xs">{win.criticalMitigationWindow}</div>
                   </div>
 
                   <div>
-                    <div className="text-xs font-semibold text-slate-300 mb-1.5">Checklist Aksi Dini Koordinator:</div>
+                    <div className="text-xs font-semibold text-slate-300 mb-1.5">
+                      {isEn ? 'Coordinator Preemptive Action Checklist:' : 'Checklist Aksi Dini Koordinator:'}
+                    </div>
                     <ul className="space-y-1.5 text-xs text-slate-300">
                       {win.recommendedActions.map((act, i) => (
                         <li key={i} className="flex items-start gap-2 bg-slate-900/60 p-2 rounded border border-slate-800/80">
@@ -551,9 +571,13 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
           {isGeneratingNarrative && (
             <div className="bg-slate-950/90 border border-blue-500/40 rounded-xl p-8 text-center space-y-3 shadow-xl">
               <RefreshCw className="w-8 h-8 text-blue-400 animate-spin mx-auto" />
-              <h4 className="font-black text-white text-base">Gemini 3.8 Flash Menganalisis Tren Historis & Siklus Iklim...</h4>
+              <h4 className="font-black text-white text-base">
+                {isEn ? 'Gemini 3.8 Flash Analyzing Historical Climatology...' : 'Gemini 3.8 Flash Menganalisis Tren Historis & Siklus Iklim...'}
+              </h4>
               <p className="text-xs text-slate-400 max-w-lg mx-auto">
-                Mengintegrasikan kurva fluktuasi curah hujan 12 bulan, anomali El Niño 2023, data kerugian ekonomi 5 tahun, dan kesiapan operasional relawan untuk menyusun narasi prediktif {provinceName}.
+                {isEn 
+                  ? `Synthesizing 12-month precipitation curves, 2023 El Niño anomalies, 5-year economic losses, and volunteer readiness for ${provinceName}.`
+                  : `Mengintegrasikan kurva fluktuasi curah hujan 12 bulan, anomali El Niño 2023, data kerugian ekonomi 5 tahun, dan kesiapan operasional relawan untuk menyusun narasi prediktif ${provinceName}.`}
               </p>
             </div>
           )}
@@ -565,9 +589,13 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
                 <Sparkles className="w-6 h-6" />
               </div>
               <div className="max-w-md mx-auto space-y-1">
-                <h4 className="font-black text-white text-base">Hasilkan Narasi Komprehensif dengan Gemini AI</h4>
+                <h4 className="font-black text-white text-base">
+                  {isEn ? 'Generate Comprehensive Narrative with Gemini AI' : 'Hasilkan Narasi Komprehensif dengan Gemini AI'}
+                </h4>
                 <p className="text-xs text-slate-400">
-                  Ubah data mentah tabel dan grafik historis menjadi narasi taktis: korelasi anomali El Niño, fase bahaya laten monsun, prakiraan risiko 6 bulan ke depan, dan rekomendasi penempatan relawan.
+                  {isEn 
+                    ? 'Transform raw table metrics and charts into actionable narrative intelligence: El Niño correlations, monsoon danger phases, 6-month predictive risk, and volunteer positioning guidelines.'
+                    : 'Ubah data mentah tabel dan grafik historis menjadi narasi taktis: korelasi anomali El Niño, fase bahaya laten monsun, prakiraan risiko 6 bulan ke depan, dan rekomendasi penempatan relawan.'}
                 </p>
               </div>
               <button
@@ -575,7 +603,7 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
                 className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2.5 px-5 rounded-lg transition-all shadow-lg shadow-blue-600/30 inline-flex items-center gap-2"
               >
                 <Sparkles className="w-4 h-4 text-blue-200" />
-                Mulai Analisis Naratif Tren Sekarang
+                {isEn ? 'Start AI Narrative Analysis Now' : 'Mulai Analisis Naratif Tren Sekarang'}
               </button>
             </div>
           )}
@@ -602,17 +630,17 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
                       className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-1.5 px-3 rounded-lg border border-slate-700 transition-colors flex items-center gap-1.5"
                     >
                       {copiedNarrative ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
-                      {copiedNarrative ? 'Narasi Tersalin!' : 'Salin Teks Narasi'}
+                      {copiedNarrative ? (isEn ? 'Narrative Copied!' : 'Narasi Tersalin!') : (isEn ? 'Copy Narrative Text' : 'Salin Teks Narasi')}
                     </button>
                     {onGenerateNarrative && (
                       <button
                         onClick={onGenerateNarrative}
                         disabled={isGeneratingNarrative}
                         className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-1.5 px-3 rounded-lg border border-slate-700 transition-colors flex items-center gap-1.5 disabled:opacity-50"
-                        title="Perbarui analisis dengan parameter terkini"
+                        title={isEn ? 'Refresh analysis with latest parameters' : 'Perbarui analisis dengan parameter terkini'}
                       >
                         <RefreshCw className={`w-3.5 h-3.5 ${isGeneratingNarrative ? 'animate-spin' : ''}`} />
-                        Muat Ulang
+                        {isEn ? 'Reload' : 'Muat Ulang'}
                       </button>
                     )}
                   </div>
@@ -627,7 +655,7 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
               <div className="bg-slate-950/80 p-5 rounded-xl border border-slate-800 space-y-3">
                 <div className="flex items-center gap-2 text-white font-bold text-sm">
                   <TrendingUp className="w-4 h-4 text-blue-400" />
-                  <h5>Lintasan Tren 5 Tahun (2022–2026) & Pembelajaran Bencana Empiris</h5>
+                  <h5>{isEn ? '5-Year Trend Trajectory (2022–2026) & Empirical Disaster Learnings' : 'Lintasan Tren 5 Tahun (2022–2026) & Pembelajaran Bencana Empiris'}</h5>
                 </div>
                 <div className="text-xs text-slate-300 leading-relaxed whitespace-pre-line space-y-2">
                   {narrativeReport.trendTrajectoryAnalysis}
@@ -638,7 +666,7 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
               <div className="bg-slate-950/80 p-5 rounded-xl border border-slate-800 space-y-3">
                 <div className="flex items-center gap-2 text-white font-bold text-sm">
                   <Calendar className="w-4 h-4 text-cyan-400" />
-                  <h5>Dinamika Siklus Musiman 12 Bulan & Fase Bahaya Laten</h5>
+                  <h5>{isEn ? '12-Month Climatological Rhythm & Latent Hazard Windows' : 'Dinamika Siklus Musiman 12 Bulan & Fase Bahaya Laten'}</h5>
                 </div>
                 <div className="text-xs text-slate-300 leading-relaxed whitespace-pre-line">
                   {narrativeReport.seasonalCyclicalDeepDive}
@@ -650,7 +678,7 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
                 <div className="bg-orange-950/20 p-4 rounded-xl border border-orange-800/60 text-xs space-y-2">
                   <div className="flex items-center gap-2 font-bold text-orange-400">
                     <Sun className="w-4 h-4" />
-                    <span>Anomali El Niño & Kemarau Kering</span>
+                    <span>{isEn ? 'El Niño Anomalies & Dry Droughts' : 'Anomali El Niño & Kemarau Kering'}</span>
                   </div>
                   <p className="text-slate-300 leading-relaxed text-[11px]">
                     {narrativeReport.climateAnomalyCorrelation.elNinoImpactSummary}
@@ -660,7 +688,7 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
                 <div className="bg-cyan-950/20 p-4 rounded-xl border border-cyan-800/60 text-xs space-y-2">
                   <div className="flex items-center gap-2 font-bold text-cyan-400">
                     <Droplets className="w-4 h-4" />
-                    <span>La Niña & Puncak Monsun Basah</span>
+                    <span>{isEn ? 'La Niña & Wet Monsoon Peaks' : 'La Niña & Puncak Monsun Basah'}</span>
                   </div>
                   <p className="text-slate-300 leading-relaxed text-[11px]">
                     {narrativeReport.climateAnomalyCorrelation.laNinaOrMonsoonRisk}
@@ -670,7 +698,7 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
                 <div className="bg-indigo-950/20 p-4 rounded-xl border border-indigo-800/60 text-xs space-y-2">
                   <div className="flex items-center gap-2 font-bold text-indigo-400">
                     <Compass className="w-4 h-4" />
-                    <span>Pola Perulangan Berkala</span>
+                    <span>{isEn ? 'Cyclical Recurrence Patterns' : 'Pola Perulangan Berkala'}</span>
                   </div>
                   <p className="text-slate-300 leading-relaxed text-[11px]">
                     {narrativeReport.climateAnomalyCorrelation.recurrencePattern}
@@ -683,9 +711,9 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-white font-bold text-sm">
                     <Clock className="w-4 h-4 text-amber-400" />
-                    <h5>Proyeksi Risiko 6 Bulan Ke Depan Berdasarkan Model Historis</h5>
+                    <h5>{isEn ? '6-Month Preemptive Risk Projections from Climatological Models' : 'Proyeksi Risiko 6 Bulan Ke Depan Berdasarkan Model Historis'}</h5>
                   </div>
-                  <span className="text-[11px] text-slate-400">Fokus Operasi Respons Aksi Dini</span>
+                  <span className="text-[11px] text-slate-400">{isEn ? 'Early Action Priority' : 'Fokus Operasi Respons Aksi Dini'}</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
@@ -705,7 +733,7 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
                           </span>
                         </div>
                         <div>
-                          <div className="text-[10px] text-slate-400 font-semibold">Proyeksi Ancaman:</div>
+                          <div className="text-[10px] text-slate-400 font-semibold">{isEn ? 'Projected Threat:' : 'Proyeksi Ancaman:'}</div>
                           <div className="font-bold text-white text-xs">{item.projectedThreat}</div>
                         </div>
                         <div className="text-slate-300 text-[11px] leading-relaxed pt-1 border-t border-slate-800/60">
@@ -721,7 +749,7 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
               <div className="bg-slate-950/80 p-5 rounded-xl border border-slate-800 space-y-3">
                 <div className="flex items-center gap-2 text-white font-bold text-sm">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  <h5>Rekomendasi Taktis Koordinator Berbasis Bukti Data Historis</h5>
+                  <h5>{isEn ? 'Data-Driven Preemptive Action Recommendations' : 'Rekomendasi Taktis Koordinator Berbasis Bukti Data Historis'}</h5>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
@@ -736,7 +764,7 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
 
                       <div className="bg-slate-950 p-2 rounded-lg border border-slate-800/80 text-[11px] text-amber-300/90 flex items-start gap-1.5">
                         <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-amber-400" />
-                        <span><strong>Dasar Data:</strong> {rec.rationaleFromHistoricalData}</span>
+                        <span><strong>{isEn ? 'Data Evidence: ' : 'Dasar Data: '}</strong>{rec.rationaleFromHistoricalData}</span>
                       </div>
 
                       <ul className="space-y-1.5 text-slate-300 text-[11px]">
@@ -756,7 +784,7 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
               <div className="bg-gradient-to-r from-emerald-950/40 via-slate-950 to-teal-950/40 border border-emerald-800/60 p-4 rounded-xl text-xs space-y-2">
                 <div className="flex items-center gap-2 font-bold text-emerald-400 text-xs">
                   <Users className="w-4 h-4" />
-                  <h5>Panduan Penempatan Dini (Pre-positioning) Relawan & Logistik Lapangan</h5>
+                  <h5>{isEn ? 'Preemptive Volunteer & Logistics Pre-positioning Guidelines' : 'Panduan Penempatan Dini (Pre-positioning) Relawan & Logistik Lapangan'}</h5>
                 </div>
                 <p className="text-slate-200 leading-relaxed text-[11px]">
                   {narrativeReport.volunteerAndLogisticsPrepositioning}
@@ -773,7 +801,7 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-blue-400 font-bold">
               <Sparkles className="w-4 h-4 text-blue-300" />
-              <span>Panduan Mitigasi Dini Wilayah {provinceName}:</span>
+              <span>{isEn ? `Preemptive Mitigation Guidelines - ${provinceName}:` : `Panduan Mitigasi Dini Wilayah ${provinceName}:`}</span>
             </div>
 
             <button
@@ -785,7 +813,7 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
               }}
               className="text-[11px] font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors self-start sm:self-auto"
             >
-              <span>{narrativeReport ? 'Lihat Analisis Naratif Penuh' : 'Jalankan Analisis Naratif Gemini AI'}</span>
+              <span>{narrativeReport ? (isEn ? 'View Full AI Narrative Analysis' : 'Lihat Analisis Naratif Penuh') : (isEn ? 'Run Gemini AI Narrative Intelligence' : 'Jalankan Analisis Naratif Gemini AI')}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>

@@ -16,6 +16,7 @@ export const RegisterVolunteerModal: React.FC<RegisterVolunteerModalProps> = ({
 }) => {
   const { currentUser, loginWithGoogle, registerAsVolunteer } = useAuth();
   const { language } = useLanguage();
+  const isEn = language === 'en';
 
   const [name, setName] = useState(currentUser?.displayName || '');
   const [email, setEmail] = useState(currentUser?.email || '');
@@ -80,7 +81,7 @@ export const RegisterVolunteerModal: React.FC<RegisterVolunteerModalProps> = ({
     }));
 
     if (skillsArray.length === 0) {
-      alert('Pilih minimal 1 keahlian relawan');
+      alert(isEn ? 'Please select at least 1 volunteer skill' : 'Pilih minimal 1 keahlian relawan');
       return;
     }
 
@@ -92,9 +93,9 @@ export const RegisterVolunteerModal: React.FC<RegisterVolunteerModalProps> = ({
             name,
             phone,
             city,
-            organization: organization || 'Relawan Mandiri',
+            organization: organization || (isEn ? 'Independent Volunteer' : 'Relawan Mandiri'),
             category: category || 'public_community',
-            sarUnitOrRole: sarUnitOrRole || (category === 'sar_official' ? 'Anggota Regu Potensi SAR' : 'Relawan Komunitas Warga'),
+            sarUnitOrRole: sarUnitOrRole || (category === 'sar_official' ? (isEn ? 'Official SAR Team Member' : 'Anggota Regu Potensi SAR') : (isEn ? 'Citizen Volunteer' : 'Relawan Komunitas Warga')),
             skills: skillsArray,
             bloodType,
             status
@@ -108,7 +109,7 @@ export const RegisterVolunteerModal: React.FC<RegisterVolunteerModalProps> = ({
         name,
         email: email || (currentUser?.email ? currentUser.email : `${name.toLowerCase().replace(/\s+/g, '.')}@relawan.id`),
         phone,
-        organization: organization || 'Relawan Mandiri',
+        organization: organization || (isEn ? 'Independent Volunteer' : 'Relawan Mandiri'),
         address: address || `Jl. Raya ${city}`,
         city,
         locationLat,
@@ -116,7 +117,7 @@ export const RegisterVolunteerModal: React.FC<RegisterVolunteerModalProps> = ({
         radiusKm,
         status,
         category,
-        sarUnitOrRole: sarUnitOrRole || (category === 'sar_official' ? 'Anggota Regu Potensi SAR' : 'Relawan Komunitas Warga'),
+        sarUnitOrRole: sarUnitOrRole || (category === 'sar_official' ? (isEn ? 'Official SAR Team Member' : 'Anggota Regu Potensi SAR') : (isEn ? 'Citizen Volunteer' : 'Relawan Komunitas Warga')),
         skills: skillsArray,
       });
       onClose();
@@ -205,19 +206,23 @@ export const RegisterVolunteerModal: React.FC<RegisterVolunteerModalProps> = ({
           {/* Identity */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-slate-400 mb-1 font-medium">Nama Lengkap & Gelar</label>
+              <label className="block text-slate-400 mb-1 font-medium">
+                {isEn ? 'Full Name & Title' : 'Nama Lengkap & Gelar'}
+              </label>
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Contoh: dr. Farhan Malik / Rian Sanjaya"
+                placeholder={isEn ? 'e.g. Dr. Farhan Malik / Rian Sanjaya' : 'Contoh: dr. Farhan Malik / Rian Sanjaya'}
                 className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:border-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-slate-400 mb-1 font-medium">Nomor WhatsApp / HP Aktif</label>
+              <label className="block text-slate-400 mb-1 font-medium">
+                {isEn ? 'Active WhatsApp / Phone Number' : 'Nomor WhatsApp / HP Aktif'}
+              </label>
               <input
                 type="text"
                 required
@@ -234,18 +239,20 @@ export const RegisterVolunteerModal: React.FC<RegisterVolunteerModalProps> = ({
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="farhan@relawan.id"
+                placeholder={isEn ? 'volunteer@sigap.id' : 'farhan@relawan.id'}
                 className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:border-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-slate-400 mb-1 font-medium">Komunitas / Lembaga Asal</label>
+              <label className="block text-slate-400 mb-1 font-medium">
+                {isEn ? 'Community / Affiliation / NGO' : 'Komunitas / Lembaga Asal'}
+              </label>
               <input
                 type="text"
                 value={organization}
                 onChange={(e) => setOrganization(e.target.value)}
-                placeholder="PMI / BSMI / SAR / Relawan Independen"
+                placeholder={isEn ? 'Red Cross / SAR / Independent Volunteer' : 'PMI / BSMI / SAR / Relawan Independen'}
                 className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:border-blue-500"
               />
             </div>
@@ -253,7 +260,9 @@ export const RegisterVolunteerModal: React.FC<RegisterVolunteerModalProps> = ({
 
           {/* Korps Relawan (SAR vs Masyarakat Umum) */}
           <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2.5">
-            <label className="block text-slate-300 font-bold">Kategori Korps Relawan:</label>
+            <label className="block text-slate-300 font-bold">
+              {isEn ? 'Volunteer Corps Category:' : 'Kategori Korps Relawan:'}
+            </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <label 
                 onClick={() => setCategory('sar_official')}
@@ -272,10 +281,12 @@ export const RegisterVolunteerModal: React.FC<RegisterVolunteerModalProps> = ({
                 />
                 <div>
                   <div className="font-bold text-amber-400 flex items-center gap-1">
-                    <span>🛡️</span> Tim SAR Resmi (Basarnas / Potensi SAR)
+                    <span>🛡️</span> {isEn ? 'Official SAR Team (Basarnas / Certified SAR)' : 'Tim SAR Resmi (Basarnas / Potensi SAR)'}
                   </div>
                   <div className="text-[11px] text-slate-400 mt-0.5">
-                    Memiliki sertifikasi pencarian dan penyelamatan resmi, water rescue, atau USAR.
+                    {isEn 
+                      ? 'Certified in search & rescue, swift water rescue, or Urban SAR.'
+                      : 'Memiliki sertifikasi pencarian dan penyelamatan resmi, water rescue, atau USAR.'}
                   </div>
                 </div>
               </label>
@@ -297,22 +308,30 @@ export const RegisterVolunteerModal: React.FC<RegisterVolunteerModalProps> = ({
                 />
                 <div>
                   <div className="font-bold text-emerald-400 flex items-center gap-1">
-                    <span>🤝</span> Relawan Masyarakat Umum / Komunitas
+                    <span>🤝</span> {isEn ? 'General Citizen Volunteer / Community' : 'Relawan Masyarakat Umum / Komunitas'}
                   </div>
                   <div className="text-[11px] text-slate-400 mt-0.5">
-                    Warga masyarakat, pemuda, dapur umum, logistik, trauma healing, & dukungan posko.
+                    {isEn 
+                      ? 'Local citizens, field kitchens, logistics distribution, trauma healing, & shelter support.'
+                      : 'Warga masyarakat, pemuda, dapur umum, logistik, trauma healing, & dukungan posko.'}
                   </div>
                 </div>
               </label>
             </div>
 
             <div>
-              <label className="block text-slate-400 mb-1 font-medium">Peran Spesifik / Regu Unit (Opsional)</label>
+              <label className="block text-slate-400 mb-1 font-medium">
+                {isEn ? 'Specific Role / Squad Unit (Optional)' : 'Peran Spesifik / Regu Unit (Opsional)'}
+              </label>
               <input
                 type="text"
                 value={sarUnitOrRole}
                 onChange={(e) => setSarUnitOrRole(e.target.value)}
-                placeholder={category === 'sar_official' ? 'Contoh: Regu Selam LCR Kansar / Potensi SAR Mapala' : 'Contoh: Koordinator Dapur Umum RW / Distribusi Sembako'}
+                placeholder={
+                  category === 'sar_official' 
+                    ? (isEn ? 'e.g. Inflatable Boat SAR Diver / Mountain Rescue Squad' : 'Contoh: Regu Selam LCR Kansar / Potensi SAR Mapala') 
+                    : (isEn ? 'e.g. Field Kitchen Coordinator / Relief Aid Distribution' : 'Contoh: Koordinator Dapur Umum RW / Distribusi Sembako')
+                }
                 className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-white focus:outline-none focus:border-blue-500"
               />
             </div>
@@ -323,7 +342,7 @@ export const RegisterVolunteerModal: React.FC<RegisterVolunteerModalProps> = ({
             <div className="flex items-center justify-between">
               <span className="text-slate-400 font-medium flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-blue-400" />
-                Domisili & Wilayah Siaga
+                {isEn ? 'Domicile & Operational Readiness Area' : 'Domisili & Wilayah Siaga'}
               </span>
 
               {/* City Presets */}
@@ -361,7 +380,7 @@ export const RegisterVolunteerModal: React.FC<RegisterVolunteerModalProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-slate-400 mb-1">Kota / Kabupaten</label>
+                <label className="block text-slate-400 mb-1">{isEn ? 'City / Regency' : 'Kota / Kabupaten'}</label>
                 <input
                   type="text"
                   required
@@ -372,12 +391,14 @@ export const RegisterVolunteerModal: React.FC<RegisterVolunteerModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Alamat Domisili / Titik Kumpul</label>
+                <label className="block text-slate-400 mb-1">
+                  {isEn ? 'Street Address / Gathering Point' : 'Alamat Domisili / Titik Kumpul'}
+                </label>
                 <input
                   type="text"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Jl. Tebet Barat Dalam No. 12"
+                  placeholder={isEn ? 'e.g. Main Street No. 12' : 'Jl. Tebet Barat Dalam No. 12'}
                   className="w-full px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-white"
                 />
               </div>
@@ -405,7 +426,9 @@ export const RegisterVolunteerModal: React.FC<RegisterVolunteerModalProps> = ({
                 />
               </div>
               <div>
-                <label className="block text-slate-400 mb-1">Radius: {radiusKm} km</label>
+                <label className="block text-slate-400 mb-1">
+                  {isEn ? `Radius: ${radiusKm} km` : `Radius: ${radiusKm} km`}
+                </label>
                 <input
                   type="range"
                   min="10"
@@ -424,10 +447,10 @@ export const RegisterVolunteerModal: React.FC<RegisterVolunteerModalProps> = ({
             <label className="block text-slate-300 font-semibold mb-2 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <Award className="w-4 h-4 text-blue-400" />
-                Keahlian & Kompetensi (Pilih yang Anda Kuasai)
+                {isEn ? 'Skills & Competencies (Select applicable skills)' : 'Keahlian & Kompetensi (Pilih yang Anda Kuasai)'}
               </span>
               <span className="text-[11px] text-blue-400 font-mono">
-                {Object.keys(selectedSkills).length} Dipilih
+                {isEn ? `${Object.keys(selectedSkills).length} Selected` : `${Object.keys(selectedSkills).length} Dipilih`}
               </span>
             </label>
 
@@ -460,9 +483,9 @@ export const RegisterVolunteerModal: React.FC<RegisterVolunteerModalProps> = ({
                         onChange={(e) => setProficiency(skill.id, e.target.value as SkillProficiency)}
                         className="px-2 py-1 bg-slate-900 border border-slate-700 rounded text-[11px] text-blue-300 font-mono"
                       >
-                        <option value="beginner">Pemula</option>
-                        <option value="intermediate">Menengah</option>
-                        <option value="expert">Ahli / Bersertifikat</option>
+                        <option value="beginner">{isEn ? 'Beginner' : 'Pemula'}</option>
+                        <option value="intermediate">{isEn ? 'Intermediate' : 'Menengah'}</option>
+                        <option value="expert">{isEn ? 'Expert / Certified' : 'Ahli / Bersertifikat'}</option>
                       </select>
                     )}
                   </div>
@@ -478,7 +501,7 @@ export const RegisterVolunteerModal: React.FC<RegisterVolunteerModalProps> = ({
               onClick={onClose}
               className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white"
             >
-              Batal
+              {isEn ? 'Cancel' : 'Batal'}
             </button>
             <button
               type="submit"
@@ -486,7 +509,7 @@ export const RegisterVolunteerModal: React.FC<RegisterVolunteerModalProps> = ({
               className="px-5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors shadow-sm shadow-blue-600/30 flex items-center gap-1.5"
             >
               <UserPlus className="w-4 h-4" />
-              {submitting ? 'Mendaftarkan...' : 'Daftar Sebagai Relawan'}
+              {submitting ? (isEn ? 'Registering...' : 'Mendaftarkan...') : (isEn ? 'Register as Volunteer' : 'Daftar Sebagai Relawan')}
             </button>
           </div>
         </form>

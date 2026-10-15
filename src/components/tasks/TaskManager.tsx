@@ -12,6 +12,7 @@ import {
   Filter 
 } from 'lucide-react';
 import { Task, Disaster, Assignment, Volunteer } from '../../types/index.ts';
+import { useLanguage } from '../../context/LanguageContext.tsx';
 
 interface TaskManagerProps {
   tasks: Task[];
@@ -34,6 +35,9 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
   onUpdateTaskStatus,
   onUpdateAssignmentStatus,
 }) => {
+  const { language } = useLanguage();
+  const isEn = language === 'en';
+
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterDisaster, setFilterDisaster] = useState<string>('all');
   const [filterPriority, setFilterPriority] = useState<string>('all');
@@ -50,9 +54,13 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
       {/* Header Bar */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-bold text-white">Manajemen Tugas Lapangan ({tasks.length})</h2>
+          <h2 className="text-lg font-bold text-white">
+            {isEn ? `Field Task Management (${tasks.length})` : `Manajemen Tugas Lapangan (${tasks.length})`}
+          </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Pantau progres penugasan tim, koordinasi evakuasi, dapur umum, dan distribusi bantuan secara real-time
+            {isEn 
+              ? 'Track mission dispatch progress, evacuations, soup kitchens, and supply distribution in real time'
+              : 'Pantau progres penugasan tim, koordinasi evakuasi, dapur umum, dan distribusi bantuan secara real-time'}
           </p>
         </div>
 
@@ -61,7 +69,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
           className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors flex items-center gap-2 shadow-sm shadow-blue-600/30 whitespace-nowrap self-start md:self-auto"
         >
           <Plus className="w-4 h-4" />
-          Buat Tugas Baru
+          {isEn ? 'Create New Task' : 'Buat Tugas Baru'}
         </button>
       </div>
 
@@ -69,29 +77,39 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
       <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex flex-wrap items-center gap-3 text-xs">
         {/* Status Filter */}
         <div className="flex items-center gap-1.5">
-          <span className="text-slate-400 font-medium">Status:</span>
+          <span className="text-slate-400 font-medium">{isEn ? 'Status:' : 'Status:'}</span>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             className="px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
           >
-            <option value="all">Semua Status ({tasks.length})</option>
-            <option value="pending">Menunggu ({tasks.filter(t => t.status === 'pending').length})</option>
-            <option value="assigned">Ditugaskan ({tasks.filter(t => t.status === 'assigned').length})</option>
-            <option value="in_progress">Sedang Berjalan ({tasks.filter(t => t.status === 'in_progress').length})</option>
-            <option value="completed">Selesai ({tasks.filter(t => t.status === 'completed').length})</option>
+            <option value="all">
+              {isEn ? `All Statuses (${tasks.length})` : `Semua Status (${tasks.length})`}
+            </option>
+            <option value="pending">
+              {isEn ? `Pending (${tasks.filter(t => t.status === 'pending').length})` : `Menunggu (${tasks.filter(t => t.status === 'pending').length})`}
+            </option>
+            <option value="assigned">
+              {isEn ? `Assigned (${tasks.filter(t => t.status === 'assigned').length})` : `Ditugaskan (${tasks.filter(t => t.status === 'assigned').length})`}
+            </option>
+            <option value="in_progress">
+              {isEn ? `In Progress (${tasks.filter(t => t.status === 'in_progress').length})` : `Sedang Berjalan (${tasks.filter(t => t.status === 'in_progress').length})`}
+            </option>
+            <option value="completed">
+              {isEn ? `Completed (${tasks.filter(t => t.status === 'completed').length})` : `Selesai (${tasks.filter(t => t.status === 'completed').length})`}
+            </option>
           </select>
         </div>
 
         {/* Disaster Filter */}
         <div className="flex items-center gap-1.5">
-          <span className="text-slate-400 font-medium">Bencana:</span>
+          <span className="text-slate-400 font-medium">{isEn ? 'Disaster:' : 'Bencana:'}</span>
           <select
             value={filterDisaster}
             onChange={(e) => setFilterDisaster(e.target.value)}
             className="px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
           >
-            <option value="all">Semua Bencana</option>
+            <option value="all">{isEn ? 'All Operations' : 'Semua Bencana'}</option>
             {disasters.map(d => (
               <option key={d.id} value={d.id}>
                 {d.title.split('-')[0].trim()}
@@ -102,17 +120,17 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
 
         {/* Priority Filter */}
         <div className="flex items-center gap-1.5">
-          <span className="text-slate-400 font-medium">Prioritas:</span>
+          <span className="text-slate-400 font-medium">{isEn ? 'Priority:' : 'Prioritas:'}</span>
           <select
             value={filterPriority}
             onChange={(e) => setFilterPriority(e.target.value)}
             className="px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
           >
-            <option value="all">Semua Prioritas</option>
-            <option value="urgent">Mendesak (Urgent)</option>
-            <option value="high">Tinggi (High)</option>
-            <option value="medium">Sedang (Medium)</option>
-            <option value="low">Rendah (Low)</option>
+            <option value="all">{isEn ? 'All Priorities' : 'Semua Prioritas'}</option>
+            <option value="urgent">{isEn ? 'Urgent' : 'Mendesak (Urgent)'}</option>
+            <option value="high">{isEn ? 'High' : 'Tinggi (High)'}</option>
+            <option value="medium">{isEn ? 'Medium' : 'Sedang (Medium)'}</option>
+            <option value="low">{isEn ? 'Low' : 'Rendah (Low)'}</option>
           </select>
         </div>
       </div>
@@ -121,7 +139,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
       <div className="space-y-3">
         {filteredTasks.length === 0 ? (
           <div className="p-12 text-center text-slate-400 text-xs bg-slate-900/40 rounded-xl border border-slate-800">
-            Tidak ada tugas yang sesuai dengan filter yang dipilih.
+            {isEn ? 'No tasks match the selected filter.' : 'Tidak ada tugas yang sesuai dengan filter yang dipilih.'}
           </div>
         ) : (
           filteredTasks.map(task => {
@@ -151,7 +169,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
                       </span>
 
                       <span className="text-xs text-slate-400 font-mono">
-                        {disaster?.title.split('-')[0].trim() || 'Operasi Darurat'}
+                        {disaster?.title.split('-')[0].trim() || (isEn ? 'Emergency Operation' : 'Operasi Darurat')}
                       </span>
                     </div>
 
@@ -166,12 +184,12 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
                         {task.address}
                       </span>
                       <span>
-                        Keahlian:{' '}
+                        {isEn ? 'Required Skill: ' : 'Keahlian: '}
                         <strong className="text-blue-400">{task.requiredSkillName}</strong>
                       </span>
                       <span>
                         Target:{' '}
-                        <span className="text-slate-300">{task.targetCompletionTime || '2 jam'}</span>
+                        <span className="text-slate-300">{task.targetCompletionTime || (isEn ? '2 hours' : '2 jam')}</span>
                       </span>
                     </div>
                   </div>
@@ -179,9 +197,11 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
                   {/* Right Actions */}
                   <div className="flex items-center gap-3 self-end lg:self-center shrink-0">
                     <div className="text-right font-mono tabular-nums">
-                      <span className="text-[11px] text-slate-400 block">Kebutuhan Relawan</span>
+                      <span className="text-[11px] text-slate-400 block">
+                        {isEn ? 'Volunteers Needed' : 'Kebutuhan Relawan'}
+                      </span>
                       <span className="text-sm font-bold text-white">
-                        {task.volunteersAssigned} / {task.volunteersNeeded} Orang
+                        {task.volunteersAssigned} / {task.volunteersNeeded} {isEn ? 'Responders' : 'Orang'}
                       </span>
                     </div>
 
@@ -191,7 +211,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
                         className="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm shadow-blue-600/30 whitespace-nowrap"
                       >
                         <Sparkles className="w-3.5 h-3.5" />
-                        Cari Relawan via AI
+                        {isEn ? 'Find Volunteers with AI' : 'Cari Relawan via AI'}
                       </button>
                     )}
 
@@ -200,11 +220,11 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
                       onChange={(e) => onUpdateTaskStatus(task.id, e.target.value as Task['status'])}
                       className="px-2.5 py-2 text-xs bg-slate-950 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
                     >
-                      <option value="pending">Menunggu</option>
-                      <option value="assigned">Ditugaskan</option>
-                      <option value="in_progress">Sedang Berjalan</option>
-                      <option value="completed">Selesai</option>
-                      <option value="cancelled">Dibatalkan</option>
+                      <option value="pending">{isEn ? 'Pending' : 'Menunggu'}</option>
+                      <option value="assigned">{isEn ? 'Assigned' : 'Ditugaskan'}</option>
+                      <option value="in_progress">{isEn ? 'In Progress' : 'Sedang Berjalan'}</option>
+                      <option value="completed">{isEn ? 'Completed' : 'Selesai'}</option>
+                      <option value="cancelled">{isEn ? 'Cancelled' : 'Dibatalkan'}</option>
                     </select>
                   </div>
                 </div>
@@ -213,7 +233,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
                 {taskAssignments.length > 0 && (
                   <div className="pt-3 border-t border-slate-800/80 space-y-2">
                     <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block font-mono">
-                      Personel Ditugaskan ({taskAssignments.length}):
+                      {isEn ? `Assigned Responders (${taskAssignments.length}):` : `Personel Ditugaskan (${taskAssignments.length}):`}
                     </span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs">
                       {taskAssignments.map(asg => {
@@ -230,7 +250,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
                                 {vol.name}
                               </span>
                               <span className="text-[10px] text-slate-400 font-mono block">
-                                {asg.matchScore ? `AI Match ${Math.round(asg.matchScore * 100)}%` : 'Manual'} · {vol.phone}
+                                {asg.matchScore ? `AI Match ${Math.round(asg.matchScore * 100)}%` : (isEn ? 'Manual' : 'Manual')} · {vol.phone}
                               </span>
                             </div>
 
@@ -238,7 +258,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
                               {asg.status !== 'completed' && (
                                 <button
                                   onClick={() => onUpdateAssignmentStatus(asg.id, 'completed')}
-                                  title="Tandai Selesai"
+                                  title={isEn ? 'Mark as Completed' : 'Tandai Selesai'}
                                   className="p-1 rounded bg-emerald-950/80 hover:bg-emerald-800 text-emerald-300 border border-emerald-800/80"
                                 >
                                   <Check className="w-3 h-3" />

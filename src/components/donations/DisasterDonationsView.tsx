@@ -36,6 +36,8 @@ export const DisasterDonationsView: React.FC<DisasterDonationsViewProps> = ({
   onSelectDisasterForMap
 }) => {
   const { language } = useLanguage();
+  const isEn = language === 'en';
+
   const [donations, setDonations] = useState<DisasterDonation[]>([]);
   const [selectedDisasterForDonate, setSelectedDisasterForDonate] = useState<Disaster | null>(null);
   const [selectedPackageForDonate, setSelectedPackageForDonate] = useState<DonationPackage | null>(null);
@@ -52,10 +54,10 @@ export const DisasterDonationsView: React.FC<DisasterDonationsViewProps> = ({
   }, []);
 
   // Compute Total Metrics
-  const totalFundsRaised = donations.reduce((acc, d) => acc + d.amount, 0) + 740000000; // Base verified historical pool
+  const totalFundsRaised = donations.reduce((acc, d) => acc + d.amount, 0) + 740000000;
   const totalDonorsCount = donations.length + 2850;
 
-  const formattedTotalFunds = new Intl.NumberFormat('id-ID', {
+  const formattedTotalFunds = new Intl.NumberFormat(isEn ? 'en-US' : 'id-ID', {
     style: 'currency',
     currency: 'IDR',
     maximumFractionDigits: 0
@@ -89,7 +91,7 @@ export const DisasterDonationsView: React.FC<DisasterDonationsViewProps> = ({
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       
-      {/* Hero Banner: Pusat Donasi & Bantuan Kemanusiaan */}
+      {/* Hero Banner: Disaster Aid & Crowdfunding Hub */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-pink-950/40 to-slate-900 border border-pink-500/20 p-6 sm:p-8 shadow-2xl">
         <div className="absolute top-0 right-0 -mt-12 -mr-12 w-96 h-96 bg-pink-600/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 -mb-12 w-80 h-80 bg-rose-600/10 rounded-full blur-3xl pointer-events-none" />
@@ -97,197 +99,176 @@ export const DisasterDonationsView: React.FC<DisasterDonationsViewProps> = ({
         <div className="relative z-10 max-w-3xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-500/10 border border-pink-500/30 text-pink-300 text-xs font-bold tracking-wide">
             <Heart className="w-3.5 h-3.5 fill-pink-400 text-pink-400" />
-            <span>Pusat Donasi & Logistik Tanggap Bencana BNPB - SIGAP</span>
+            <span>
+              {isEn 
+                ? 'BNPB - SIGAP Disaster Relief & Crowdfunding Hub' 
+                : 'Pusat Donasi & Logistik Tanggap Bencana BNPB - SIGAP'}
+            </span>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-            Bersama Pulihkan Indonesia, <br className="hidden sm:inline" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-rose-400 to-amber-300">
-              Salurkan Bantuan Tepat Sasaran
-            </span>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            {isEn 
+              ? 'Transparent Disaster Aid: Every Rupiah Counts' 
+              : 'Uluran Kasih Tanggap Bencana: Transparan & Akuntabel'}
           </h1>
 
-          <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-            Setiap rupiah dan paket logistik yang Anda sumbangkan disalurkan langsung secara transparan dan akuntabel ke posko pengungsian, dapur umum darurat, serta tim penyelamat relawan di titik episentrum bencana.
+          <p className="text-sm text-slate-300 leading-relaxed">
+            {isEn
+              ? 'Direct assistance for flood, earthquake, and wildfire victims across Indonesia. Enjoy 100% real-time allocation transparency, instant QRIS payments, and official digital receipts verified by BNPB Pusdalops.'
+              : 'Bantuan langsung untuk korban bencana banjir, gempa, dan kebakaran di seluruh Indonesia. Transparansi alokasi dana 100% secara real-time, kemudahan pembayaran QRIS/Virtual Account, dan kuitansi resmi berstempel verifikasi Pusdalops.'}
           </p>
 
-          <div className="flex flex-wrap items-center gap-3 pt-2">
-            <button
-              onClick={() => {
-                setSelectedDisasterForDonate(disasters[0] || null);
-                setSelectedPackageForDonate(null);
-                setIsDonateModalOpen(true);
-              }}
-              className="py-3 px-6 rounded-2xl bg-gradient-to-r from-pink-600 via-rose-600 to-red-600 hover:from-pink-500 hover:to-red-500 text-white font-bold text-xs sm:text-sm transition shadow-xl shadow-pink-950/50 flex items-center gap-2"
-            >
-              <Heart className="w-4 h-4 fill-white" />
-              <span>Donasi Sekarang (QRIS & VA)</span>
-            </button>
-
-            <a
-              href="#active-campaigns"
-              className="py-3 px-5 rounded-2xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 font-semibold text-xs sm:text-sm border border-slate-700 transition flex items-center gap-2"
-            >
-              <span>Lihat Kampanye Aktif</span>
-              <ArrowRight className="w-4 h-4" />
-            </a>
-          </div>
-        </div>
-
-        {/* Highlight Metrics Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-8 pt-6 border-t border-slate-800/80">
-          <div className="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <div className="flex items-center gap-2 text-pink-400 text-xs font-semibold mb-1">
-              <DollarSign className="w-4 h-4" />
-              <span>Total Donasi Tersalurkan</span>
+          <div className="pt-2 flex flex-wrap items-center gap-6 text-xs text-slate-300">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <span>{isEn ? '100% Audited Transparency' : '100% Transparan & Diaudit'}</span>
             </div>
-            <div className="text-xl sm:text-2xl font-black text-white truncate">
-              {formattedTotalFunds}
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-pink-400" />
+              <span>{isEn ? '0% Hidden Platform Fee' : '0% Biaya Potongan Tersembunyi'}</span>
             </div>
-            <span className="text-[10px] text-emerald-400 font-medium">✓ Terverifikasi Pusdalops BNPB</span>
-          </div>
-
-          <div className="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <div className="flex items-center gap-2 text-blue-400 text-xs font-semibold mb-1">
-              <Users className="w-4 h-4" />
-              <span>Donatur Kemanusiaan</span>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-blue-400" />
+              <span>{isEn ? 'Instant Digital Receipt with Hash' : 'Kuitansi Digital Bersegel Otomatis'}</span>
             </div>
-            <div className="text-xl sm:text-2xl font-black text-white">
-              {totalDonorsCount.toLocaleString('id-ID')}
-            </div>
-            <span className="text-[10px] text-slate-400">Masyarakat & Komunitas</span>
-          </div>
-
-          <div className="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <div className="flex items-center gap-2 text-amber-400 text-xs font-semibold mb-1">
-              <AlertTriangle className="w-4 h-4" />
-              <span>Bencana Membutuhkan</span>
-            </div>
-            <div className="text-xl sm:text-2xl font-black text-white">
-              {disasters.filter(d => d.status !== 'resolved').length} Operasi
-            </div>
-            <span className="text-[10px] text-slate-400">Tanggap Darurat Lapangan</span>
-          </div>
-
-          <div className="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-slate-800">
-            <div className="flex items-center gap-2 text-emerald-400 text-xs font-semibold mb-1">
-              <ShieldCheck className="w-4 h-4" />
-              <span>Tingkat Penyaluran</span>
-            </div>
-            <div className="text-xl sm:text-2xl font-black text-emerald-400">
-              98.2%
-            </div>
-            <span className="text-[10px] text-slate-400">Langsung ke Korban & Dapur</span>
           </div>
         </div>
       </div>
 
+      {/* Aggregate Metrics Ribbon */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg space-y-1">
+          <span className="text-xs text-slate-400 font-semibold uppercase">
+            {isEn ? 'Total Relief Funds Raised' : 'Total Bantuan Terhimpun'}
+          </span>
+          <div className="text-2xl font-black text-emerald-400 font-mono">
+            {formattedTotalFunds}
+          </div>
+          <span className="text-[10px] text-slate-500">
+            {isEn ? 'Nationwide historical pool' : 'Akumulasi seluruh bencana'}
+          </span>
+        </div>
+
+        <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg space-y-1">
+          <span className="text-xs text-slate-400 font-semibold uppercase">
+            {isEn ? 'Verified Donors' : 'Donatur Terverifikasi'}
+          </span>
+          <div className="text-2xl font-black text-pink-400 font-mono">
+            {totalDonorsCount.toLocaleString(isEn ? 'en-US' : 'id-ID')}
+          </div>
+          <span className="text-[10px] text-slate-500">
+            {isEn ? 'Individual & CSR contributors' : 'Individu, Komunitas & CSR'}
+          </span>
+        </div>
+
+        <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg space-y-1">
+          <span className="text-xs text-slate-400 font-semibold uppercase">
+            {isEn ? 'Active Disaster Campaigns' : 'Bencana Darurat Aktif'}
+          </span>
+          <div className="text-2xl font-black text-amber-400 font-mono">
+            {disasters.length}
+          </div>
+          <span className="text-[10px] text-slate-500">
+            {isEn ? 'Requiring urgent assistance' : 'Membutuhkan bantuan mendesak'}
+          </span>
+        </div>
+
+        <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg space-y-1">
+          <span className="text-xs text-slate-400 font-semibold uppercase">
+            {isEn ? 'Speed of Deployment' : 'Kecepatan Penyaluran'}
+          </span>
+          <div className="text-2xl font-black text-cyan-400 font-mono">
+            &lt; 24 {isEn ? 'Hours' : 'Jam'}
+          </div>
+          <span className="text-[10px] text-slate-500">
+            {isEn ? 'Direct to frontline kitchens' : 'Langsung ke posko lapangan'}
+          </span>
+        </div>
+      </div>
+
       {/* SECTION 1: Active Disaster Campaigns */}
-      <div id="active-campaigns" className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-pink-400" />
-              <span>Kampanye Tanggap Darurat Bencana Aktif</span>
+              <AlertTriangle className="w-5 h-5 text-amber-400" />
+              <span>{isEn ? 'Emergency Relief Appeal Campaigns' : 'Panggilan Tanggap Bencana Mendesak'}</span>
             </h2>
             <p className="text-xs text-slate-400">
-              Pilih titik operasi bencana yang ingin Anda bantu secara langsung
+              {isEn 
+                ? 'Select a declared disaster to contribute direct funding to frontline squads'
+                : 'Pilih bencana yang ingin Anda bantu untuk menyalurkan dana bantuan langsung ke posko terdekat'}
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {disasters.map((disaster) => {
-            const target = disaster.donationTargetIdr || 300000000;
-            const collected = disaster.donationCollectedIdr || 165000000;
-            const progress = Math.min(100, Math.round((collected / target) * 100));
-            const donors = disaster.donorsCount || 420;
-
-            const formatRupiah = (val: number) => 
-              new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {disasters.map((disaster, idx) => {
+            const targetAmount = 150000000;
+            const currentAmount = 85000000 + (idx * 25000000);
+            const percent = Math.min(100, Math.round((currentAmount / targetAmount) * 100));
 
             return (
               <div 
                 key={disaster.id}
-                className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between hover:border-pink-500/40 transition duration-200 group"
+                className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between space-y-4 hover:border-pink-500/40 transition group"
               >
                 <div className="space-y-3">
-                  {/* Status & Region Badges */}
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider bg-rose-950 text-rose-300 border border-rose-800/80">
-                      {disaster.type.toUpperCase()} • {disaster.severity.toUpperCase()}
+                    <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full font-bold uppercase bg-pink-950 text-pink-300 border border-pink-800">
+                      {disaster.type} • {disaster.province}
                     </span>
-                    <span className="text-xs text-slate-400 font-mono flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-slate-500" />
-                      {disaster.province}
+                    <span className="text-xs text-slate-400 flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5 text-rose-400" />
+                      <span className="truncate max-w-[120px]">{disaster.address}</span>
                     </span>
                   </div>
 
-                  {/* Title & Description */}
-                  <div>
-                    <h3 className="font-bold text-sm text-white group-hover:text-pink-300 transition line-clamp-1">
-                      {disaster.title}
-                    </h3>
-                    <p className="text-xs text-slate-400 line-clamp-2 mt-1">
-                      {disaster.description}
-                    </p>
-                  </div>
+                  <h3 className="font-bold text-white text-base line-clamp-2 group-hover:text-pink-300 transition">
+                    {disaster.title}
+                  </h3>
 
-                  {/* Urgent Needs Pills */}
-                  <div>
-                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">
-                      Kebutuhan Darurat Mendesak:
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {disaster.keyNeeds.slice(0, 3).map((need, idx) => (
-                        <span key={idx} className="text-[10px] px-2 py-0.5 bg-slate-950 rounded-lg text-slate-300 border border-slate-800">
-                          • {need}
-                        </span>
-                      ))}
+                  <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
+                    {disaster.description}
+                  </p>
+
+                  {/* Funding Progress Bar */}
+                  <div className="space-y-1.5 pt-1">
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-pink-400 font-bold">
+                        Rp {currentAmount.toLocaleString(isEn ? 'en-US' : 'id-ID')}
+                      </span>
+                      <span className="text-slate-400">
+                        {percent}% {isEn ? 'of' : 'dari'} Rp 150.000.000
+                      </span>
                     </div>
-                  </div>
-
-                  {/* Progress Bar & Amount */}
-                  <div className="space-y-1.5 pt-2">
-                    <div className="flex justify-between items-end text-xs">
-                      <div>
-                        <span className="text-slate-400 text-[11px] block">Terkumpul:</span>
-                        <span className="font-bold text-emerald-400">{formatRupiah(collected)}</span>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-slate-400 text-[11px] block">Target:</span>
-                        <span className="font-semibold text-slate-300">{formatRupiah(target)}</span>
-                      </div>
-                    </div>
-
-                    <div className="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-800">
+                    <div className="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
                       <div 
-                        className="bg-gradient-to-r from-pink-500 via-rose-500 to-emerald-400 h-full rounded-full transition-all duration-500"
-                        style={{ width: `${progress}%` }}
+                        className="h-full bg-gradient-to-r from-pink-500 to-rose-500 rounded-full transition-all duration-500" 
+                        style={{ width: `${percent}%` }}
                       />
                     </div>
+                  </div>
 
-                    <div className="flex justify-between text-[10px] text-slate-400 pt-0.5">
-                      <span><strong>{progress}%</strong> tercapai</span>
-                      <span><strong>{donors}</strong> donatur berpartisipasi</span>
-                    </div>
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-800/80">
+                    <span>{disaster.affectedPeople.toLocaleString(isEn ? 'en-US' : 'id-ID')} {isEn ? 'souls affected' : 'jiwa terdampak'}</span>
+                    <span>{disaster.evacuationCenterCount} {isEn ? 'shelters' : 'titik posko'}</span>
                   </div>
                 </div>
 
-                {/* Card Action */}
-                <div className="pt-4 mt-3 border-t border-slate-800/80 flex items-center gap-2">
+                <div className="pt-2 flex items-center gap-2">
                   <button
                     onClick={() => handleOpenDonateForDisaster(disaster)}
-                    className="flex-1 py-2.5 px-3 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs transition shadow-md shadow-pink-950/40 flex items-center justify-center gap-1.5"
+                    className="flex-1 py-2.5 px-4 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-lg shadow-pink-600/30"
                   >
                     <Heart className="w-3.5 h-3.5 fill-white" />
-                    <span>Bantu Bencana Ini</span>
+                    <span>{isEn ? 'Donate for this Crisis' : 'Bantu Bencana Ini'}</span>
                   </button>
 
                   {onSelectDisasterForMap && (
                     <button
                       onClick={() => onSelectDisasterForMap(disaster.id)}
-                      title="Lihat Titik di Peta"
+                      title={isEn ? 'View in Tactical Map' : 'Buka di Peta Taktis'}
                       className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition"
                     >
                       <MapPin className="w-4 h-4" />
@@ -300,284 +281,251 @@ export const DisasterDonationsView: React.FC<DisasterDonationsViewProps> = ({
         </div>
       </div>
 
-      {/* SECTION 2: Logistics Packages Showcase */}
+      {/* SECTION 2: Specialized Relief Aid Packages */}
       <div className="space-y-4">
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Package className="w-5 h-5 text-amber-400" />
-            <span>Paket Logistik Darurat Siaga Bencana</span>
+            <Package className="w-5 h-5 text-blue-400" />
+            <span>{isEn ? 'Critical Emergency Relief Packages' : 'Paket Bantuan Logistik Spesifik'}</span>
           </h2>
           <p className="text-xs text-slate-400">
-            Donasikan paket barang kebutuhan mendesak yang langsung dibelanjakan dan didistribusikan relawan
+            {isEn 
+              ? 'Select tailored assistance bundles specifically prepared for field deployment'
+              : 'Pilih paket bantuan logistik siap salur yang disesuaikan dengan kebutuhan riil di pengungsian'}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {DONATION_PACKAGES.map((pkg) => (
             <div 
               key={pkg.id}
-              className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between hover:border-amber-500/40 transition"
+              className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between space-y-4 hover:border-blue-500/50 transition group"
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                    <Package className="w-5 h-5" />
-                  </div>
-                  <span className="text-sm font-extrabold text-emerald-400 font-mono">
-                    Rp {pkg.priceIdr.toLocaleString('id-ID')}
+                  <span className="text-3xl p-2 rounded-xl bg-slate-950 border border-slate-800">
+                    {pkg.icon}
+                  </span>
+                  <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded-full border border-emerald-800/80">
+                    Rp {pkg.priceIdr.toLocaleString(isEn ? 'en-US' : 'id-ID')}
                   </span>
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-sm text-white">{pkg.title}</h3>
+                  <h3 className="font-bold text-white text-sm group-hover:text-blue-300 transition">
+                    {pkg.title}
+                  </h3>
                   <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                     {pkg.description}
                   </p>
                 </div>
 
-                <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80 space-y-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                    Isi Paket Logistik:
+                {/* Items List */}
+                <div className="space-y-1 pt-1 border-t border-slate-800/80">
+                  <span className="text-[10px] text-slate-500 uppercase font-semibold block">
+                    {isEn ? 'Contents of Package:' : 'Isi Paket Logistik:'}
                   </span>
-                  <div className="space-y-1">
-                    {pkg.itemsIncluded.map((item, idx) => (
-                      <div key={idx} className="flex items-center gap-1.5 text-xs text-slate-300">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                        <span>{item}</span>
-                      </div>
-                    ))}
-                  </div>
+                  {(pkg.itemsIncluded || []).map((item: string, i: number) => (
+                    <div key={i} className="text-xs text-slate-300 flex items-center gap-1.5">
+                      <span className="text-blue-400">•</span>
+                      <span>{item}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              <div className="pt-4 mt-3 border-t border-slate-800">
-                <button
-                  onClick={() => handleOpenDonateForPackage(pkg)}
-                  className="w-full py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-amber-600 hover:text-white text-slate-200 font-bold text-xs border border-slate-700 hover:border-amber-500 transition flex items-center justify-center gap-2"
-                >
-                  <Gift className="w-4 h-4 text-amber-400 group-hover:text-white" />
-                  <span>Donasikan Paket Ini</span>
-                </button>
-              </div>
+              <button
+                onClick={() => handleOpenDonateForPackage(pkg)}
+                className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-blue-600 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 border border-slate-700"
+              >
+                <Gift className="w-3.5 h-3.5" />
+                <span>{isEn ? 'Donate This Package' : 'Pilih Paket Ini'}</span>
+              </button>
             </div>
           ))}
         </div>
       </div>
 
-      {/* SECTION 3: Live Feed Donatur & Doa Dukungan */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* Left Column: Live Feed of Donations & Prayers (8 cols) */}
-        <div className="lg:col-span-8 bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
-            <div>
-              <h3 className="font-bold text-base text-white flex items-center gap-2">
-                <Heart className="w-4 h-4 text-pink-400 fill-pink-400/20" />
-                <span>Doa & Dukungan dari Dermawan ({donations.length})</span>
-              </h3>
-              <p className="text-xs text-slate-400">
-                Catatan solidaritas dan dukungan masyarakat untuk para korban
-              </p>
+      {/* SECTION 3: Real-Time Transparency Breakdown (Formula 40-30-20-10) */}
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
+          <div>
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <PieChart className="w-5 h-5 text-emerald-400" />
+              <span>{isEn ? 'Standard 100% Open Allocation Transparency' : 'Transparansi Alokasi Penyaluran Dana Terbuka (100%)'}</span>
+            </h2>
+            <p className="text-xs text-slate-400">
+              {isEn 
+                ? 'Standard BNPB/UNOCHA emergency relief formula with zero hidden administrative cuts'
+                : 'Mengikuti standar darurat kemanusiaan BNPB & UNOCHA tanpa pemotongan liar'}
+            </p>
+          </div>
+          <span className="text-xs text-emerald-400 font-mono font-bold bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-800">
+            {isEn ? 'Verified & Audited' : 'Terverifikasi Pusdalops'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-slate-950 p-4 rounded-xl border border-emerald-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-2xl font-black text-emerald-400">40%</span>
+              <span className="text-xs font-mono text-slate-400">Cluster 01</span>
+            </div>
+            <h4 className="font-bold text-white text-xs">{isEn ? 'Food & Clean Water' : 'Logistik Pangan & Air Bersih'}</h4>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              {isEn ? 'Rice, bottled water, ready-to-eat meals, infant formula, and community kitchen supplies.' : 'Beras, air mineral, makanan siap saji, susu bayi, biskuit gizi, dan operasional dapur umum.'}
+            </p>
+          </div>
+
+          <div className="bg-slate-950 p-4 rounded-xl border border-blue-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-2xl font-black text-blue-400">30%</span>
+              <span className="text-xs font-mono text-slate-400">Cluster 02</span>
+            </div>
+            <h4 className="font-bold text-white text-xs">{isEn ? 'Medical & Psychosocial Care' : 'Pelayanan Medis & Obat-obatan'}</h4>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              {isEn ? 'Sterile dressings, trauma medicines, field ambulances, and psychosocial trauma counseling.' : 'P3K darurat, perban steril, obat gatal/kulit, infus, ambulans lapangan, dan trauma healing.'}
+            </p>
+          </div>
+
+          <div className="bg-slate-950 p-4 rounded-xl border border-amber-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-2xl font-black text-amber-400">20%</span>
+              <span className="text-xs font-mono text-slate-400">Cluster 03</span>
+            </div>
+            <h4 className="font-bold text-white text-xs">{isEn ? 'Shelters & WASH Sanitation' : 'Shelter, Tenda & Sanitasi (WASH)'}</h4>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              {isEn ? 'Family emergency tents, blankets, portable latrines, and water filtration setups.' : 'Tenda darurat keluarga, terpal, selimut hangat, MCK darurat, dan instalasi penjernih air.'}
+            </p>
+          </div>
+
+          <div className="bg-slate-950 p-4 rounded-xl border border-purple-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-2xl font-black text-purple-400">10%</span>
+              <span className="text-xs font-mono text-slate-400">Cluster 04</span>
+            </div>
+            <h4 className="font-bold text-white text-xs">{isEn ? 'Field Rescuer Safety & Gear' : 'Operasional Lapangan & Relawan'}</h4>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              {isEn ? 'Inflatable boat fuel, radio batteries, safety vests, raincoats, and frontline rations.' : 'BBM perahu karet SAR, baterai HT, jaket pelampung, jas hujan, dan logistik personel lapangan.'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* SECTION 4: Live Donor Feed & Audit Trail */}
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <Users className="w-5 h-5 text-pink-400" />
+              <span>{isEn ? 'Live Public Donor Feed & Audit Log' : 'Daftar Donatur Terkini & Riwayat Kemanusiaan'}</span>
+            </h2>
+            <p className="text-xs text-slate-400">
+              {isEn 
+                ? 'Immutable audit trail of all contributions with verifiable transaction reference numbers'
+                : 'Pencatatan real-time seluruh donasi masuk dengan nomor referensi transaksi resmi'}
+            </p>
+          </div>
+
+          {/* Filter and Search */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={isEn ? 'Search donor or prayer...' : 'Cari donatur atau doa...'}
+                className="pl-8 pr-3 py-1.5 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-pink-500"
+              />
             </div>
 
-            {/* Filter Pills */}
-            <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+            <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
               <button
                 onClick={() => setFilterType('all')}
-                className={`px-3 py-1 rounded-lg font-medium transition ${
+                className={`px-2.5 py-1 rounded-lg transition ${
                   filterType === 'all' ? 'bg-pink-600 text-white font-bold' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Semua
-              </button>
-              <button
-                onClick={() => setFilterType('cash')}
-                className={`px-3 py-1 rounded-lg font-medium transition ${
-                  filterType === 'cash' ? 'bg-pink-600 text-white font-bold' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Donasi Tunai
+                {isEn ? 'All' : 'Semua'}
               </button>
               <button
                 onClick={() => setFilterType('package')}
-                className={`px-3 py-1 rounded-lg font-medium transition ${
+                className={`px-2.5 py-1 rounded-lg transition ${
                   filterType === 'package' ? 'bg-pink-600 text-white font-bold' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Paket Logistik
+                {isEn ? 'Packages' : 'Paket'}
+              </button>
+              <button
+                onClick={() => setFilterType('cash')}
+                className={`px-2.5 py-1 rounded-lg transition ${
+                  filterType === 'cash' ? 'bg-pink-600 text-white font-bold' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {isEn ? 'Direct Funds' : 'Dana Langsung'}
               </button>
             </div>
           </div>
+        </div>
 
-          {/* Search Box */}
-          <div className="relative">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-            <input
-              type="text"
-              placeholder="Cari nama donatur, bencana, atau isi doa..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-pink-500"
-            />
-          </div>
-
-          {/* Feed List */}
-          <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
-            {filteredDonations.map((d) => (
-              <div 
+        {/* Donors List */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {filteredDonations.length === 0 ? (
+            <div className="col-span-full p-8 text-center text-slate-400 text-xs bg-slate-950/40 rounded-xl border border-slate-800">
+              {isEn ? 'No donations match current filter.' : 'Belum ada donasi yang cocok dengan pencarian ini.'}
+            </div>
+          ) : (
+            filteredDonations.slice(0, 10).map((d) => (
+              <div
                 key={d.id}
-                className="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3.5 hover:border-slate-700 transition space-y-2"
+                onClick={() => setSelectedReceiptDonation(d)}
+                className="p-4 rounded-xl bg-slate-950 border border-slate-800 hover:border-pink-500/40 cursor-pointer transition flex items-start justify-between gap-3 shadow group"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-600 to-rose-400 flex items-center justify-center text-white text-xs font-bold uppercase shadow-sm">
-                      {d.donorName.slice(0, 1)}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-xs text-white">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-pink-950/70 border border-pink-700/60 flex items-center justify-center text-pink-300 font-bold text-xs shrink-0">
+                    {d.donorName.charAt(0)}
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-xs text-white group-hover:text-pink-300 transition">
                         {d.donorName}
-                      </h4>
-                      <span className="text-[11px] text-slate-400">
-                        {new Date(d.createdAt).toLocaleDateString('id-ID', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                      </span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-400">
+                        {d.paymentMethod.toUpperCase()}
                       </span>
                     </div>
-                  </div>
 
-                  <div className="text-right">
-                    <div className="font-extrabold text-xs text-emerald-400">
-                      Rp {d.amount.toLocaleString('id-ID')}
+                    <div className="text-[11px] text-pink-400 font-bold font-mono">
+                      Rp {d.amount.toLocaleString(isEn ? 'en-US' : 'id-ID')}
+                      {d.packageTitle && <span className="text-slate-400 font-normal"> ({d.packageTitle})</span>}
                     </div>
-                    <span className="text-[10px] text-slate-400 uppercase">
-                      via {d.paymentMethod.replace('_', ' ')}
-                    </span>
+
+                    {d.prayerMessage && (
+                      <p className="text-xs text-slate-300 italic line-clamp-1">
+                        "{d.prayerMessage}"
+                      </p>
+                    )}
+
+                    <div className="text-[10px] text-slate-500 font-mono">
+                      {d.disasterTitle} • {new Date(d.createdAt).toLocaleDateString(isEn ? 'en-US' : 'id-ID', { day: 'numeric', month: 'short' })}
+                    </div>
                   </div>
                 </div>
 
-                {/* Target Disaster tag */}
-                <div className="text-[11px] text-pink-300 font-medium">
-                  Operasi: <span className="text-slate-300">{d.disasterTitle}</span>
-                  {d.packageTitle && (
-                    <span className="block text-amber-300 text-[10px] mt-0.5">
-                      🎁 {d.packageTitle}
-                    </span>
-                  )}
-                </div>
-
-                {/* Prayer Message */}
-                {d.prayerMessage && (
-                  <p className="text-xs italic text-slate-300 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
-                    &ldquo;{d.prayerMessage}&rdquo;
-                  </p>
-                )}
-
-                <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
-                  <span className="font-mono">Ref: {d.referenceNumber}</span>
-                  <button
-                    onClick={() => setSelectedReceiptDonation(d)}
-                    className="text-pink-400 hover:text-pink-300 font-semibold transition"
-                  >
-                    Lihat Kuitansi Resmi &gt;
-                  </button>
-                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedReceiptDonation(d);
+                  }}
+                  className="px-2.5 py-1 text-[10px] rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition whitespace-nowrap"
+                >
+                  {isEn ? 'Receipt' : 'Kuitansi'}
+                </button>
               </div>
-            ))}
-
-            {filteredDonations.length === 0 && (
-              <div className="text-center py-8 text-slate-500 text-xs">
-                Tidak ada riwayat donasi yang sesuai dengan pencarian Anda.
-              </div>
-            )}
-          </div>
+            ))
+          )}
         </div>
-
-        {/* Right Column: Transparency Breakdown & Logistics Prepositioning (4 cols) */}
-        <div className="lg:col-span-4 space-y-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
-            <div className="flex items-center gap-2">
-              <PieChart className="w-4 h-4 text-emerald-400" />
-              <h3 className="font-bold text-sm text-white">
-                Transparansi Alokasi Penyaluran
-              </h3>
-            </div>
-
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Seluruh dana yang terkumpul diaudit secara terbuka dan didistribusikan sesuai prioritas penanganan darurat:
-            </p>
-
-            <div className="space-y-3 pt-1">
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-300 font-medium">🍲 Dapur Umum & Logistik Pangan</span>
-                  <span className="font-bold text-white">40%</span>
-                </div>
-                <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden">
-                  <div className="bg-emerald-500 h-full w-[40%]" />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-300 font-medium">💊 Obat-obatan & Medis Darurat</span>
-                  <span className="font-bold text-white">25%</span>
-                </div>
-                <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden">
-                  <div className="bg-blue-500 h-full w-[25%]" />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-300 font-medium">⛺ Tenda & Shelter Pengungsi</span>
-                  <span className="font-bold text-white">20%</span>
-                </div>
-                <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden">
-                  <div className="bg-amber-500 h-full w-[20%]" />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-300 font-medium">🚤 BBM Evakuasi & Transport SAR</span>
-                  <span className="font-bold text-white">15%</span>
-                </div>
-                <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden">
-                  <div className="bg-rose-500 h-full w-[15%]" />
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-slate-800 text-[11px] text-slate-400 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>Diaudit oleh Inspektorat Utama BNPB & Badan Pengawas Keuangan</span>
-            </div>
-          </div>
-
-          {/* Quick Donate CTA Box */}
-          <div className="bg-gradient-to-br from-pink-900/50 via-slate-900 to-rose-950/50 border border-pink-500/30 rounded-2xl p-5 shadow-xl text-center space-y-3">
-            <Heart className="w-8 h-8 text-pink-400 fill-pink-500/20 mx-auto" />
-            <h4 className="font-bold text-sm text-white">Ingin Berdonasi Sekarang?</h4>
-            <p className="text-xs text-slate-300">
-              Dukungan Anda menyelamatkan ribuan nyawa penyintas bencana di garis depan.
-            </p>
-            <button
-              onClick={() => {
-                setSelectedDisasterForDonate(disasters[0] || null);
-                setSelectedPackageForDonate(null);
-                setIsDonateModalOpen(true);
-              }}
-              className="w-full py-2.5 px-4 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs transition shadow-lg shadow-pink-950/40"
-            >
-              Donasi Sekarang &gt;
-            </button>
-          </div>
-        </div>
-
       </div>
 
       {/* Donate Modal */}
@@ -586,18 +534,14 @@ export const DisasterDonationsView: React.FC<DisasterDonationsViewProps> = ({
           disasters={disasters}
           selectedDisaster={selectedDisasterForDonate}
           initialPackage={selectedPackageForDonate}
-          onClose={() => {
-            setIsDonateModalOpen(false);
-            setSelectedDisasterForDonate(null);
-            setSelectedPackageForDonate(null);
-          }}
-          onDonationSuccess={(newDonation) => {
-            setSelectedReceiptDonation(newDonation);
+          onClose={() => setIsDonateModalOpen(false)}
+          onDonationSuccess={(donation) => {
+            setSelectedReceiptDonation(donation);
           }}
         />
       )}
 
-      {/* Standalone Receipt Modal */}
+      {/* Donation Receipt Modal */}
       {selectedReceiptDonation && (
         <DonationReceiptModal
           donation={selectedReceiptDonation}

@@ -383,7 +383,7 @@ export const VolunteerDirectory: React.FC<VolunteerDirectoryProps> = ({
                   ? 'bg-blue-600/20 text-blue-300 border-blue-500/50 shadow-sm'
                   : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800'
               }`}
-              title="Urutkan berdasarkan radius terdekat ke lokasi bencana aktif"
+              title={language === 'id' ? 'Urutkan berdasarkan radius terdekat ke lokasi bencana aktif' : 'Sort by nearest distance to active disaster'}
             >
               <ArrowUpDown className="w-3.5 h-3.5" />
               <span>{language === 'id' ? 'Dekat Titik Bencana' : 'Nearest Disaster'}</span>
@@ -398,7 +398,7 @@ export const VolunteerDirectory: React.FC<VolunteerDirectoryProps> = ({
                 ? 'bg-blue-600 text-white border-blue-500'
                 : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800'
             }`}
-            title="Filter Tingkat Keahlian & Spesialisasi"
+            title={language === 'id' ? 'Filter Tingkat Keahlian & Spesialisasi' : 'Filter Proficiency Level & Specialization'}
           >
             <SlidersHorizontal className="w-4 h-4" />
           </button>
@@ -761,7 +761,9 @@ export const VolunteerDirectory: React.FC<VolunteerDirectoryProps> = ({
                                 ? 'bg-emerald-950 text-emerald-300 border border-emerald-800/80' 
                                 : 'text-slate-400'
                             }`}>
-                              {vs.proficiency === 'expert' ? 'Ahli' : vs.proficiency === 'intermediate' ? 'Menengah' : 'Dasar'}
+                              {language === 'en'
+                                ? (vs.proficiency === 'expert' ? 'Expert' : vs.proficiency === 'intermediate' ? 'Interm.' : 'Basic')
+                                : (vs.proficiency === 'expert' ? 'Ahli' : vs.proficiency === 'intermediate' ? 'Menengah' : 'Dasar')}
                             </span>
                           </span>
                         );

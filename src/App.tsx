@@ -59,6 +59,7 @@ import volunteerTeamImg from './assets/images/volunteer_field_team_1791810284793
 
 export default function App() {
   const { language, t } = useLanguage();
+  const isEn = language === 'en';
   const { isCoordinator, isVolunteer, effectiveRole } = useAuth();
   const { dispatchTaskToast } = useFieldNotifications();
 
@@ -175,7 +176,7 @@ export default function App() {
         if (offline.disasters?.length && !selectedDisasterId) {
           setSelectedDisasterId(offline.disasters[0].id);
         }
-        showToast('Mode Offline: Memuat data posko & relawan dari penyimpanan lokal.');
+        showToast(isEn ? 'Offline Mode: Loaded incident command & responder data from local cache.' : 'Mode Offline: Memuat data posko & relawan dari penyimpanan lokal.');
       }
     }
   };
@@ -342,11 +343,11 @@ export default function App() {
 
         const vol = volunteers.find(v => v.id === volunteerId);
         const disaster = disasters.find(d => d.id === task.disasterId);
-        dispatchTaskToast(task, disaster, `Penugasan untuk ${vol?.name || 'Relawan'}`);
-        showToast(`Relawan ${vol?.name || ''} berhasil ditugaskan ke: ${task.title}`);
+        dispatchTaskToast(task, disaster, isEn ? `Assignment for ${vol?.name || 'Volunteer'}` : `Penugasan untuk ${vol?.name || 'Relawan'}`);
+        showToast(isEn ? `Responder ${vol?.name || ''} successfully assigned to: ${task.title}` : `Relawan ${vol?.name || ''} berhasil ditugaskan ke: ${task.title}`);
       } else {
         const errData = await res.json();
-        showToast(errData.error || 'Gagal menugaskan relawan');
+        showToast(errData.error || (isEn ? 'Failed to assign volunteer' : 'Gagal menugaskan relawan'));
       }
     } catch (err) {
       console.error(err);
@@ -368,7 +369,7 @@ export default function App() {
         if (selectedVolunteerForProfile && selectedVolunteerForProfile.id === volunteerId) {
           setSelectedVolunteerForProfile(prev => prev ? { ...prev, status } : null);
         }
-        showToast(`Status relawan diperbarui menjadi '${status}'.`);
+        showToast(isEn ? `Responder status updated to '${status}'.` : `Status relawan diperbarui menjadi '${status}'.`);
       }
     } catch (err) {
       console.error(err);
@@ -387,7 +388,7 @@ export default function App() {
         setTasks(prev =>
           prev.map(t => (t.id === taskId ? { ...t, status } : t))
         );
-        showToast(`Status tugas diperbarui menjadi '${status}'.`);
+        showToast(isEn ? `Task status updated to '${status}'.` : `Status tugas diperbarui menjadi '${status}'.`);
       }
     } catch (err) {
       console.error(err);
@@ -406,7 +407,7 @@ export default function App() {
         setAssignments(prev =>
           prev.map(a => (a.id === assignmentId ? { ...a, status } : a))
         );
-        showToast(`Status penugasan diperbarui menjadi '${status}'.`);
+        showToast(isEn ? `Assignment status updated to '${status}'.` : `Status penugasan diperbarui menjadi '${status}'.`);
       }
     } catch (err) {
       console.error(err);
@@ -444,7 +445,7 @@ export default function App() {
         alerts={bmkgAlerts}
         onSelectAlert={(a) => {
           setActiveTab('map');
-          showToast(`Peringatan BMKG: ${a.title}`);
+          showToast(isEn ? `BMKG Alert: ${a.title}` : `Peringatan BMKG: ${a.title}`);
         }}
         onOpenEarlyWarningTab={() => setActiveTab('early-warning')}
       />
@@ -592,7 +593,7 @@ export default function App() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setIsOfflineManagerOpen(true)}
-                      title="Unduh & Kelola Tile Peta Offline untuk Operasi Lapangan"
+                      title={isEn ? 'Download & Manage Offline Map Tiles for Field Operations' : 'Unduh & Kelola Tile Peta Offline untuk Operasi Lapangan'}
                       className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-slate-750 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-[11px] font-semibold transition shadow-sm"
                     >
                       <HardDrive className="w-3 h-3 text-blue-400" />
@@ -666,7 +667,7 @@ export default function App() {
                   <div className="relative rounded-xl overflow-hidden mb-3 border border-slate-800 h-28 bg-slate-950">
                     <img
                       src={commandCenterImg}
-                      alt="Pusdalops SIGAP"
+                      alt={isEn ? 'SIGAP Operations Command Center' : 'Pusdalops SIGAP'}
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
                     />
@@ -759,7 +760,7 @@ export default function App() {
                         setRoleGateState({
                           isOpen: true,
                           requiredRole: 'coordinator',
-                          featureTitle: 'Analisis Situasi SitRep AI'
+                          featureTitle: isEn ? 'AI SitRep Situational Analysis' : 'Analisis Situasi SitRep AI'
                         });
                         return;
                       }
@@ -775,7 +776,7 @@ export default function App() {
                         setRoleGateState({
                           isOpen: true,
                           requiredRole: 'coordinator',
-                          featureTitle: 'Siaran Darurat WhatsApp Massal'
+                          featureTitle: isEn ? 'Emergency Mass WhatsApp Broadcast' : 'Siaran Darurat WhatsApp Massal'
                         });
                         return;
                       }
@@ -975,7 +976,7 @@ export default function App() {
             volunteers.filter(v => v.status !== 'offline').length
           }
           onSendBroadcast={(bc) => {
-            showToast(`Siaran darurat ke ${bc.recipientCount} relawan terkirim via ${bc.channel.toUpperCase()}`);
+            showToast(isEn ? `Emergency broadcast to ${bc.recipientCount} responders sent via ${bc.channel.toUpperCase()}` : `Siaran darurat ke ${bc.recipientCount} relawan terkirim via ${bc.channel.toUpperCase()}`);
           }}
           onClose={() => setIsBroadcastOpen(false)}
         />
@@ -1042,7 +1043,7 @@ export default function App() {
             setSelectedDisasterForDonate(null);
           }}
           onDonationSuccess={(donation) => {
-            showToast(`Terima kasih! Donasi sebesar Rp ${donation.amount.toLocaleString('id-ID')} berhasil disalurkan.`);
+            showToast(isEn ? `Thank you! Donation of Rp ${donation.amount.toLocaleString('en-US')} transferred successfully.` : `Terima kasih! Donasi sebesar Rp ${donation.amount.toLocaleString('id-ID')} berhasil disalurkan.`);
             // Update local disaster funds
             setDisasters(prev => prev.map(d => {
               if (d.id === donation.disasterId) {

@@ -43,15 +43,16 @@ export const PWAInstallButton: React.FC = () => {
 
   // iOS Safari flow (beforeinstallprompt is not supported by WebKit)
   if (isIOS) {
+    const isEn = language === 'en';
     return (
       <>
         <button
           onClick={() => setShowIOSGuide(true)}
-          title="Instal di iPhone / iPad"
+          title={isEn ? 'Install on iPhone / iPad' : 'Instal di iPhone / iPad'}
           className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 px-2.5 py-1.5 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition"
         >
           <Smartphone className="w-3.5 h-3.5 text-blue-400" />
-          <span className="hidden sm:inline">Instal iOS</span>
+          <span className="hidden sm:inline">{isEn ? 'Install iOS' : 'Instal iOS'}</span>
         </button>
 
         {showIOSGuide && (
@@ -62,7 +63,9 @@ export const PWAInstallButton: React.FC = () => {
                   <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center">
                     <Share2 className="w-4 h-4 text-blue-400" />
                   </div>
-                  <h3 className="text-base font-bold text-white">Instal di iPhone / iPad</h3>
+                  <h3 className="text-base font-bold text-white">
+                    {isEn ? 'Install on iPhone / iPad' : 'Instal di iPhone / iPad'}
+                  </h3>
                 </div>
                 <button
                   onClick={() => setShowIOSGuide(false)}
@@ -75,15 +78,27 @@ export const PWAInstallButton: React.FC = () => {
               <div className="space-y-3 text-sm text-slate-300">
                 <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-800/60 border border-slate-750">
                   <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs shrink-0">1</span>
-                  <p>Ketuk tombol <strong>Share</strong> (ikon kotak panah atas) di menu bawah Safari.</p>
+                  <p>
+                    {isEn 
+                      ? <>Tap the <strong>Share</strong> button (square icon with upward arrow) in the Safari bottom bar.</>
+                      : <>Ketuk tombol <strong>Share</strong> (ikon kotak panah atas) di menu bawah Safari.</>}
+                  </p>
                 </div>
                 <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-800/60 border border-slate-750">
                   <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs shrink-0">2</span>
-                  <p>Gulir ke bawah lalu pilih <strong>Add to Home Screen</strong> (Tambahkan ke Layar Utama).</p>
+                  <p>
+                    {isEn
+                      ? <>Scroll down and select <strong>Add to Home Screen</strong>.</>
+                      : <>Gulir ke bawah lalu pilih <strong>Add to Home Screen</strong> (Tambahkan ke Layar Utama).</>}
+                  </p>
                 </div>
                 <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-800/60 border border-slate-750">
                   <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs shrink-0">3</span>
-                  <p>Aplikasi SIGAP dapat diakses cepat secara offline dari layar ponsel Anda.</p>
+                  <p>
+                    {isEn
+                      ? <>SIGAP App is now accessible directly and offline from your iPhone home screen.</>
+                      : <>Aplikasi SIGAP dapat diakses cepat secara offline dari layar ponsel Anda.</>}
+                  </p>
                 </div>
               </div>
 
@@ -91,7 +106,7 @@ export const PWAInstallButton: React.FC = () => {
                 onClick={() => setShowIOSGuide(false)}
                 className="mt-5 w-full rounded-xl bg-blue-600 hover:bg-blue-500 py-2.5 text-sm font-bold text-white transition shadow-lg shadow-blue-600/30"
               >
-                Mengerti
+                {isEn ? 'Got It' : 'Mengerti'}
               </button>
             </div>
           </div>

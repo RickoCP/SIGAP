@@ -17,6 +17,7 @@ import { Volunteer, Disaster, Assignment, Task } from '../../types/index.ts';
 import { SEED_SKILLS } from '../../data/seedData.ts';
 import { calculateDistance } from '../../lib/geo.ts';
 import { GAMIFICATION_BADGES, REWARD_ITEMS } from '../../data/gamificationData.ts';
+import { useLanguage } from '../../context/LanguageContext.tsx';
 
 interface VolunteerProfileModalProps {
   volunteer: Volunteer;
@@ -35,6 +36,9 @@ export const VolunteerProfileModal: React.FC<VolunteerProfileModalProps> = ({
   onClose,
   onUpdateStatus,
 }) => {
+  const { language } = useLanguage();
+  const isEn = language === 'en';
+
   const volunteerAssignments = assignments.filter(a => a.volunteerId === volunteer.id);
 
   const distance = selectedDisaster
@@ -65,7 +69,9 @@ export const VolunteerProfileModal: React.FC<VolunteerProfileModalProps> = ({
                       : 'bg-emerald-950 text-emerald-300 border border-emerald-800'
                   }`}
                 >
-                  {volunteer.category === 'sar_official' ? '🛡️ Tim SAR Basarnas / Potensi' : '🤝 Relawan Warga / Komunitas'}
+                  {volunteer.category === 'sar_official' 
+                    ? (isEn ? '🛡️ Official SAR Unit / Basarnas' : '🛡️ Tim SAR Basarnas / Potensi') 
+                    : (isEn ? '🤝 Community Volunteer' : '🤝 Relawan Warga / Komunitas')}
                 </span>
                 <span
                   className={`text-[10px] font-semibold px-2 py-0.5 rounded font-mono ${
@@ -76,21 +82,25 @@ export const VolunteerProfileModal: React.FC<VolunteerProfileModalProps> = ({
                       : 'bg-slate-800 text-slate-400'
                   }`}
                 >
-                  {volunteer.status === 'available' ? 'Siaga' : volunteer.status === 'busy' ? 'Bertugas' : 'Offline'}
+                  {volunteer.status === 'available' 
+                    ? (isEn ? 'Ready' : 'Siaga') 
+                    : volunteer.status === 'busy' 
+                    ? (isEn ? 'Deployed' : 'Bertugas') 
+                    : 'Offline'}
                 </span>
               </div>
               <p className="text-xs text-slate-300 mt-0.5 font-medium">
-                {volunteer.sarUnitOrRole || volunteer.organization || 'Relawan Independen'} · Bergabung sejak {volunteer.joinedDate}
+                {volunteer.sarUnitOrRole || volunteer.organization || (isEn ? 'Independent Responder' : 'Relawan Independen')} · {isEn ? 'Joined since ' : 'Bergabung sejak '}{volunteer.joinedDate}
               </p>
               <div className="flex items-center gap-2 mt-1.5 text-[11px] text-amber-400 font-mono">
                 <span className="bg-amber-950/80 px-2 py-0.5 rounded border border-amber-800 font-bold">
-                  ★ Level {volunteer.gamification?.level || 2} : {volunteer.gamification?.levelTitle || 'Relawan Tanggap'}
+                  ★ Level {volunteer.gamification?.level || 2} : {volunteer.gamification?.levelTitle || (isEn ? 'Rapid Responder' : 'Relawan Tanggap')}
                 </span>
                 <span className="text-white font-bold">
                   {volunteer.gamification?.points || volunteer.completedTasksCount * 45 + 120} XP
                 </span>
                 <span className="text-slate-400">
-                  ({volunteer.gamification?.badges?.length || 2} Lencana)
+                  ({volunteer.gamification?.badges?.length || 2} {isEn ? 'Badges' : 'Lencana'})
                 </span>
               </div>
             </div>
@@ -107,7 +117,9 @@ export const VolunteerProfileModal: React.FC<VolunteerProfileModalProps> = ({
         <div className="p-6 space-y-5 text-xs">
           {/* Status Switcher Bar */}
           <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
-            <span className="text-slate-400 font-medium">Ubah Status Ketersediaan:</span>
+            <span className="text-slate-400 font-medium">
+              {isEn ? 'Update Availability Status:' : 'Ubah Status Ketersediaan:'}
+            </span>
             <div className="flex items-center gap-1.5 font-mono">
               <button
                 onClick={() => onUpdateStatus(volunteer.id, 'available')}
@@ -117,7 +129,7 @@ export const VolunteerProfileModal: React.FC<VolunteerProfileModalProps> = ({
                     : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
                 }`}
               >
-                Siaga
+                {isEn ? 'Ready' : 'Siaga'}
               </button>
               <button
                 onClick={() => onUpdateStatus(volunteer.id, 'busy')}
@@ -127,7 +139,7 @@ export const VolunteerProfileModal: React.FC<VolunteerProfileModalProps> = ({
                     : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
                 }`}
               >
-                Bertugas
+                {isEn ? 'Deployed' : 'Bertugas'}
               </button>
               <button
                 onClick={() => onUpdateStatus(volunteer.id, 'offline')}
@@ -146,7 +158,7 @@ export const VolunteerProfileModal: React.FC<VolunteerProfileModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-1.5">
               <span className="text-[11px] text-slate-500 uppercase tracking-wider block font-mono">
-                Kontak & Jangkauan
+                {isEn ? 'Contact & Standby Range' : 'Kontak & Jangkauan'}
               </span>
               <div className="text-slate-300 space-y-1 font-mono">
                 <div className="flex items-center gap-2">
@@ -158,14 +170,14 @@ export const VolunteerProfileModal: React.FC<VolunteerProfileModalProps> = ({
                   <span className="truncate">{volunteer.email}</span>
                 </div>
                 <div className="text-blue-400 pt-0.5">
-                  Radius Siaga: {volunteer.radiusKm} km
+                  {isEn ? 'Standby Radius: ' : 'Radius Siaga: '}{volunteer.radiusKm} km
                 </div>
               </div>
             </div>
 
             <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-1.5">
               <span className="text-[11px] text-slate-500 uppercase tracking-wider block font-mono">
-                Domisili & Posisi
+                {isEn ? 'Domicile & Coordinates' : 'Domisili & Posisi'}
               </span>
               <div className="text-slate-300 space-y-1 font-mono">
                 <div className="flex items-start gap-2">
@@ -174,7 +186,7 @@ export const VolunteerProfileModal: React.FC<VolunteerProfileModalProps> = ({
                 </div>
                 {distance !== null && (
                   <div className="text-amber-400 pt-0.5">
-                    {distance.toFixed(1)} km dari {selectedDisaster?.title.split('-')[0].trim()}
+                    {distance.toFixed(1)} km {isEn ? 'from ' : 'dari '}{selectedDisaster?.title.split('-')[0].trim()}
                   </div>
                 )}
               </div>
@@ -185,7 +197,7 @@ export const VolunteerProfileModal: React.FC<VolunteerProfileModalProps> = ({
           <div>
             <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
               <Award className="w-4 h-4 text-blue-400" />
-              Keahlian & Sertifikasi Terverifikasi
+              {isEn ? 'Verified Skills & Certifications' : 'Keahlian & Sertifikasi Terverifikasi'}
             </h4>
             <div className="divide-y divide-slate-800 border border-slate-800 rounded-xl overflow-hidden bg-slate-950/40">
               {volunteer.skills.map((vs, idx) => {
@@ -219,10 +231,10 @@ export const VolunteerProfileModal: React.FC<VolunteerProfileModalProps> = ({
             <div className="flex items-center justify-between mb-2.5">
               <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                 <Trophy className="w-4 h-4 text-amber-400" />
-                Lencana & Prestasi Relawan
+                {isEn ? 'Badges & Responder Honors' : 'Lencana & Prestasi Relawan'}
               </h4>
               <span className="text-[11px] font-mono text-amber-400 font-bold">
-                {volunteer.gamification?.points || volunteer.completedTasksCount * 45 + 120} XP Tersedia
+                {volunteer.gamification?.points || volunteer.completedTasksCount * 45 + 120} {isEn ? 'XP Available' : 'XP Tersedia'}
               </span>
             </div>
 
@@ -256,7 +268,7 @@ export const VolunteerProfileModal: React.FC<VolunteerProfileModalProps> = ({
               <div className="p-3 bg-gradient-to-r from-emerald-950/30 to-blue-950/30 border border-emerald-800/40 rounded-xl">
                 <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
                   <Gift className="w-3.5 h-3.5" />
-                  Reward Ditukarkan:
+                  {isEn ? 'Claimed Rewards:' : 'Reward Ditukarkan:'}
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {volunteer.gamification.claimedRewardIds.map(rid => {
@@ -281,16 +293,16 @@ export const VolunteerProfileModal: React.FC<VolunteerProfileModalProps> = ({
             <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                Riwayat Penugasan Lapangan ({volunteerAssignments.length})
+                {isEn ? `Field Mission History (${volunteerAssignments.length})` : `Riwayat Penugasan Lapangan (${volunteerAssignments.length})`}
               </span>
               <span className="text-slate-500 font-mono text-[11px]">
-                {volunteer.completedTasksCount} tugas tuntas
+                {volunteer.completedTasksCount} {isEn ? 'tasks completed' : 'tugas tuntas'}
               </span>
             </h4>
 
             {volunteerAssignments.length === 0 ? (
               <p className="text-xs text-slate-500 italic p-3 bg-slate-950/40 rounded-xl border border-slate-800">
-                Belum ada catatan tugas aktif dalam sesi tanggap bencana ini.
+                {isEn ? 'No mission records in current disaster response session.' : 'Belum ada catatan tugas aktif dalam sesi tanggap bencana ini.'}
               </p>
             ) : (
               <div className="space-y-2">
@@ -303,10 +315,10 @@ export const VolunteerProfileModal: React.FC<VolunteerProfileModalProps> = ({
                     >
                       <div>
                         <span className="font-semibold text-white text-xs block">
-                          {taskObj?.title || 'Tugas Lapangan'}
+                          {taskObj?.title || (isEn ? 'Field Task' : 'Tugas Lapangan')}
                         </span>
                         <span className="text-[11px] text-slate-400 font-mono">
-                          {asg.matchReason || 'Ditugaskan oleh koordinator'}
+                          {asg.matchReason || (isEn ? 'Assigned by coordinator' : 'Ditugaskan oleh koordinator')}
                         </span>
                       </div>
                       <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800">
@@ -326,7 +338,7 @@ export const VolunteerProfileModal: React.FC<VolunteerProfileModalProps> = ({
             onClick={onClose}
             className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors"
           >
-            Tutup Profil
+            {isEn ? 'Close Profile' : 'Tutup Profil'}
           </button>
         </div>
       </div>

@@ -259,7 +259,7 @@ export const ProjectPresentationView: React.FC<ProjectPresentationViewProps> = (
               <button
                 onClick={() => setIsFullscreen(!isFullscreen)}
                 className="p-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 transition"
-                title={isFullscreen ? 'Keluar Layar Penuh' : 'Mode Layar Penuh (F11)'}
+                title={isFullscreen ? (currentLang === 'en' ? 'Exit Fullscreen' : 'Keluar Layar Penuh') : (currentLang === 'en' ? 'Fullscreen Mode (F11)' : 'Mode Layar Penuh (F11)')}
               >
                 {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </button>

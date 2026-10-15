@@ -21,6 +21,7 @@ import {
   clearMapTilesCache, 
   OfflineCacheStats 
 } from '../../services/offlineCacheService.ts';
+import { useLanguage } from '../../context/LanguageContext.tsx';
 
 interface OfflineMapCacheManagerModalProps {
   isOpen: boolean;
@@ -39,6 +40,9 @@ export const OfflineMapCacheManagerModal: React.FC<OfflineMapCacheManagerModalPr
   onSelectDisaster,
   onRefreshCacheStats,
 }) => {
+  const { language } = useLanguage();
+  const isEn = language === 'en';
+
   const [stats, setStats] = useState<OfflineCacheStats | null>(null);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
   const [targetDisasterId, setTargetDisasterId] = useState<string>(selectedDisasterId || disasters[0]?.id || '');
@@ -94,7 +98,9 @@ export const OfflineMapCacheManagerModal: React.FC<OfflineMapCacheManagerModalPr
 
       if (res.success) {
         setDownloadSuccessMessage(
-          `Berhasil menyimpan ${res.cachedCount} tile peta taktis untuk zona ${targetDisaster.title}. Peta siap digunakan tanpa koneksi internet!`
+          isEn 
+            ? `Successfully cached ${res.cachedCount} tactical map tiles for ${targetDisaster.title}. Map is ready for zero-signal offline ops!`
+            : `Berhasil menyimpan ${res.cachedCount} tile peta taktis untuk zona ${targetDisaster.title}. Peta siap digunakan tanpa koneksi internet!`
         );
         fetchStats();
       }
@@ -107,10 +113,13 @@ export const OfflineMapCacheManagerModal: React.FC<OfflineMapCacheManagerModalPr
   };
 
   const handleClearTiles = async () => {
-    if (window.confirm('Hapus seluruh cache tile peta offline? Data yang belum tersimpan ulang akan diunduh kembali saat online.')) {
+    const confirmMsg = isEn 
+      ? 'Clear all cached offline map tiles? Uncached areas will be re-downloaded when online.'
+      : 'Hapus seluruh cache tile peta offline? Data yang belum tersimpan ulang akan diunduh kembali saat online.';
+    if (window.confirm(confirmMsg)) {
       await clearMapTilesCache();
       await fetchStats();
-      setDownloadSuccessMessage('Cache tile peta berhasil dibersihkan.');
+      setDownloadSuccessMessage(isEn ? 'Map tile cache cleared successfully.' : 'Cache tile peta berhasil dibersihkan.');
     }
   };
 
@@ -125,13 +134,17 @@ export const OfflineMapCacheManagerModal: React.FC<OfflineMapCacheManagerModalPr
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-white">Manajemen Cache Peta & Data Offline</h2>
+                <h2 className="text-lg font-bold text-white">
+                  {isEn ? 'Offline Map & Incident Data Cache' : 'Manajemen Cache Peta & Data Offline'}
+                </h2>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                   Service Worker Ready
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Simpan tile peta taktis dan data posko untuk operasi relawan di zona bencana berfasilitas sinyal terbatas.
+                {isEn 
+                  ? 'Pre-cache high-resolution tactical map tiles and shelter data for field operations in zero-connectivity disaster zones.'
+                  : 'Simpan tile peta taktis dan data posko untuk operasi relawan di zona bencana berfasilitas sinyal terbatas.'}
               </p>
             </div>
           </div>
@@ -155,18 +168,24 @@ export const OfflineMapCacheManagerModal: React.FC<OfflineMapCacheManagerModalPr
               <div className="text-xl font-bold text-white">
                 {stats ? stats.osmTilesCount : '...'}
               </div>
-              <span className="text-[10px] text-slate-400">Peta Vektor Jalan</span>
+              <span className="text-[10px] text-slate-400">
+                {isEn ? 'Vector Street Tiles' : 'Peta Vektor Jalan'}
+              </span>
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-800/60 border border-slate-750">
               <div className="flex items-center justify-between text-slate-400 mb-1">
-                <span className="text-[11px] font-medium">Satelit Tiles</span>
+                <span className="text-[11px] font-medium">
+                  {isEn ? 'Satellite Tiles' : 'Satelit Tiles'}
+                </span>
                 <Compass className="w-3.5 h-3.5 text-emerald-400" />
               </div>
               <div className="text-xl font-bold text-white">
                 {stats ? stats.satelliteTilesCount : '...'}
               </div>
-              <span className="text-[10px] text-slate-400">Citra ArcGIS</span>
+              <span className="text-[10px] text-slate-400">
+                {isEn ? 'ArcGIS Imagery' : 'Citra ArcGIS'}
+              </span>
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-800/60 border border-slate-750">
@@ -177,19 +196,25 @@ export const OfflineMapCacheManagerModal: React.FC<OfflineMapCacheManagerModalPr
               <div className="text-xl font-bold text-white">
                 {stats ? `${stats.storageUsedMB} MB` : '...'}
               </div>
-              <span className="text-[10px] text-slate-400">Total terpakai</span>
+              <span className="text-[10px] text-slate-400">
+                {isEn ? 'Total Allocated' : 'Total terpakai'}
+              </span>
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-800/60 border border-slate-750">
               <div className="flex items-center justify-between text-slate-400 mb-1">
-                <span className="text-[11px] font-medium">Data Kritis</span>
+                <span className="text-[11px] font-medium">
+                  {isEn ? 'Critical Data' : 'Data Kritis'}
+                </span>
                 <Database className="w-3.5 h-3.5 text-cyan-400" />
               </div>
               <div className="text-xl font-bold text-emerald-400 flex items-center gap-1">
                 <CheckCircle2 className="w-4 h-4" />
-                <span>Aktif</span>
+                <span>{isEn ? 'Active' : 'Aktif'}</span>
               </div>
-              <span className="text-[10px] text-slate-400">Tugas & Relawan</span>
+              <span className="text-[10px] text-slate-400">
+                {isEn ? 'Tasks & Volunteers' : 'Tugas & Relawan'}
+              </span>
             </div>
           </div>
 
@@ -207,10 +232,12 @@ export const OfflineMapCacheManagerModal: React.FC<OfflineMapCacheManagerModalPr
               <div>
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
                   <Download className="w-4 h-4 text-blue-400" />
-                  Unduh Peta Offline Wilayah Bencana (Zona Siaga)
+                  {isEn ? 'Download Offline Tiles for Disaster Staging Zone' : 'Unduh Peta Offline Wilayah Bencana (Zona Siaga)'}
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Pre-cache tile peta resolusi tinggi (zoom 12-15) di sekitar episentrum agar peta tetap terbuka mulus tanpa internet.
+                  {isEn 
+                    ? 'Pre-cache high-resolution map tiles (zoom 12-15) around epicenter so maps render fluidly without internet connectivity.'
+                    : 'Pre-cache tile peta resolusi tinggi (zoom 12-15) di sekitar episentrum agar peta tetap terbuka mulus tanpa internet.'}
                 </p>
               </div>
             </div>
@@ -218,7 +245,7 @@ export const OfflineMapCacheManagerModal: React.FC<OfflineMapCacheManagerModalPr
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="sm:col-span-2">
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                  Pilih Wilayah Operasi Tanggap Bencana
+                  {isEn ? 'Select Disaster Operations Sector' : 'Pilih Wilayah Operasi Tanggap Bencana'}
                 </label>
                 <select
                   value={targetDisasterId}
@@ -236,10 +263,10 @@ export const OfflineMapCacheManagerModal: React.FC<OfflineMapCacheManagerModalPr
 
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                  Radius Episentrum
+                  {isEn ? 'Epicenter Radius' : 'Radius Episentrum'}
                 </label>
                 <div className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-300">
-                  Episentrum 15 km (Zoom 12-15)
+                  {isEn ? '15 km Epicenter (Zoom 12-15)' : 'Episentrum 15 km (Zoom 12-15)'}
                 </div>
               </div>
             </div>
@@ -250,7 +277,7 @@ export const OfflineMapCacheManagerModal: React.FC<OfflineMapCacheManagerModalPr
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-blue-400 font-semibold flex items-center gap-1.5">
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    Mengunduh tile peta ({downloadProgress.loaded} / {downloadProgress.total})
+                    {isEn ? `Downloading tiles (${downloadProgress.loaded} / ${downloadProgress.total})` : `Mengunduh tile peta (${downloadProgress.loaded} / ${downloadProgress.total})`}
                   </span>
                   <span className="text-slate-300 font-bold">{downloadProgress.percent}%</span>
                 </div>
@@ -275,7 +302,11 @@ export const OfflineMapCacheManagerModal: React.FC<OfflineMapCacheManagerModalPr
                   className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-blue-600/30"
                 >
                   <Download className="w-4 h-4" />
-                  <span>{isDownloading ? 'Sedang Mengunduh...' : 'Unduh Tile Wilayah Ini'}</span>
+                  <span>
+                    {isDownloading 
+                      ? (isEn ? 'Downloading...' : 'Sedang Mengunduh...') 
+                      : (isEn ? 'Download Sector Tiles' : 'Unduh Tile Wilayah Ini')}
+                  </span>
                 </button>
                 {onSelectDisaster && targetDisaster && (
                   <button
@@ -285,7 +316,7 @@ export const OfflineMapCacheManagerModal: React.FC<OfflineMapCacheManagerModalPr
                     }}
                     className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs font-semibold border border-slate-700 transition"
                   >
-                    Fokus Peta ke Zona Ini
+                    {isEn ? 'Center Map on this Zone' : 'Fokus Peta ke Zona Ini'}
                   </button>
                 )}
               </div>
@@ -294,7 +325,7 @@ export const OfflineMapCacheManagerModal: React.FC<OfflineMapCacheManagerModalPr
                 onClick={fetchStats}
                 disabled={isLoadingStats}
                 className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
-                title="Segarkan data status cache"
+                title={isEn ? 'Refresh cache statistics' : 'Segarkan data status cache'}
               >
                 <RefreshCw className={`w-4 h-4 ${isLoadingStats ? 'animate-spin' : ''}`} />
               </button>
@@ -306,7 +337,9 @@ export const OfflineMapCacheManagerModal: React.FC<OfflineMapCacheManagerModalPr
             <div className="flex items-start gap-2.5">
               <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
               <p>
-                Service worker menggunakan strategi <strong>CacheFirst</strong> untuk tile peta OSM dan ArcGIS sehingga setiap tile yang dilihat langsung tersimpan otomatis di perangkat hingga 30 hari.
+                {isEn 
+                  ? 'Service worker leverages a CacheFirst strategy for OSM and ArcGIS satellite tiles. Any visited area is stored locally on device for up to 30 days.'
+                  : 'Service worker menggunakan strategi CacheFirst untuk tile peta OSM dan ArcGIS sehingga setiap tile yang dilihat langsung tersimpan otomatis di perangkat hingga 30 hari.'}
               </p>
             </div>
             <button
@@ -314,7 +347,7 @@ export const OfflineMapCacheManagerModal: React.FC<OfflineMapCacheManagerModalPr
               className="text-xs text-red-400 hover:text-red-300 font-semibold flex items-center gap-1.5 shrink-0 hover:bg-red-950/40 px-2.5 py-1.5 rounded-lg border border-red-900/40 transition"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              <span>Bersihkan Cache Peta</span>
+              <span>{isEn ? 'Purge Tile Cache' : 'Bersihkan Cache Peta'}</span>
             </button>
           </div>
         </div>
@@ -325,7 +358,7 @@ export const OfflineMapCacheManagerModal: React.FC<OfflineMapCacheManagerModalPr
             onClick={onClose}
             className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition"
           >
-            Tutup
+            {isEn ? 'Close' : 'Tutup'}
           </button>
         </div>
       </div>

@@ -17,6 +17,7 @@ import {
   Maximize2
 } from 'lucide-react';
 import { Disaster, Volunteer, Task, Assignment, VolunteerTrackingTelemetry } from '../../types/index.ts';
+import { useLanguage } from '../../context/LanguageContext.tsx';
 
 interface LeafletClusterMapProps {
   disasters: Disaster[];
@@ -58,6 +59,9 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
   selectedTrackedVolunteerId = null,
   onSelectTrackedVolunteer
 }) => {
+  const { language } = useLanguage();
+  const isEn = language === 'en';
+
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const clusterGroupRef = useRef<any>(null);
@@ -115,7 +119,7 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
         return L.divIcon({
           html: `<div class="${className} w-10 h-10 flex flex-col items-center justify-center text-xs font-bold text-white shadow-lg">
                   <span>${count}</span>
-                  <span class="text-[9px] opacity-80">${hasTasks ? 'Tugas' : 'Relawan'}</span>
+                  <span class="text-[9px] opacity-80">${hasTasks ? (isEn ? 'Tasks' : 'Tugas') : (isEn ? 'Volunteers' : 'Relawan')}</span>
                  </div>`,
           className: 'custom-cluster-marker',
           iconSize: L.point(40, 40)
@@ -175,7 +179,7 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
       const isFlood = d.type === 'flood';
 
       const color = d.severity === 'critical' ? '#ef4444' : d.severity === 'high' ? '#f97316' : '#eab308';
-      const badgeText = isFire ? 'KARHUTLA' : isFlood ? 'BANJIR' : d.type.toUpperCase();
+      const badgeText = isFire ? (isEn ? 'WILDFIRE' : 'KARHUTLA') : isFlood ? (isEn ? 'FLOOD' : 'BANJIR') : d.type.toUpperCase();
 
       const iconHtml = `
         <div class="relative flex items-center justify-center cursor-pointer group">
@@ -211,16 +215,16 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
           <p class="text-xs text-slate-300 line-clamp-2 mb-2">${d.description}</p>
           <div class="grid grid-cols-2 gap-2 text-xs bg-slate-800/60 p-2 rounded mb-2 border border-slate-700/60">
             <div>
-              <div class="text-[10px] text-slate-400">Terdampak</div>
-              <div class="font-bold text-white">${d.affectedPeople.toLocaleString()} Jiwa</div>
+              <div class="text-[10px] text-slate-400">${isEn ? 'Affected' : 'Terdampak'}</div>
+              <div class="font-bold text-white">${d.affectedPeople.toLocaleString()} ${isEn ? 'People' : 'Jiwa'}</div>
             </div>
             <div>
-              <div class="text-[10px] text-slate-400">${isFire ? 'Titik Hotspot' : 'Genangan Air'}</div>
-              <div class="font-bold text-amber-400">${isFire ? (d.activeHotspots || 'Aktif') + ' Titik' : (d.waterLevelCm || 150) + ' cm'}</div>
+              <div class="text-[10px] text-slate-400">${isFire ? (isEn ? 'Hotspots' : 'Titik Hotspot') : (isEn ? 'Water Depth' : 'Genangan Air')}</div>
+              <div class="font-bold text-amber-400">${isFire ? (d.activeHotspots || (isEn ? 'Active' : 'Aktif')) + (isEn ? ' Spots' : ' Titik') : (d.waterLevelCm || 150) + ' cm'}</div>
             </div>
           </div>
           <button id="btn-select-disaster-${d.id}" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-1.5 px-3 rounded text-xs transition-colors flex items-center justify-center gap-1.5">
-            Pilih Bencana Ini
+            ${isEn ? 'Select This Incident' : 'Pilih Bencana Ini'}
           </button>
         </div>
       `;
@@ -255,7 +259,7 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
       });
       disasterGroup.addLayer(circle);
     });
-  }, [disasters, selectedDisasterId, activeDisasterType]);
+  }, [disasters, selectedDisasterId, activeDisasterType, isEn]);
 
   // Render Clustered Volunteers and Tasks
   useEffect(() => {
@@ -308,7 +312,7 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
             <div class="flex-1 min-w-0">
               <h5 class="font-bold text-sm text-white truncate">${v.name}</h5>
               <span class="text-[10px] px-1.5 py-0.5 rounded font-medium ${isAvailable ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-amber-950 text-amber-400 border border-amber-800'}">
-                ${isAvailable ? 'Tersedia Siaga' : 'Sedang Bertugas'}
+                ${isAvailable ? (isEn ? 'Available / Standby' : 'Tersedia Siaga') : (isEn ? 'On Duty' : 'Sedang Bertugas')}
               </span>
             </div>
           </div>
@@ -320,11 +324,11 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
               <span>📞</span> <span>${v.phone}</span>
             </div>
             <div class="flex items-center gap-1.5 text-slate-400">
-              <span>🎯</span> <span>Radius: ${v.radiusKm} km</span>
+              <span>🎯</span> <span>${isEn ? 'Coverage' : 'Radius'}: ${v.radiusKm} km</span>
             </div>
           </div>
           <button id="btn-view-volunteer-${v.id}" class="w-full bg-slate-800 hover:bg-slate-700 text-blue-400 font-medium py-1.5 px-3 rounded text-xs border border-slate-700 transition-colors">
-            Lihat Profil & Riwayat Penugasan
+            ${isEn ? 'View Profile & Duty History' : 'Lihat Profil & Riwayat Penugasan'}
           </button>
         </div>
       `;
@@ -391,19 +395,19 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
         <div class="p-3 w-68 text-slate-100">
           <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
             <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider text-white" style="background-color: ${taskColor}">
-              TUGAS ${t.priority.toUpperCase()}
+              ${isEn ? 'TASK' : 'TUGAS'} ${t.priority.toUpperCase()}
             </span>
-            <span class="text-[11px] text-slate-400 font-mono">${t.volunteersAssigned}/${t.volunteersNeeded} Relawan</span>
+            <span class="text-[11px] text-slate-400 font-mono">${t.volunteersAssigned}/${t.volunteersNeeded} ${isEn ? 'Volunteers' : 'Relawan'}</span>
           </div>
           <h5 class="font-bold text-sm text-white mb-1">${t.title}</h5>
           <p class="text-xs text-slate-300 line-clamp-2 mb-2">${t.description}</p>
           <div class="text-[11px] bg-slate-800/80 p-1.5 rounded mb-2 text-slate-300 border border-slate-700/60">
-            Keahlian: <span class="font-semibold text-blue-400">${t.requiredSkillName}</span>
+            ${isEn ? 'Skill Required:' : 'Keahlian:'} <span class="font-semibold text-blue-400">${t.requiredSkillName}</span>
           </div>
           ${onOpenAIMatching ? `
             <button id="btn-match-task-${t.id}" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-1.5 px-3 rounded text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm shadow-blue-500/20">
               <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-              Cocokkan Relawan dengan AI
+              ${isEn ? 'Match Volunteers with AI' : 'Cocokkan Relawan dengan AI'}
             </button>
           ` : ''}
         </div>
@@ -423,7 +427,7 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
 
       clusterGroup.addLayer(taskMarker);
     });
-  }, [volunteers, tasks, selectedDisasterId, activeVolunteerStatus, mapRadiusEnabled, isTrackingActive, telemetryList]);
+  }, [volunteers, tasks, selectedDisasterId, activeVolunteerStatus, mapRadiusEnabled, isTrackingActive, telemetryList, isEn]);
 
   // Render Real-time Live Tracking Telemetry (Breadcrumb Trails & High-Tech Beacons)
   useEffect(() => {
@@ -496,7 +500,9 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
         zIndexOffset: isSelected ? 1200 : 800
       });
 
-      const cardinal = ['U', 'TL', 'T', 'TG', 'S', 'BD', 'B', 'BL'][Math.round(((tel.headingDeg %= 360) < 0 ? tel.headingDeg + 360 : tel.headingDeg) / 45) % 8];
+      const cardinal = isEn 
+        ? ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(((tel.headingDeg %= 360) < 0 ? tel.headingDeg + 360 : tel.headingDeg) / 45) % 8]
+        : ['U', 'TL', 'T', 'TG', 'S', 'BD', 'B', 'BL'][Math.round(((tel.headingDeg %= 360) < 0 ? tel.headingDeg + 360 : tel.headingDeg) / 45) % 8];
 
       const popupHtml = `
         <div class="p-3 w-72 text-slate-100 font-sans">
@@ -504,7 +510,7 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
             <div class="flex items-center gap-1.5">
               <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
               <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-cyan-400">
-                LIVE TELEMETRI GPS
+                ${isEn ? 'LIVE GPS TELEMETRY' : 'LIVE TELEMETRI GPS'}
               </span>
             </div>
             <span class="text-[10px] font-mono bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700">
@@ -523,31 +529,31 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
           </div>
 
           <div class="bg-slate-950/80 p-2 rounded-lg border border-slate-800 mb-2 space-y-1">
-            <div class="text-[10px] text-slate-400">Tugas: <span class="text-white font-bold">${tel.dutyType}</span></div>
-            <div class="text-[10px] text-slate-400">Tujuan: <span class="text-cyan-400 font-bold">${tel.destinationName}</span></div>
+            <div class="text-[10px] text-slate-400">${isEn ? 'Task:' : 'Tugas:'} <span class="text-white font-bold">${tel.dutyType}</span></div>
+            <div class="text-[10px] text-slate-400">${isEn ? 'Destination:' : 'Tujuan:'} <span class="text-cyan-400 font-bold">${tel.destinationName}</span></div>
           </div>
 
           <div class="grid grid-cols-2 gap-1.5 text-xs font-mono tabular-nums mb-3">
             <div class="bg-slate-800/60 p-1.5 rounded border border-slate-700/60">
-              <span class="text-[9px] text-slate-400 block">KECEPATAN</span>
+              <span class="text-[9px] text-slate-400 block">${isEn ? 'SPEED' : 'KECEPATAN'}</span>
               <span class="font-bold text-amber-400 text-sm">${tel.speedKmh} km/h</span>
             </div>
             <div class="bg-slate-800/60 p-1.5 rounded border border-slate-700/60">
-              <span class="text-[9px] text-slate-400 block">ARAH KOMPAS</span>
+              <span class="text-[9px] text-slate-400 block">${isEn ? 'HEADING' : 'ARAH KOMPAS'}</span>
               <span class="font-bold text-blue-400 text-sm">${tel.headingDeg}° (${cardinal})</span>
             </div>
             <div class="bg-slate-800/60 p-1.5 rounded border border-slate-700/60">
-              <span class="text-[9px] text-slate-400 block">JARAK KE TUJUAN</span>
+              <span class="text-[9px] text-slate-400 block">${isEn ? 'DISTANCE' : 'JARAK KE TUJUAN'}</span>
               <span class="font-bold text-emerald-400 text-sm">${tel.distanceToDestinationM} m</span>
             </div>
             <div class="bg-slate-800/60 p-1.5 rounded border border-slate-700/60">
-              <span class="text-[9px] text-slate-400 block">BATERAI & SINYAL</span>
+              <span class="text-[9px] text-slate-400 block">${isEn ? 'BATTERY & SIGNAL' : 'BATERAI & SINYAL'}</span>
               <span class="font-bold text-slate-200 text-xs">${tel.batteryLevel}% • ${tel.signalStrength}</span>
             </div>
           </div>
 
           <button id="btn-follow-gps-${tel.volunteerId}" class="w-full ${isSelected ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-slate-800 hover:bg-slate-700 border border-slate-700'} text-white font-bold py-1.5 px-2 rounded text-xs transition-colors flex items-center justify-center gap-1">
-            <span>${isSelected ? 'Sedang Diikuti (Kamera Terkunci ✓)' : 'Fokus Kamera & Ikuti GPS'}</span>
+            <span>${isSelected ? (isEn ? 'Tracking Live (Camera Locked ✓)' : 'Sedang Diikuti (Kamera Terkunci ✓)') : (isEn ? 'Focus & Follow GPS' : 'Fokus Kamera & Ikuti GPS')}</span>
           </button>
         </div>
       `;
@@ -582,7 +588,7 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
         });
       }
     }
-  }, [isTrackingActive, telemetryList, selectedTrackedVolunteerId, onSelectTrackedVolunteer]);
+  }, [isTrackingActive, telemetryList, selectedTrackedVolunteerId, onSelectTrackedVolunteer, isEn]);
 
   const handleZoomIn = () => {
     mapInstanceRef.current?.zoomIn();
@@ -607,14 +613,14 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
         <div className="flex flex-wrap items-center gap-2 pointer-events-auto bg-slate-950/80 backdrop-blur-md p-1.5 rounded-lg border border-slate-800 shadow-lg">
           {showVolunteerFilter && (
             <div className="flex items-center gap-1 text-xs">
-              <span className="text-slate-400 text-[11px] px-1 font-medium">Relawan:</span>
+              <span className="text-slate-400 text-[11px] px-1 font-medium">{isEn ? 'Volunteers:' : 'Relawan:'}</span>
               <button
                 onClick={() => setActiveVolunteerStatus('all')}
                 className={`px-2 py-1 rounded text-[11px] font-medium transition-colors ${
                   activeVolunteerStatus === 'all' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800'
                 }`}
               >
-                Semua ({volunteers.length})
+                {isEn ? 'All' : 'Semua'} ({volunteers.length})
               </button>
               <button
                 onClick={() => setActiveVolunteerStatus('available')}
@@ -622,7 +628,7 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
                   activeVolunteerStatus === 'available' ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-800'
                 }`}
               >
-                Tersedia ({volunteers.filter(v => v.status === 'available').length})
+                {isEn ? 'Available' : 'Tersedia'} ({volunteers.filter(v => v.status === 'available').length})
               </button>
               <button
                 onClick={() => setActiveVolunteerStatus('busy')}
@@ -630,23 +636,23 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
                   activeVolunteerStatus === 'busy' ? 'bg-amber-600 text-white' : 'text-slate-300 hover:bg-slate-800'
                 }`}
               >
-                Bertugas ({volunteers.filter(v => v.status === 'busy').length})
+                {isEn ? 'On Duty' : 'Bertugas'} ({volunteers.filter(v => v.status === 'busy').length})
               </button>
             </div>
           )}
 
           {showDisasterFilter && (
             <div className="hidden sm:flex items-center gap-1 text-xs pl-2 border-l border-slate-800">
-              <span className="text-slate-400 text-[11px] px-1 font-medium">Bencana:</span>
+              <span className="text-slate-400 text-[11px] px-1 font-medium">{isEn ? 'Disaster:' : 'Bencana:'}</span>
               <select
                 value={activeDisasterType}
                 onChange={(e) => setActiveDisasterType(e.target.value)}
                 className="bg-slate-900 text-slate-200 text-[11px] py-1 px-2 rounded border border-slate-700 focus:outline-none focus:border-blue-500"
               >
-                <option value="all">Semua Tipe Bencana</option>
-                <option value="fire">Kebakaran / Karhutla 🔥</option>
-                <option value="flood">Banjir & Luapan Air 🌊</option>
-                <option value="earthquake">Gempa Bumi ⚠️</option>
+                <option value="all">{isEn ? 'All Incident Types' : 'Semua Tipe Bencana'}</option>
+                <option value="fire">{isEn ? 'Wildfire / Forest Fire 🔥' : 'Kebakaran / Karhutla 🔥'}</option>
+                <option value="flood">{isEn ? 'Flood & Inundation 🌊' : 'Banjir & Luapan Air 🌊'}</option>
+                <option value="earthquake">{isEn ? 'Earthquake ⚠️' : 'Gempa Bumi ⚠️'}</option>
               </select>
             </div>
           )}
@@ -659,29 +665,29 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
             className={`px-2 py-1 rounded text-[11px] font-medium transition-colors flex items-center gap-1 ${
               mapRadiusEnabled ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'text-slate-400 hover:bg-slate-800'
             }`}
-            title="Tampilkan Radius Jangkauan Relawan"
+            title={isEn ? 'Toggle Volunteer Coverage Radius' : 'Tampilkan Radius Jangkauan Relawan'}
           >
             <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            Radius
+            {isEn ? 'Radius' : 'Radius'}
           </button>
           <button
             onClick={handleResetView}
             className="p-1 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
-            title="Reset Peta ke Titik Awal"
+            title={isEn ? 'Reset Map View' : 'Reset Peta ke Titik Awal'}
           >
             <Maximize2 className="w-4 h-4" />
           </button>
           <button
             onClick={handleZoomIn}
             className="p-1 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
-            title="Perbesar"
+            title={isEn ? 'Zoom In' : 'Perbesar'}
           >
             <ZoomIn className="w-4 h-4" />
           </button>
           <button
             onClick={handleZoomOut}
             className="p-1 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
-            title="Perkecil"
+            title={isEn ? 'Zoom Out' : 'Perkecil'}
           >
             <ZoomOut className="w-4 h-4" />
           </button>
@@ -692,19 +698,19 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
       <div className="absolute bottom-3 left-3 z-20 bg-slate-950/85 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-[11px] text-slate-300 flex items-center gap-3 shadow-lg pointer-events-none sm:pointer-events-auto">
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full bg-red-500 border border-white inline-block"></span>
-          <span>Episentrum Bencana</span>
+          <span>{isEn ? 'Disaster Epicenter' : 'Episentrum Bencana'}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-          <span>Relawan Siaga</span>
+          <span>{isEn ? 'Standby Volunteer' : 'Relawan Siaga'}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-md bg-blue-500 inline-block"></span>
-          <span>Tugas Terbuka</span>
+          <span>{isEn ? 'Open Task' : 'Tugas Terbuka'}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-4 h-4 rounded-full sigap-cluster-mixed inline-flex items-center justify-center text-[8px] font-bold">#</span>
-          <span>Klaster Terkelompok</span>
+          <span>{isEn ? 'Clustered Group' : 'Klaster Terkelompok'}</span>
         </div>
         {isTrackingActive && (
           <div className="flex items-center gap-1.5 text-cyan-300 font-bold border-l border-slate-700 pl-3">

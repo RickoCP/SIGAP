@@ -12,6 +12,7 @@ import {
   Building2 
 } from 'lucide-react';
 import { Disaster, SituationReport } from '../../types/index.ts';
+import { useLanguage } from '../../context/LanguageContext.tsx';
 
 interface SitRepModalProps {
   disaster: Disaster;
@@ -19,6 +20,9 @@ interface SitRepModalProps {
 }
 
 export const SitRepModal: React.FC<SitRepModalProps> = ({ disaster, onClose }) => {
+  const { language } = useLanguage();
+  const isEn = language === 'en';
+
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState<SituationReport | null>(null);
   const [copied, setCopied] = useState(false);
@@ -35,23 +39,45 @@ export const SitRepModal: React.FC<SitRepModalProps> = ({ disaster, onClose }) =
           body: JSON.stringify({ disasterId: disaster.id }),
         });
 
-        if (!res.ok) throw new Error('Gagal memuat laporan situasi');
+        if (!res.ok) throw new Error(isEn ? 'Failed to generate situation report' : 'Gagal memuat laporan situasi');
         const data = await res.json();
         setReport(data);
       } catch (err: any) {
         console.error(err);
-        setError(err.message || 'Terjadi kesalahan saat membuat SitRep');
+        setError(err.message || (isEn ? 'Error creating SitRep' : 'Terjadi kesalahan saat membuat SitRep'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchSitRep();
-  }, [disaster.id]);
+  }, [disaster.id, isEn]);
 
   const handleCopy = () => {
     if (!report) return;
-    const textToCopy = `LAPORAN SITUASI RESMI (SITUATION REPORT - SIGAP)
+    const textToCopy = isEn
+      ? `OFFICIAL SITUATION REPORT (SITREP - SIGAP)
+Incident: ${disaster.title}
+Timestamp: ${new Date().toLocaleString('en-US')}
+Severity Level: ${disaster.severity.toUpperCase()}
+Location: ${disaster.address}
+
+EXECUTIVE SUMMARY:
+${report.executiveSummary}
+
+URGENT NEEDS:
+${report.urgentNeeds.map((n, i) => `${i + 1}. ${n}`).join('\n')}
+
+OPERATIONAL PRIORITIES (12-24 HOURS):
+${report.operationalPriorities.map((p, i) => `${i + 1}. ${p}`).join('\n')}
+
+RECOMMENDED TEAM ALLOCATION:
+${report.recommendedTeamAllocations.map(t => `- ${t.role}: ${t.count} responders (${t.urgency})`).join('\n')}
+
+GOVERNMENT LIAISON PROTOCOL (BNPB/BPBD/PMI):
+${report.governmentLiaisonNotes}
+`
+      : `LAPORAN SITUASI RESMI (SITUATION REPORT - SIGAP)
 Kejadian: ${disaster.title}
 Waktu: ${new Date().toLocaleString('id-ID')} WIB
 Tingkat Keparahan: ${disaster.severity.toUpperCase()}
@@ -89,14 +115,16 @@ ${report.governmentLiaisonNotes}
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold text-white">
-                  Laporan Situasi Resmi (Situation Report)
+                  {isEn ? 'Official Incident Situation Report (SitRep)' : 'Laporan Situasi Resmi (Situation Report)'}
                 </h3>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-900/50 text-blue-300 border border-blue-800">
                   AI-Generated SitRep
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Dokumen komando terstandarisasi BNPB & BPBD untuk sinkronisasi posko multi-sektor
+                {isEn 
+                  ? 'Standardized incident command documentation for multi-agency coordination'
+                  : 'Dokumen komando terstandarisasi BNPB & BPBD untuk sinkronisasi posko multi-sektor'}
               </p>
             </div>
           </div>
@@ -114,7 +142,7 @@ ${report.governmentLiaisonNotes}
             <div className="py-16 flex flex-col items-center justify-center text-center space-y-3">
               <div className="w-10 h-10 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
               <p className="text-sm font-semibold text-slate-200">
-                Gemini AI sedang mengompilasi data lapangan menjadi SitRep resmi...
+                {isEn ? 'Gemini AI is compiling field telemetry into an official SitRep...' : 'Gemini AI sedang mengompilasi data lapangan menjadi SitRep resmi...'}
               </p>
             </div>
           ) : error ? (
@@ -127,7 +155,7 @@ ${report.governmentLiaisonNotes}
               <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
                 <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider mb-2 flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-blue-400" />
-                  Ringkasan Eksekutif Situasi
+                  {isEn ? 'Executive Situation Summary' : 'Ringkasan Eksekutif Situasi'}
                 </h4>
                 <p className="text-xs text-slate-300 leading-relaxed">
                   {report.executiveSummary}
@@ -140,7 +168,7 @@ ${report.governmentLiaisonNotes}
                 <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
                   <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider mb-2.5 flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4 text-amber-400" />
-                    Kebutuhan Mendesak
+                    {isEn ? 'Urgent Priority Needs' : 'Kebutuhan Mendesak'}
                   </h4>
                   <ul className="space-y-1.5">
                     {report.urgentNeeds.map((need, idx) => (
@@ -156,7 +184,7 @@ ${report.governmentLiaisonNotes}
                 <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
                   <h4 className="text-xs font-bold text-blue-300 uppercase tracking-wider mb-2.5 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-blue-400" />
-                    Prioritas Operasional (12 - 24 Jam)
+                    {isEn ? 'Operational Priorities (12 - 24 Hours)' : 'Prioritas Operasional (12 - 24 Jam)'}
                   </h4>
                   <ul className="space-y-1.5">
                     {report.operationalPriorities.map((p, idx) => (
@@ -173,7 +201,7 @@ ${report.governmentLiaisonNotes}
               <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
                 <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider mb-3 flex items-center gap-2">
                   <Users className="w-4 h-4 text-indigo-400" />
-                  Rekomendasi Alokasi Tim Relawan
+                  {isEn ? 'Recommended Responder Deployments' : 'Rekomendasi Alokasi Tim Relawan'}
                 </h4>
                 <div className="divide-y divide-slate-800/80 border border-slate-800 rounded-lg overflow-hidden">
                   {report.recommendedTeamAllocations.map((team, idx) => (
@@ -181,12 +209,12 @@ ${report.governmentLiaisonNotes}
                       <div>
                         <span className="font-semibold text-white">{team.role}</span>
                         <span className="text-slate-400 block text-[11px] mt-0.5 font-mono">
-                          Kebutuhan: {team.count} Personel
+                          {isEn ? `Required: ${team.count} Responders` : `Kebutuhan: ${team.count} Personel`}
                         </span>
                       </div>
                       <span
                         className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
-                          team.urgency.toLowerCase().includes('sangat')
+                          team.urgency.toLowerCase().includes('sangat') || team.urgency.toLowerCase().includes('urgent')
                             ? 'bg-red-950/80 text-red-300 border border-red-800/60'
                             : 'bg-amber-950/80 text-amber-300 border border-amber-800/60'
                         }`}
@@ -202,7 +230,7 @@ ${report.governmentLiaisonNotes}
               <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
                 <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider mb-2 flex items-center gap-2">
                   <Building2 className="w-4 h-4 text-slate-400" />
-                  Protokol Penghubung Pemerintah (BNPB / BPBD / PMI)
+                  {isEn ? 'Inter-Agency Liaison Protocol (BNPB / BPBD / Red Cross)' : 'Protokol Penghubung Pemerintah (BNPB / BPBD / PMI)'}
                 </h4>
                 <p className="text-xs text-slate-300 leading-relaxed">
                   {report.governmentLiaisonNotes}
@@ -215,7 +243,7 @@ ${report.governmentLiaisonNotes}
         {/* Footer actions */}
         <div className="bg-slate-950 px-6 py-3.5 border-t border-slate-800 flex items-center justify-between">
           <span className="text-[11px] text-slate-400 font-mono">
-            Format: Standar Pusdalops PB Indonesia
+            {isEn ? 'Standard: Indonesia BNPB Emergency Operations' : 'Format: Standar Pusdalops PB Indonesia'}
           </span>
           <div className="flex items-center gap-2">
             <button
@@ -223,13 +251,13 @@ ${report.governmentLiaisonNotes}
               className="px-3 py-1.5 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors border border-slate-700 flex items-center gap-1.5"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-              {copied ? 'Tersalin' : 'Salin Laporan'}
+              {copied ? (isEn ? 'Copied' : 'Tersalin') : (isEn ? 'Copy SitRep' : 'Salin Laporan')}
             </button>
             <button
               onClick={onClose}
               className="px-4 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors"
             >
-              Tutup
+              {isEn ? 'Close' : 'Tutup'}
             </button>
           </div>
         </div>

@@ -46,6 +46,8 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
   onNavigateToMap
 }) => {
   const { language } = useLanguage();
+  const isEn = language === 'en';
+
   const [alerts, setAlerts] = useState<EarlyWarningAlert[]>([]);
   const [citizenReports, setCitizenReports] = useState<CitizenSafetyReport[]>([]);
   const [isSirenPlaying, setIsSirenPlaying] = useState<boolean>(false);
@@ -55,7 +57,9 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
     lat: -6.2088,
     lng: 106.8456
   });
-  const [userLocationName, setUserLocationName] = useState<string>('Jakarta Pusat (Default)');
+  const [userLocationName, setUserLocationName] = useState<string>(
+    isEn ? 'Central Jakarta (Default)' : 'Jakarta Pusat (Default)'
+  );
   const [isDetectingLocation, setIsDetectingLocation] = useState<boolean>(false);
 
   // Modal State
@@ -102,13 +106,12 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
             lat: pos.coords.latitude,
             lng: pos.coords.longitude
           });
-          setUserLocationName('Koordinat GPS Perangkat Anda');
+          setUserLocationName(isEn ? 'Your Device GPS Coordinates' : 'Koordinat GPS Perangkat Anda');
           setIsDetectingLocation(false);
         },
         () => {
-          // If permission denied or unavailable, use sample location
           setIsDetectingLocation(false);
-          setUserLocationName('Lokasi Terkini (Simulasi GPS Jaktim)');
+          setUserLocationName(isEn ? 'Current Location (East Jakarta Simulation)' : 'Lokasi Terkini (Simulasi GPS Jaktim)');
           setUserCoords({ lat: -6.2255, lng: 106.8630 });
         },
         { timeout: 8000 }
@@ -128,7 +131,9 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
 
   const handleShareAlert = (alert: EarlyWarningAlert) => {
     const text = encodeURIComponent(
-      `⚠️ PERINGATAN DINI RESMI BNPB/BMKG: ${alert.title}. Arahan evakuasi: ${alert.evacuationAdvice}. Informasi & Posko Pengungsian SIGAP: https://sigap.bnpb.go.id/early-warning`
+      isEn
+        ? `⚠️ OFFICIAL BNPB/BMKG EARLY WARNING: ${alert.title}. Evacuation advice: ${alert.evacuationAdvice}. Info & Safe Shelters: https://sigap.bnpb.go.id/early-warning`
+        : `⚠️ PERINGATAN DINI RESMI BNPB/BMKG: ${alert.title}. Arahan evakuasi: ${alert.evacuationAdvice}. Informasi & Posko Pengungsian SIGAP: https://sigap.bnpb.go.id/early-warning`
     );
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   };
@@ -149,7 +154,7 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-rose-600 text-white animate-pulse shadow-lg">
                 <Siren className="w-4 h-4" />
-                <span>SIAGA NASIONAL • PUSDALOPS BNPB</span>
+                <span>{isEn ? 'NATIONAL ALERT • BNPB PUSDALOPS' : 'SIAGA NASIONAL • PUSDALOPS BNPB'}</span>
               </span>
               <span className="text-xs text-slate-400 font-mono hidden sm:inline">
                 Live Early Warning System (EWS)
@@ -157,19 +162,25 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              Sistem Peringatan Dini & Evakuasi Warga
+              {isEn ? 'Community Early Warning & Evacuation System' : 'Sistem Peringatan Dini & Evakuasi Warga'}
             </h1>
 
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Pantau zona bahaya bencana secara real-time, dapatkan panduan evakuasi darurat ke titik kumpul terdekat, dan laporkan status keselamatan Anda untuk koordinasi tim SAR.
+              {isEn
+                ? 'Monitor live hazard buffer zones, access emergency evacuation routes to verified safe shelters, and submit your safety status to incident command squads.'
+                : 'Pantau zona bahaya bencana secara real-time, dapatkan panduan evakuasi darurat ke titik kumpul terdekat, dan laporkan status keselamatan Anda untuk koordinasi tim SAR.'}
             </p>
           </div>
 
           {/* Siren Controller & Audio Test Button */}
           <div className="bg-slate-900/90 backdrop-blur-md p-4 rounded-2xl border border-slate-700/80 shadow-2xl flex flex-col items-center gap-3 shrink-0 w-full sm:w-auto">
             <div className="text-center">
-              <span className="text-xs font-bold text-white block">Sirene Darurat EWS</span>
-              <span className="text-[10px] text-slate-400">Suara Peringatan Evakuasi BNPB</span>
+              <span className="text-xs font-bold text-white block">
+                {isEn ? 'Emergency EWS Siren' : 'Sirene Darurat EWS'}
+              </span>
+              <span className="text-[10px] text-slate-400">
+                {isEn ? 'Official BNPB Evacuation Audio' : 'Suara Peringatan Evakuasi BNPB'}
+              </span>
             </div>
 
             <button
@@ -183,18 +194,18 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
               {isSirenPlaying ? (
                 <>
                   <VolumeX className="w-4 h-4" />
-                  <span>Matikan Sirene Bahaya</span>
+                  <span>{isEn ? 'Silence Emergency Siren' : 'Matikan Sirene Bahaya'}</span>
                 </>
               ) : (
                 <>
                   <Volume2 className="w-4 h-4 text-red-400" />
-                  <span>Bunyikan Sirene EWS (Tes)</span>
+                  <span>{isEn ? 'Sound EWS Siren (Test)' : 'Bunyikan Sirene EWS (Tes)'}</span>
                 </>
               )}
             </button>
 
             <span className="text-[10px] text-slate-400 text-center">
-              Audio Web API • Tanpa Kuota Tambahan
+              {isEn ? 'Web Audio API • Zero External Data' : 'Audio Web API • Tanpa Kuota Tambahan'}
             </span>
           </div>
         </div>
@@ -206,10 +217,12 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
           <div>
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
               <Compass className="w-5 h-5 text-cyan-400" />
-              <span>Radar Jarak Bahaya dari Posisi Anda</span>
+              <span>{isEn ? 'Hazard Proximity Radar from Your Location' : 'Radar Jarak Bahaya dari Posisi Anda'}</span>
             </h2>
             <p className="text-xs text-slate-400">
-              Deteksi otomatis apakah lokasi Anda saat ini berada dalam radius bahaya bencana
+              {isEn 
+                ? 'Automated detection of whether your coordinates fall within active disaster impact perimeters'
+                : 'Deteksi otomatis apakah lokasi Anda saat ini berada dalam radius bahaya bencana'}
             </p>
           </div>
 
@@ -220,28 +233,32 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
               className="py-2 px-3.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs transition shadow-md flex items-center gap-2"
             >
               <Navigation className="w-3.5 h-3.5" />
-              <span>{isDetectingLocation ? 'Mendeteksi...' : 'Gunakan GPS Saya'}</span>
+              <span>
+                {isDetectingLocation 
+                  ? (isEn ? 'Detecting GPS...' : 'Mendeteksi...') 
+                  : (isEn ? 'Use My Live GPS' : 'Gunakan GPS Saya')}
+              </span>
             </button>
 
             {/* Quick Preset Selector */}
             <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
               <button
-                onClick={() => handleSetPresetLocation('Kampung Melayu (Jaktim)', -6.2255, 106.8630)}
+                onClick={() => handleSetPresetLocation(isEn ? 'Kampung Melayu (East Jakarta)' : 'Kampung Melayu (Jaktim)', -6.2255, 106.8630)}
                 className="px-2.5 py-1 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition"
               >
-                Jaktim (Banjir)
+                {isEn ? 'Jakarta (Flood)' : 'Jaktim (Banjir)'}
               </button>
               <button
-                onClick={() => handleSetPresetLocation('Labuan (Pandeglang)', -6.4010, 105.8240)}
+                onClick={() => handleSetPresetLocation(isEn ? 'Labuan (Pandeglang Quake)' : 'Labuan (Pandeglang)', -6.4010, 105.8240)}
                 className="px-2.5 py-1 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition"
               >
-                Labuan (Gempa)
+                {isEn ? 'Labuan (Quake)' : 'Labuan (Gempa)'}
               </button>
               <button
-                onClick={() => handleSetPresetLocation('Pekanbaru (Riau)', 0.5280, 101.4500)}
+                onClick={() => handleSetPresetLocation(isEn ? 'Pekanbaru (Riau Wildfire)' : 'Pekanbaru (Riau)', 0.5280, 101.4500)}
                 className="px-2.5 py-1 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition"
               >
-                Riau (Karhutla)
+                {isEn ? 'Riau (Fire)' : 'Riau (Karhutla)'}
               </button>
             </div>
           </div>
@@ -269,7 +286,11 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-base sm:text-lg">
-                  {proximityStatus.zoneTitle}
+                  {isEn
+                    ? proximityStatus.zone === 'red_danger' ? 'RED DANGER ZONE: EVACUATION ORDERED'
+                      : proximityStatus.zone === 'orange_warning' ? 'ORANGE ADVISORY ZONE: HIGH ALERT'
+                      : 'GREEN SAFE ZONE: NO IMMEDIATE THREAT'
+                    : proximityStatus.zoneTitle}
                 </span>
                 <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-black/40 border border-white/20">
                   {userLocationName}
@@ -278,12 +299,15 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
 
               {proximityStatus.nearestAlert ? (
                 <p className="text-xs text-slate-200 leading-relaxed">
-                  Jarak Anda saat ini: <strong>{proximityStatus.distanceKm} km</strong> dari episentrum bencana{' '}
-                  <span className="font-bold underline">{proximityStatus.nearestAlert.title}</span>. Radius bahaya langsung: {proximityStatus.nearestAlert.dangerRadiusKm} km.
+                  {isEn
+                    ? `Current distance: ${proximityStatus.distanceKm} km from the epicenter of ${proximityStatus.nearestAlert.title}. Direct danger buffer: ${proximityStatus.nearestAlert.dangerRadiusKm} km.`
+                    : `Jarak Anda saat ini: ${proximityStatus.distanceKm} km dari episentrum bencana ${proximityStatus.nearestAlert.title}. Radius bahaya langsung: ${proximityStatus.nearestAlert.dangerRadiusKm} km.`}
                 </p>
               ) : (
                 <p className="text-xs text-slate-300">
-                  Tidak terdeteksi ancaman bencana langsung dalam radius 50 km dari koordinat Anda.
+                  {isEn
+                    ? 'No immediate disaster hazard detected within 50 km of your current coordinates.'
+                    : 'Tidak terdeteksi ancaman bencana langsung dalam radius 50 km dari koordinat Anda.'}
                 </p>
               )}
             </div>
@@ -293,7 +317,7 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
           {proximityStatus.nearestAlert && (
             <div className="bg-slate-950/80 p-3.5 rounded-xl border border-white/10 shrink-0 w-full md:w-80 space-y-2">
               <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                Titik Kumpul / Evakuasi Terdekat:
+                {isEn ? 'Nearest Safe Evacuation Shelter:' : 'Titik Kumpul / Evakuasi Terdekat:'}
               </div>
               <div className="font-bold text-xs text-white">
                 🏛️ {proximityStatus.nearestAlert.emergencyShelter.name}
@@ -302,8 +326,8 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
                 {proximityStatus.nearestAlert.emergencyShelter.address}
               </div>
               <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800">
-                <span>Kapasitas: {proximityStatus.nearestAlert.emergencyShelter.capacity} Jiwa</span>
-                <span className="text-emerald-400 font-semibold">Tersedia Posko Dapur & Medis</span>
+                <span>{isEn ? `Capacity: ${proximityStatus.nearestAlert.emergencyShelter.capacity} People` : `Kapasitas: ${proximityStatus.nearestAlert.emergencyShelter.capacity} Jiwa`}</span>
+                <span className="text-emerald-400 font-semibold">{isEn ? 'Medical & Food Ready' : 'Tersedia Posko Dapur & Medis'}</span>
               </div>
             </div>
           )}
@@ -316,7 +340,7 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
             className="py-3 px-4 rounded-2xl bg-emerald-950 hover:bg-emerald-900 text-emerald-200 border border-emerald-700/60 font-bold text-xs transition flex items-center justify-center gap-2 shadow-lg"
           >
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span>🟢 Lapor: Saya & Keluarga Selamat</span>
+            <span>{isEn ? '🟢 Check-in: My Family & I are Safe' : '🟢 Lapor: Saya & Keluarga Selamat'}</span>
           </button>
 
           <button
@@ -324,7 +348,7 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
             className="py-3 px-4 rounded-2xl bg-amber-950 hover:bg-amber-900 text-amber-200 border border-amber-700/60 font-bold text-xs transition flex items-center justify-center gap-2 shadow-lg"
           >
             <AlertTriangle className="w-4 h-4 text-amber-400" />
-            <span>🟡 Butuh Evakuasi Medis / Rentan</span>
+            <span>{isEn ? '🟡 Request Medical Evacuation / Vulnerable' : '🟡 Butuh Evakuasi Medis / Rentan'}</span>
           </button>
 
           <button
@@ -332,7 +356,7 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
             className="py-3 px-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition flex items-center justify-center gap-2 shadow-xl shadow-red-950/60 animate-pulse"
           >
             <Siren className="w-4 h-4" />
-            <span>🔴 SOS Darurat Terjebak (Kirim SAR)</span>
+            <span>{isEn ? '🔴 Urgent SOS: Trapped (Dispatch SAR)' : '🔴 SOS Darurat Terjebak (Kirim SAR)'}</span>
           </button>
         </div>
       </div>
@@ -342,10 +366,12 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <Radio className="w-5 h-5 text-rose-400" />
-            <span>Siaran Peringatan Dini Bencana Terkini (BMKG / BNPB)</span>
+            <span>{isEn ? 'Active Disaster Early Warning Broadcasts (BMKG / BNPB)' : 'Siaran Peringatan Dini Bencana Terkini (BMKG / BNPB)'}</span>
           </h2>
           <p className="text-xs text-slate-400">
-            Pembaruan berkala peringatan potensi bahaya dan tindakan penyelamatan jiwa
+            {isEn
+              ? 'Real-time hazard updates and life-saving instructions issued by national disaster authorities'
+              : 'Pembaruan berkala peringatan potensi bahaya dan tindakan penyelamatan jiwa'}
           </p>
         </div>
 
@@ -375,12 +401,12 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
                         ? 'bg-amber-600 text-white' 
                         : 'bg-yellow-600 text-slate-900 font-extrabold'
                     }`}>
-                      LEVEL {isAwas ? '4: AWAS' : isSiaga ? '3: SIAGA' : '2: WASPADA'}
+                      LEVEL {isAwas ? (isEn ? '4: WARNING' : '4: AWAS') : isSiaga ? (isEn ? '3: WATCH' : '3: SIAGA') : (isEn ? '2: ADVISORY' : '2: WASPADA')}
                     </span>
 
                     <span className="text-[11px] text-slate-400 flex items-center gap-1 font-mono">
                       <Clock className="w-3 h-3" />
-                      {new Date(alert.issuedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
+                      {new Date(alert.issuedAt).toLocaleTimeString(isEn ? 'en-US' : 'id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
                     </span>
                   </div>
 
@@ -398,7 +424,7 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
                   {/* Evacuation Advice Box */}
                   <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-1.5">
                     <span className="text-[10px] font-bold text-rose-300 uppercase tracking-wider block">
-                      Arahan Evakuasi Mandiri:
+                      {isEn ? 'Official Evacuation Advice:' : 'Arahan Evakuasi Mandiri:'}
                     </span>
                     <p className="text-xs text-slate-200 leading-relaxed">
                       {alert.evacuationAdvice}
@@ -408,7 +434,7 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
                   {/* Life saving action steps */}
                   <div className="space-y-1.5">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                      Langkah Aksi Cepat Penyelamatan Jiwa:
+                      {isEn ? 'Rapid Life-Saving Action Steps:' : 'Langkah Aksi Cepat Penyelamatan Jiwa:'}
                     </span>
                     <div className="space-y-1">
                       {alert.keyActionSteps.slice(0, 3).map((step, idx) => (
@@ -428,13 +454,13 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
                     className="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs border border-slate-700 transition flex items-center justify-center gap-1.5"
                   >
                     <Share2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Bagikan WhatsApp</span>
+                    <span>{isEn ? 'Share WhatsApp' : 'Bagikan WhatsApp'}</span>
                   </button>
 
                   {onNavigateToMap && (
                     <button
                       onClick={() => onNavigateToMap(alert.locationLat, alert.locationLng)}
-                      title="Fokuskan Peta"
+                      title={isEn ? 'Focus Map on Epicenter' : 'Fokuskan Peta'}
                       className="p-2 rounded-xl bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white transition"
                     >
                       <MapPin className="w-4 h-4" />
@@ -452,21 +478,23 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
         <div>
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
             <ShieldAlert className="w-5 h-5 text-emerald-400" />
-            <span>Panduan SOP Keselamatan Jiwa Masyarakat (Do's & Don'ts)</span>
+            <span>{isEn ? 'Standard Safety Protocol & Guide (Do\'s & Don\'ts)' : 'Panduan SOP Keselamatan Jiwa Masyarakat (Do\'s & Don\'ts)'}</span>
           </h2>
           <p className="text-xs text-slate-400">
-            Protokol resmi penyelamatan mandiri warga saat terjadi berbagai bencana alam di Indonesia
+            {isEn
+              ? 'Official self-rescue guidelines across common natural hazards in Indonesia'
+              : 'Protokol resmi penyelamatan mandiri warga saat terjadi berbagai bencana alam di Indonesia'}
           </p>
         </div>
 
         {/* Hazard Selector Pills */}
         <div className="flex flex-wrap gap-2">
           {[
-            { id: 'flood', label: 'Banjir Bandang', icon: <Droplet className="w-3.5 h-3.5 text-blue-400" /> },
-            { id: 'earthquake', label: 'Gempa Bumi', icon: <Zap className="w-3.5 h-3.5 text-amber-400" /> },
+            { id: 'flood', label: isEn ? 'Flash Flood' : 'Banjir Bandang', icon: <Droplet className="w-3.5 h-3.5 text-blue-400" /> },
+            { id: 'earthquake', label: isEn ? 'Earthquake' : 'Gempa Bumi', icon: <Zap className="w-3.5 h-3.5 text-amber-400" /> },
             { id: 'tsunami', label: 'Tsunami', icon: <Waves className="w-3.5 h-3.5 text-cyan-400" /> },
-            { id: 'fire', label: 'Kebakaran & Karhutla', icon: <Flame className="w-3.5 h-3.5 text-orange-400" /> },
-            { id: 'volcanic', label: 'Erupsi Gunung Api', icon: <Mountain className="w-3.5 h-3.5 text-rose-400" /> }
+            { id: 'fire', label: isEn ? 'Wildfire / Building Fire' : 'Kebakaran & Karhutla', icon: <Flame className="w-3.5 h-3.5 text-orange-400" /> },
+            { id: 'volcanic', label: isEn ? 'Volcanic Eruption' : 'Erupsi Gunung Api', icon: <Mountain className="w-3.5 h-3.5 text-rose-400" /> }
           ].map((h) => (
             <button
               key={h.id}
@@ -489,42 +517,42 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
           <div className="space-y-3">
             <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4" />
-              <span>Langkah yang WAJIB Dilakukan Segera:</span>
+              <span>{isEn ? 'DO\'s: Immediate Actions to Take:' : 'Langkah yang WAJIB Dilakukan Segera:'}</span>
             </h4>
             <div className="space-y-2 text-xs text-slate-300">
               {activeGuideTab === 'flood' && (
                 <>
-                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ Matikan MCB listrik dan cabut selang tabung gas rumah tangga.</div>
-                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ Bawa tas siaga bencana (senter, obat diare/kulit, KTP/Ijazah kedap air).</div>
-                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ Evakuasi segera ke lantai 2 atau Posko Tempat Evakuasi Sementara (TES).</div>
+                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ {isEn ? 'Shut off main electrical breakers and disconnect gas tanks.' : 'Matikan MCB listrik dan cabut selang tabung gas rumah tangga.'}</div>
+                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ {isEn ? 'Secure emergency go-bag (flashlights, first aid, waterproof documents).' : 'Bawa tas siaga bencana (senter, obat diare/kulit, KTP/Ijazah kedap air).'}</div>
+                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ {isEn ? 'Evacuate immediately to second floor or designated temporary shelter.' : 'Evakuasi segera ke lantai 2 atau Posko Tempat Evakuasi Sementara (TES).'}</div>
                 </>
               )}
               {activeGuideTab === 'earthquake' && (
                 <>
-                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ Drop, Cover, Hold On: Berlutut di bawah meja kokoh dan lindungi tengkuk kepala.</div>
-                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ Keluar ke lapangan terbuka begitu getaran utama gempa berhenti.</div>
-                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ Gunakan tangga darurat, jangan pernah menggunakan elevator / lift.</div>
+                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ {isEn ? 'Drop, Cover, Hold On: Crouch beneath sturdy tables and protect neck/head.' : 'Drop, Cover, Hold On: Berlutut di bawah meja kokoh dan lindungi tengkuk kepala.'}</div>
+                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ {isEn ? 'Move to open fields as soon as primary seismic shaking ceases.' : 'Keluar ke lapangan terbuka begitu getaran utama gempa berhenti.'}</div>
+                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ {isEn ? 'Use emergency stairs; never use elevators or lifts.' : 'Gunakan tangga darurat, jangan pernah menggunakan elevator / lift.'}</div>
                 </>
               )}
               {activeGuideTab === 'tsunami' && (
                 <>
-                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ Jika air laut surut tiba-tiba setelah gempa kuat, lari ke tempat tinggi &gt; 20 meter.</div>
-                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ Gunakan kendaraan roda dua atau lari kaki agar tidak terjebak kemacetan mobil.</div>
-                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ Jangan menunggu sirene resmi jika guncangan gempa berlangsung &gt; 20 detik.</div>
+                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ {isEn ? 'If sea recedes abruptly after strong quake, run to elevations > 20 meters.' : 'Jika air laut surut tiba-tiba setelah gempa kuat, lari ke tempat tinggi > 20 meter.'}</div>
+                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ {isEn ? 'Evacuate on foot or motorcycle to avoid car gridlocks.' : 'Gunakan kendaraan roda dua atau lari kaki agar tidak terjebak kemacetan mobil.'}</div>
+                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ {isEn ? 'Do not wait for sirens if shaking persisted longer than 20 seconds.' : 'Jangan menunggu sirene resmi jika guncangan gempa berlangsung > 20 detik.'}</div>
                 </>
               )}
               {activeGuideTab === 'fire' && (
                 <>
-                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ Merangkak di bawah asap pekat karena udara bersih berada dekat lantai.</div>
-                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ Tutup hidung dan mulut dengan kain atau masker basah untuk menyaring karbon.</div>
-                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ Segera hubungi pemadam kebakaran (113) dan posko relawan terdekat.</div>
+                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ {isEn ? 'Crawl below heavy smoke; cleaner breathable air remains near the floor.' : 'Merangkak di bawah asap pekat karena udara bersih berada dekat lantai.'}</div>
+                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ {isEn ? 'Cover mouth and nose with damp cloth to filter carbon particles.' : 'Tutup hidung dan mulut dengan kain atau masker basah untuk menyaring karbon.'}</div>
+                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ {isEn ? 'Immediately dial Fire Department (113) or local response post.' : 'Segera hubungi pemadam kebakaran (113) dan posko relawan terdekat.'}</div>
                 </>
               )}
               {activeGuideTab === 'volcanic' && (
                 <>
-                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ Kenakan kacamata pelindung dan masker respirator partikulat N95.</div>
-                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ Bersihkan atap rumah dari tumpukan abu vulkanik agar tidak runtuh.</div>
-                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ Jauhi aliran lembah dan sungai yang berpotensi dialiri lahar dingin hujan.</div>
+                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ {isEn ? 'Wear airtight goggles and N95 particulate respirator masks.' : 'Kenakan kacamata pelindung dan masker respirator partikulat N95.'}</div>
+                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ {isEn ? 'Clear volcanic ash from roofs to prevent structural collapse.' : 'Bersihkan atap rumah dari tumpukan abu vulkanik agar tidak runtuh.'}</div>
+                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40">✓ {isEn ? 'Stay clear of river valleys susceptible to cold lahar debris flows.' : 'Jauhi aliran lembah dan sungai yang berpotensi dialiri lahar dingin hujan.'}</div>
                 </>
               )}
             </div>
@@ -534,12 +562,12 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
           <div className="space-y-3">
             <h4 className="text-xs font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
               <AlertTriangle className="w-4 h-4" />
-              <span>Hal yang DILARANG KERAS / Berbahaya:</span>
+              <span>{isEn ? 'DON\'Ts: Dangerous Behaviors to Avoid:' : 'Hal yang DILARANG KERAS / Berbahaya:'}</span>
             </h4>
             <div className="space-y-2 text-xs text-slate-300">
-              <div className="p-2 rounded-lg bg-rose-950/30 border border-rose-800/40">✗ Jangan menyebarkan informasi hoax atau rekaman video gempa lama yang belum diverifikasi BMKG.</div>
-              <div className="p-2 rounded-lg bg-rose-950/30 border border-rose-800/40">✗ Jangan mendekati tiang listrik, kabel putus di dalam air, atau gardu transformator.</div>
-              <div className="p-2 rounded-lg bg-rose-950/30 border border-rose-800/40">✗ Jangan kembali ke dalam rumah retak sebelum dinyatakan aman oleh tim struktural BPBD.</div>
+              <div className="p-2 rounded-lg bg-rose-950/30 border border-rose-800/40">✗ {isEn ? 'Never forward unverified social media hoax videos or rumors.' : 'Jangan menyebarkan informasi hoax atau rekaman video gempa lama yang belum diverifikasi BMKG.'}</div>
+              <div className="p-2 rounded-lg bg-rose-950/30 border border-rose-800/40">✗ {isEn ? 'Avoid downed electrical cables, submerged power lines, and transformer boxes.' : 'Jangan mendekati tiang listrik, kabel putus di dalam air, atau gardu transformator.'}</div>
+              <div className="p-2 rounded-lg bg-rose-950/30 border border-rose-800/40">✗ {isEn ? 'Do not enter cracked buildings until certified safe by structural inspectors.' : 'Jangan kembali ke dalam rumah retak sebelum dinyatakan aman oleh tim struktural BPBD.'}</div>
             </div>
           </div>
         </div>
@@ -550,21 +578,21 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
         <div>
           <h2 className="text-base font-bold text-white flex items-center gap-2">
             <Phone className="w-4 h-4 text-emerald-400" />
-            <span>Nomor Darurat Siaga Bencana Bebas Pulsa Nasional</span>
+            <span>{isEn ? 'National Toll-Free Emergency Disaster Hotlines' : 'Nomor Darurat Siaga Bencana Bebas Pulsa Nasional'}</span>
           </h2>
           <p className="text-xs text-slate-400">
-            Dapat dihubungi 24 jam bebas pulsa dari semua operator seluler di Indonesia
+            {isEn ? '24/7 toll-free access from all mobile and fixed operators across Indonesia' : 'Dapat dihubungi 24 jam bebas pulsa dari semua operator seluler di Indonesia'}
           </p>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
-            { name: 'BASARNAS', number: '115', desc: 'Penyelamatan & SAR' },
-            { name: 'BNPB PUSDALOPS', number: '117', desc: 'Komando Bencana' },
-            { name: 'LAYANAN DARURAT', number: '112', desc: 'BPBD Pemda' },
-            { name: 'AMBULANS / KEMENKES', number: '118', desc: 'Evakuasi Medis' },
-            { name: 'PEMADAM KEBAKARAN', number: '113', desc: 'Damkar Lapangan' },
-            { name: 'KEPOLISIAN', number: '110', desc: 'Keamanan Evakuasi' }
+            { name: 'BASARNAS', number: '115', desc: isEn ? 'Search & Rescue' : 'Penyelamatan & SAR' },
+            { name: 'BNPB PUSDALOPS', number: '117', desc: isEn ? 'Disaster Command' : 'Komando Bencana' },
+            { name: isEn ? 'EMERGENCY SERVICE' : 'LAYANAN DARURAT', number: '112', desc: isEn ? 'Regional BPBD' : 'BPBD Pemda' },
+            { name: isEn ? 'AMBULANCE' : 'AMBULANS / KEMENKES', number: '118', desc: isEn ? 'Medical Evac' : 'Evakuasi Medis' },
+            { name: isEn ? 'FIRE BRIGADE' : 'PEMADAM KEBAKARAN', number: '113', desc: isEn ? 'Fire Rescue' : 'Damkar Lapangan' },
+            { name: isEn ? 'POLICE' : 'KEPOLISIAN', number: '110', desc: isEn ? 'Security & Evac' : 'Keamanan Evakuasi' }
           ].map((hl) => (
             <a
               key={hl.number}

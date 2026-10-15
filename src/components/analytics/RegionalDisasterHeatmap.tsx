@@ -141,9 +141,9 @@ export const RegionalDisasterHeatmap: React.FC<RegionalDisasterHeatmapProps> = (
             <div class="p-3 w-64 text-slate-100">
               <div class="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-800">
                 <span class="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase text-white" style="background-color: ${color}">
-                  ${p.riskLevel} • ${p.type.toUpperCase()}
+                  ${p.riskLevel === 'Kritis' ? (language === 'id' ? 'Kritis' : 'Critical') : (language === 'id' ? 'Tinggi' : 'High')} • ${p.type.toUpperCase()}
                 </span>
-                <span class="text-[11px] font-mono text-slate-400">${p.frequency} Kejadian</span>
+                <span class="text-[11px] font-mono text-slate-400">${p.frequency} ${language === 'id' ? 'Kejadian' : 'Events'}</span>
               </div>
               <h5 class="font-bold text-xs text-white mb-1">${p.name}</h5>
               <div class="text-[10px] text-slate-400 mb-2">${p.province} (${p.yearRange})</div>
@@ -162,7 +162,7 @@ export const RegionalDisasterHeatmap: React.FC<RegionalDisasterHeatmapProps> = (
         });
       }
     }
-  }, [filteredPoints, activeDisasterType, heatRadius, heatBlur, showPointMarkers, activePoint]);
+  }, [filteredPoints, activeDisasterType, heatRadius, heatBlur, showPointMarkers, activePoint, language]);
 
   // Pan to selected region
   const handleRegionZoom = (regionKey: string) => {
@@ -323,7 +323,9 @@ export const RegionalDisasterHeatmap: React.FC<RegionalDisasterHeatmapProps> = (
         {/* Heatmap Slider & Pins Toggle */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
-            <span className="text-[11px] text-slate-400">Radius Panas:</span>
+            <span className="text-[11px] text-slate-400">
+              {language === 'id' ? 'Radius Panas:' : 'Heat Radius:'}
+            </span>
             <input
               type="range"
               min="18"
@@ -340,7 +342,9 @@ export const RegionalDisasterHeatmap: React.FC<RegionalDisasterHeatmapProps> = (
               showPointMarkers ? 'bg-blue-950 text-blue-300 border-blue-800' : 'bg-slate-800 text-slate-400 border-slate-700'
             }`}
           >
-            {showPointMarkers ? 'Titik Episentrum: Aktif' : 'Titik Episentrum: Sembunyi'}
+            {showPointMarkers 
+              ? (language === 'id' ? 'Titik Episentrum: Aktif' : 'Epicenter Pins: Visible') 
+              : (language === 'id' ? 'Titik Episentrum: Sembunyi' : 'Epicenter Pins: Hidden')}
           </button>
         </div>
       </div>
@@ -352,19 +356,19 @@ export const RegionalDisasterHeatmap: React.FC<RegionalDisasterHeatmapProps> = (
         {/* Heat Gradient Legend */}
         <div className="absolute bottom-4 left-4 z-20 bg-slate-950/90 backdrop-blur-md p-3 rounded-lg border border-slate-800 text-xs text-slate-300 shadow-xl space-y-2 pointer-events-none sm:pointer-events-auto">
           <div className="font-bold text-white text-[11px] uppercase tracking-wider flex items-center justify-between gap-4">
-            <span>Intensitas Kerawanan</span>
+            <span>{language === 'id' ? 'Intensitas Kerawanan' : 'Hazard Vulnerability Intensity'}</span>
             <span className="text-[10px] text-slate-400 font-mono">2021 - 2026</span>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-slate-400">Rendah</span>
+            <span className="text-[10px] text-slate-400">{language === 'id' ? 'Rendah' : 'Low'}</span>
             <div className="w-32 h-2.5 rounded-full overflow-hidden bg-gradient-to-r from-sky-400 via-amber-400 via-orange-500 to-red-600"></div>
-            <span className="text-[10px] text-red-400 font-bold">Kritis</span>
+            <span className="text-[10px] text-red-400 font-bold">{language === 'id' ? 'Kritis' : 'Critical'}</span>
           </div>
 
           <div className="text-[10px] text-slate-400 pt-1 border-t border-slate-800 flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-red-500 inline-block"></span>
-            <span>Titik merah: Lokasi kejadian berulang frekuensi tinggi</span>
+            <span>{language === 'id' ? 'Titik merah: Lokasi kejadian berulang frekuensi tinggi' : 'Red spots: High-frequency recurrent disaster zones'}</span>
           </div>
         </div>
 
@@ -376,7 +380,7 @@ export const RegionalDisasterHeatmap: React.FC<RegionalDisasterHeatmapProps> = (
                 <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${
                   activePoint.riskLevel === 'Kritis' ? 'bg-red-950 text-red-400 border border-red-800' : 'bg-orange-950 text-orange-400 border border-orange-800'
                 }`}>
-                  Zona {activePoint.riskLevel}
+                  {language === 'id' ? `Zona ${activePoint.riskLevel}` : `${activePoint.riskLevel === 'Kritis' ? 'Critical' : 'High'} Risk Zone`}
                 </span>
                 <h4 className="font-bold text-sm text-white mt-1 leading-snug">{activePoint.name}</h4>
                 <div className="text-[11px] text-slate-400">{activePoint.province}</div>
@@ -390,8 +394,8 @@ export const RegionalDisasterHeatmap: React.FC<RegionalDisasterHeatmapProps> = (
             </div>
 
             <div className="text-xs bg-slate-900 p-2 rounded border border-slate-800">
-              <span className="text-slate-400 text-[10px]">Frekuensi Kejadian:</span>
-              <div className="font-black text-amber-400 text-sm">{activePoint.frequency} Kejadian ({activePoint.yearRange})</div>
+              <span className="text-slate-400 text-[10px]">{language === 'id' ? 'Frekuensi Kejadian:' : 'Event Frequency:'}</span>
+              <div className="font-black text-amber-400 text-sm">{activePoint.frequency} {language === 'id' ? 'Kejadian' : 'Events'} ({activePoint.yearRange})</div>
             </div>
 
             <p className="text-[11px] text-slate-300 leading-relaxed bg-slate-900/60 p-2 rounded border border-slate-800/80">
@@ -404,7 +408,7 @@ export const RegionalDisasterHeatmap: React.FC<RegionalDisasterHeatmapProps> = (
               }}
               className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-1.5 px-3 rounded text-xs transition-colors"
             >
-              Perbesar Lokasi Zona Ini
+              {language === 'id' ? 'Perbesar Lokasi Zona Ini' : 'Zoom to This Hotspot'}
             </button>
           </div>
         )}

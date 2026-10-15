@@ -124,7 +124,7 @@ export const SigapLogo: React.FC<SigapLogoProps> = ({
   size = 'md', 
   showEditButton = true 
 }) => {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const [logoConfig, setLogoConfig] = useState<LogoConfig>(getStoredLogoConfig);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
@@ -154,12 +154,12 @@ export const SigapLogo: React.FC<SigapLogoProps> = ({
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setPreviewError('Mohon pilih file gambar yang valid (PNG, JPG, SVG, WebP)');
+      setPreviewError(language === 'id' ? 'Mohon pilih file gambar yang valid (PNG, JPG, SVG, WebP)' : 'Please select a valid image file (PNG, JPG, SVG, WebP)');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      setPreviewError('Ukuran gambar maksimal 5MB');
+      setPreviewError(language === 'id' ? 'Ukuran gambar maksimal 5MB' : 'Image file size must be less than 5MB');
       return;
     }
 
@@ -174,7 +174,7 @@ export const SigapLogo: React.FC<SigapLogoProps> = ({
       setLogoConfig(newConfig);
     };
     reader.onerror = () => {
-      setPreviewError('Gagal membaca file gambar');
+      setPreviewError(language === 'id' ? 'Gagal membaca file gambar' : 'Failed to read image file');
     };
     reader.readAsDataURL(file);
   };
@@ -283,18 +283,18 @@ export const SigapLogo: React.FC<SigapLogoProps> = ({
                   </div>
                   <div>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-                      Logo Aktif
+                      {language === 'id' ? 'Logo Aktif' : 'Active Logo'}
                     </span>
                     <h4 className="text-sm font-semibold text-white mt-1">
                       {logoConfig.type === 'custom' 
-                        ? 'Gambar Kustom Pengguna' 
-                        : logoConfig.preset === 'bnpb' ? 'BNPB / BPBD Tanggap Bencana'
-                        : logoConfig.preset === 'basarnas' ? 'BASARNAS SAR Nasional'
-                        : logoConfig.preset === 'pmi' ? 'Palang Merah Indonesia'
-                        : 'SIGAP Taktis Komando'}
+                        ? (language === 'id' ? 'Gambar Kustom Pengguna' : 'User Custom Logo') 
+                        : logoConfig.preset === 'bnpb' ? (language === 'id' ? 'BNPB / BPBD Tanggap Bencana' : 'BNPB / BPBD Disaster Response')
+                        : logoConfig.preset === 'basarnas' ? (language === 'id' ? 'BASARNAS SAR Nasional' : 'BASARNAS National SAR')
+                        : logoConfig.preset === 'pmi' ? (language === 'id' ? 'Palang Merah Indonesia' : 'Indonesian Red Cross')
+                        : (language === 'id' ? 'SIGAP Taktis Komando' : 'SIGAP Tactical Command')}
                     </h4>
                     <p className="text-xs text-slate-400">
-                      Tampil di navbar, mobile drawer, dan dokumen operasi.
+                      {language === 'id' ? 'Tampil di navbar, mobile drawer, dan dokumen operasi.' : 'Displayed in navbar, mobile drawer, and operational documents.'}
                     </p>
                   </div>
                 </div>
@@ -323,7 +323,7 @@ export const SigapLogo: React.FC<SigapLogoProps> = ({
                     <Upload className="w-5 h-5" />
                   </div>
                   <p className="text-xs font-semibold text-white">
-                    Klik untuk memilih file gambar dari perangkat Anda
+                    {language === 'id' ? 'Klik untuk memilih file gambar dari perangkat Anda' : 'Click to select an image file from your device'}
                   </p>
                   <p className="text-[11px] text-slate-400 mt-1">
                     {t.logoUploadHint}
@@ -370,7 +370,7 @@ export const SigapLogo: React.FC<SigapLogoProps> = ({
                         )}
                       </div>
                       <p className="text-[11px] text-slate-400 truncate">
-                        Segitiga Oranye & Biru Resmi
+                        {language === 'id' ? 'Segitiga Oranye & Biru Resmi' : 'Official Orange & Blue Triangle'}
                       </p>
                     </div>
                   </button>
@@ -396,7 +396,7 @@ export const SigapLogo: React.FC<SigapLogoProps> = ({
                         )}
                       </div>
                       <p className="text-[11px] text-slate-400 truncate">
-                        Search & Rescue Taktis
+                        {language === 'id' ? 'Search & Rescue Taktis' : 'Tactical Search & Rescue'}
                       </p>
                     </div>
                   </button>
@@ -422,7 +422,7 @@ export const SigapLogo: React.FC<SigapLogoProps> = ({
                         )}
                       </div>
                       <p className="text-[11px] text-slate-400 truncate">
-                        Palang Merah Indonesia
+                        {language === 'id' ? 'Palang Merah Indonesia' : 'Indonesian Red Cross'}
                       </p>
                     </div>
                   </button>
@@ -442,13 +442,13 @@ export const SigapLogo: React.FC<SigapLogoProps> = ({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-white">SIGAP Taktis</span>
+                        <span className="text-xs font-bold text-white">{language === 'id' ? 'SIGAP Taktis' : 'SIGAP Tactical'}</span>
                         {logoConfig.type === 'preset' && logoConfig.preset === 'sigap' && (
                           <Check className="w-4 h-4 text-amber-400" />
                         )}
                       </div>
                       <p className="text-[11px] text-slate-400 truncate">
-                        Perisai Komando Radar
+                        {language === 'id' ? 'Perisai Komando Radar' : 'Command Radar Shield'}
                       </p>
                     </div>
                   </button>

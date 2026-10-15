@@ -137,11 +137,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const handleProtectedTabClick = (tab: NavTab, requiredRole?: 'volunteer' | 'coordinator', title?: string) => {
     if (requiredRole === 'coordinator' && !isCoordinator) {
-      onRequireRole('coordinator', title || 'Menu Koordinator');
+      onRequireRole('coordinator', title || (language === 'id' ? 'Menu Koordinator' : 'Coordinator Menu'));
       return;
     }
     if (requiredRole === 'volunteer' && !isVolunteer) {
-      onRequireRole('volunteer', title || 'Menu Relawan');
+      onRequireRole('volunteer', title || (language === 'id' ? 'Menu Relawan' : 'Volunteer Menu'));
       return;
     }
     onTabChange(tab);
@@ -192,7 +192,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       shortLabel: language === 'id' ? 'EWS Publik' : 'EWS Alert',
       icon: <Siren className="w-3.5 h-3.5 text-rose-400" />,
       category: 'overview',
-      badge: 'SIAGA',
+      badge: language === 'id' ? 'SIAGA' : 'ALERT',
       badgeColor: 'bg-rose-950 text-rose-300 border-rose-800/80 animate-pulse',
       accentColor: 'rose'
     },
@@ -202,7 +202,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       shortLabel: language === 'id' ? 'Donasi' : 'Donations',
       icon: <HeartHandshake className="w-3.5 h-3.5 text-pink-400" />,
       category: 'overview',
-      badge: 'Peduli',
+      badge: language === 'id' ? 'Peduli' : 'Care',
       badgeColor: 'bg-pink-950 text-pink-300 border-pink-800/80',
       accentColor: 'pink'
     },
@@ -299,7 +299,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={() => onTabChange('presentation')}
               className="text-base sm:text-lg font-black tracking-tight text-white hover:text-blue-400 transition-colors whitespace-nowrap text-left leading-none"
-              title="Buka Halaman Presentasi Proyek SIGAP"
+              title={language === 'id' ? 'Buka Halaman Presentasi Proyek SIGAP' : 'Open SIGAP Project Showcase'}
             >
               {t.brandTitle}
             </button>
@@ -351,7 +351,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <HardDrive className="w-3.5 h-3.5 text-blue-400 shrink-0" />
               <span className="hidden xl:inline text-[11px]">
-                {cachedTilesCount > 0 ? `${cachedTilesCount} Tile` : 'Peta Offline'}
+                {cachedTilesCount > 0 ? `${cachedTilesCount} ${language === 'id' ? 'Tile' : 'Tiles'}` : (language === 'id' ? 'Peta Offline' : 'Offline Map')}
               </span>
             </button>
           )}
@@ -386,7 +386,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Plus className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
             <span className="hidden md:inline">{t.btnRegisterVol}</span>
-            <span className="md:hidden">Relawan</span>
+            <span className="md:hidden">{language === 'id' ? 'Relawan' : 'Volunteer'}</span>
           </button>
 
           {/* Declare New Disaster Action Button */}
@@ -401,7 +401,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             {!isCoordinator ? <Lock className="w-3 h-3 text-amber-400 shrink-0" /> : <Plus className="w-3.5 h-3.5 text-white shrink-0" />}
             <span className="hidden sm:inline">{t.btnDeclareDisaster}</span>
-            <span className="sm:hidden">Bencana</span>
+            <span className="sm:hidden">{language === 'id' ? 'Bencana' : 'Disaster'}</span>
           </button>
         </div>
       </div>
@@ -418,7 +418,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => scrollTabs('left')}
             disabled={!canScrollLeft}
             className={`hidden md:flex items-center justify-center w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 transition-all mr-1.5 shrink-0 disabled:opacity-20 disabled:pointer-events-none z-10 shadow-md`}
-            title="Gulir tab ke kiri"
+            title={language === 'id' ? 'Gulir tab ke kiri' : 'Scroll tabs left'}
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -486,7 +486,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => scrollTabs('right')}
             disabled={!canScrollRight}
             className={`hidden md:flex items-center justify-center w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 transition-all ml-1.5 shrink-0 disabled:opacity-20 disabled:pointer-events-none z-10 shadow-md`}
-            title="Gulir tab ke kanan"
+            title={language === 'id' ? 'Gulir tab ke kanan' : 'Scroll tabs right'}
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -496,7 +496,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={() => setIsDropdownMenuOpen(!isDropdownMenuOpen)}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-bold text-slate-300 hover:text-white transition shadow-sm"
-              title="Daftar Cepat Semua Halaman SIGAP"
+              title={language === 'id' ? 'Daftar Cepat Semua Halaman SIGAP' : 'Quick Menu for All Pages'}
             >
               <Menu className="w-3.5 h-3.5 text-blue-400" />
               <span className="hidden sm:inline text-[11px]">
@@ -510,15 +510,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="absolute right-0 top-full mt-2 w-64 bg-slate-900 border border-slate-700/80 rounded-2xl p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 space-y-2">
                 <div className="px-2.5 py-1.5 border-b border-slate-800 flex items-center justify-between">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                    Navigasi Cepat SIGAP
+                    {language === 'id' ? 'Navigasi Cepat SIGAP' : 'SIGAP Quick Navigation'}
                   </span>
-                  <span className="text-[10px] text-blue-400 font-mono">11 Halaman</span>
+                  <span className="text-[10px] text-blue-400 font-mono">
+                    {language === 'id' ? '11 Halaman' : '11 Tabs'}
+                  </span>
                 </div>
 
                 <div className="space-y-1 max-h-80 overflow-y-auto pr-1">
                   {/* Category 1: Utama & Publik */}
                   <div className="px-2 pt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Utama & Presentasi
+                    {language === 'id' ? 'Utama & Presentasi' : 'Overview & Showcase'}
                   </div>
                   {allTabs.filter(t => t.category === 'overview').map(tab => (
                     <button
@@ -538,7 +540,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                   {/* Category 2: Relawan & Gamifikasi */}
                   <div className="px-2 pt-2 border-t border-slate-800 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
-                    Portal & Relawan
+                    {language === 'id' ? 'Portal & Relawan' : 'Volunteers & Portal'}
                   </div>
                   {allTabs.filter(t => t.category === 'volunteer').map(tab => (
                     <button
@@ -558,7 +560,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                   {/* Category 3: Operasi Taktis & Koordinator */}
                   <div className="px-2 pt-2 border-t border-slate-800 text-[10px] font-bold uppercase tracking-wider text-blue-400 flex items-center justify-between">
-                    <span>Komando Taktis</span>
+                    <span>{language === 'id' ? 'Komando Taktis' : 'Tactical Command'}</span>
                     {!isCoordinator && <Lock className="w-2.5 h-2.5 text-slate-500" />}
                   </div>
                   {allTabs.filter(t => t.category === 'tactical').map(tab => (

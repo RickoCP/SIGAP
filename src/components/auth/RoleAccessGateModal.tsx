@@ -56,17 +56,21 @@ export const RoleAccessGateModal: React.FC<RoleAccessGateModalProps> = ({
 
           <div className="w-full bg-slate-950/60 p-3.5 rounded-xl border border-slate-800 text-left text-xs space-y-2 mb-5">
             <div className="flex items-center justify-between text-slate-400">
-              <span>Status Anda Saat Ini:</span>
+              <span>{language === 'id' ? 'Status Anda Saat Ini:' : 'Your Current Status:'}</span>
               <span className="font-bold text-slate-200 capitalize">
                 {effectiveRole === 'coordinator' 
-                  ? 'Koordinator' 
-                  : (effectiveRole === 'volunteer' ? 'Relawan Terdaftar' : 'Publik / Umum')}
+                  ? (language === 'id' ? 'Koordinator' : 'Coordinator') 
+                  : (effectiveRole === 'volunteer' 
+                      ? (language === 'id' ? 'Relawan Terdaftar' : 'Registered Volunteer') 
+                      : (language === 'id' ? 'Publik / Umum' : 'Public / Citizen'))}
               </span>
             </div>
             <div className="flex items-center justify-between text-slate-400">
-              <span>Tingkat Hak Akses Diperlukan:</span>
+              <span>{language === 'id' ? 'Tingkat Hak Akses Diperlukan:' : 'Required Access Level:'}</span>
               <span className={`font-bold ${isCoord ? 'text-red-400' : 'text-emerald-400'}`}>
-                {isCoord ? 'Tingkat 3 (Koordinator Lapangan)' : 'Tingkat 2 (Relawan Terdaftar)'}
+                {isCoord 
+                  ? (language === 'id' ? 'Tingkat 3 (Koordinator Lapangan)' : 'Level 3 (Field Coordinator)') 
+                  : (language === 'id' ? 'Tingkat 2 (Relawan Terdaftar)' : 'Level 2 (Registered Volunteer)')}
               </span>
             </div>
           </div>

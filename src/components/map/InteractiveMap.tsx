@@ -19,6 +19,7 @@ import {
 import { Disaster, Volunteer, Task, Assignment } from '../../types/index.ts';
 import { calculateDistance } from '../../lib/geo.ts';
 import { GoogleMapsPlacesModal } from './GoogleMapsPlacesModal.tsx';
+import { useLanguage } from '../../context/LanguageContext.tsx';
 
 interface InteractiveMapProps {
   disasters: Disaster[];
@@ -74,6 +75,9 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
   selectedTrackedVolunteerId = null,
   onSelectTrackedVolunteer
 }) => {
+  const { language } = useLanguage();
+  const isEn = language === 'en';
+
   // Map viewport states (Center coordinates and Zoom level)
   const [center, setCenter] = useState<{ lat: number; lng: number }>({ lat: -6.22, lng: 106.84 });
   const [zoom, setZoom] = useState<number>(12); // zoom level
@@ -762,12 +766,12 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
           <div className="flex items-start justify-between gap-2 mb-1.5">
             <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider font-mono">
               {hoveredItem.type === 'cluster'
-                ? 'Gugus Marker (Leaflet Cluster)'
+                ? (isEn ? 'Marker Cluster (Leaflet Cluster)' : 'Gugus Marker (Leaflet Cluster)')
                 : hoveredItem.type === 'disaster'
-                ? 'Operasi Bencana'
+                ? (isEn ? 'Disaster Incident' : 'Operasi Bencana')
                 : hoveredItem.type === 'volunteer'
-                ? 'Profil Relawan'
-                : 'Tugas Lapangan'}
+                ? (isEn ? 'Volunteer Profile' : 'Profil Relawan')
+                : (isEn ? 'Field Task' : 'Tugas Lapangan')}
             </span>
             <button
               onClick={() => setHoveredItem(null)}
@@ -785,32 +789,32 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-white">
-                    {(hoveredItem.data as MarkerCluster).items.length} Titik Terkelompok
+                    {(hoveredItem.data as MarkerCluster).items.length} {isEn ? 'Clustered Locations' : 'Titik Terkelompok'}
                   </h4>
                   <span className="text-[10px] text-slate-400 font-mono">
-                    Gugus Wilayah Koordinat
+                    {isEn ? 'Geographic Coordinates Cluster' : 'Gugus Wilayah Koordinat'}
                   </span>
                 </div>
               </div>
 
               <div className="space-y-1.5 text-[11px] border-t border-slate-800 pt-2 font-mono tabular-nums">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Relawan Siaga:</span>
+                  <span className="text-slate-400">{isEn ? 'Standby Volunteers:' : 'Relawan Siaga:'}</span>
                   <span className="text-emerald-400 font-semibold">
-                    {(hoveredItem.data as MarkerCluster).availableVolunteerCount} Personel
+                    {(hoveredItem.data as MarkerCluster).availableVolunteerCount} {isEn ? 'Personnel' : 'Personel'}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Relawan Bertugas:</span>
+                  <span className="text-slate-400">{isEn ? 'On Duty Volunteers:' : 'Relawan Bertugas:'}</span>
                   <span className="text-amber-400 font-semibold">
-                    {(hoveredItem.data as MarkerCluster).busyVolunteerCount} Personel
+                    {(hoveredItem.data as MarkerCluster).busyVolunteerCount} {isEn ? 'Personnel' : 'Personel'}
                   </span>
                 </div>
                 {(hoveredItem.data as MarkerCluster).taskCount > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Tugas Lapangan:</span>
+                    <span className="text-slate-400">{isEn ? 'Field Tasks:' : 'Tugas Lapangan:'}</span>
                     <span className="text-blue-400 font-semibold">
-                      {(hoveredItem.data as MarkerCluster).taskCount} Titik Tugas
+                      {(hoveredItem.data as MarkerCluster).taskCount} {isEn ? 'Tasks' : 'Titik Tugas'}
                     </span>
                   </div>
                 )}
@@ -825,7 +829,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                 className="mt-2.5 w-full py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors text-center flex items-center justify-center gap-1.5"
               >
                 <Maximize2 className="w-3.5 h-3.5" />
-                Perbesar & Perluas Gugus (+2 Zoom)
+                {isEn ? 'Zoom & Expand Cluster (+2 Zoom)' : 'Perbesar & Perluas Gugus (+2 Zoom)'}
               </button>
             </div>
           )}
@@ -839,9 +843,9 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                 {(hoveredItem.data as Disaster).description}
               </p>
               <div className="mt-2 pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] font-mono tabular-nums">
-                <span className="text-slate-400">Terdampak:</span>
+                <span className="text-slate-400">{isEn ? 'Affected:' : 'Terdampak:'}</span>
                 <span className="text-amber-400 font-semibold">
-                  {(hoveredItem.data as Disaster).affectedPeople.toLocaleString('id-ID')} jiwa
+                  {(hoveredItem.data as Disaster).affectedPeople.toLocaleString('id-ID')} {isEn ? 'people' : 'jiwa'}
                 </span>
               </div>
               <div className="mt-2.5 flex items-center gap-2">
@@ -849,7 +853,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                   onClick={() => onSelectDisaster((hoveredItem.data as Disaster).id)}
                   className="w-full py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors text-center"
                 >
-                  Buka Operasi Lengkap
+                  {isEn ? 'Open Full Incident' : 'Buka Operasi Lengkap'}
                 </button>
               </div>
             </div>
@@ -866,13 +870,13 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                     {(hoveredItem.data as Volunteer).name}
                   </h4>
                   <span className="text-[11px] text-slate-400">
-                    {(hoveredItem.data as Volunteer).organization || 'Relawan Independen'}
+                    {(hoveredItem.data as Volunteer).organization || (isEn ? 'Independent Volunteer' : 'Relawan Independen')}
                   </span>
                 </div>
               </div>
               <div className="mt-2 pt-2 border-t border-slate-800 space-y-1 text-[11px]">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Status:</span>
+                  <span className="text-slate-400">{isEn ? 'Status:' : 'Status:'}</span>
                   <span
                     className={`font-semibold ${
                       (hoveredItem.data as Volunteer).status === 'available'
@@ -883,15 +887,15 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                     }`}
                   >
                     {(hoveredItem.data as Volunteer).status === 'available'
-                      ? 'Tersedia Siaga'
+                      ? (isEn ? 'Available / Standby' : 'Tersedia Siaga')
                       : (hoveredItem.data as Volunteer).status === 'busy'
-                      ? 'Sedang Bertugas'
+                      ? (isEn ? 'On Duty' : 'Sedang Bertugas')
                       : 'Offline'}
                   </span>
                 </div>
                 {selectedDisaster && (
                   <div className="flex justify-between font-mono tabular-nums">
-                    <span className="text-slate-400">Jarak ke Bencana:</span>
+                    <span className="text-slate-400">{isEn ? 'Distance to Incident:' : 'Jarak ke Bencana:'}</span>
                     <span className="text-blue-300 font-semibold">
                       {calculateDistance(
                         selectedDisaster.locationLat,
@@ -904,9 +908,9 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                   </div>
                 )}
                 <div className="flex justify-between font-mono tabular-nums">
-                  <span className="text-slate-400">Tugas Selesai:</span>
+                  <span className="text-slate-400">{isEn ? 'Tasks Completed:' : 'Tugas Selesai:'}</span>
                   <span className="text-slate-300">
-                    {(hoveredItem.data as Volunteer).completedTasksCount} penugasan
+                    {(hoveredItem.data as Volunteer).completedTasksCount} {isEn ? 'assignments' : 'penugasan'}
                   </span>
                 </div>
               </div>
@@ -914,7 +918,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                 onClick={() => onSelectVolunteer?.(hoveredItem.data as Volunteer)}
                 className="mt-2.5 w-full py-1 text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors border border-slate-700"
               >
-                Lihat Detail Profil
+                {isEn ? 'View Profile Details' : 'Lihat Detail Profil'}
               </button>
             </div>
           )}
@@ -929,13 +933,13 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
               </p>
               <div className="mt-2 pt-2 border-t border-slate-800 space-y-1 text-[11px]">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Keahlian:</span>
+                  <span className="text-slate-400">{isEn ? 'Required Skill:' : 'Keahlian:'}</span>
                   <span className="text-blue-300 font-semibold truncate max-w-[150px]">
                     {(hoveredItem.data as Task).requiredSkillName}
                   </span>
                 </div>
                 <div className="flex justify-between font-mono tabular-nums">
-                  <span className="text-slate-400">Relawan Dibutuhkan:</span>
+                  <span className="text-slate-400">{isEn ? 'Volunteers Required:' : 'Relawan Dibutuhkan:'}</span>
                   <span className="text-white">
                     {(hoveredItem.data as Task).volunteersAssigned} /{' '}
                     {(hoveredItem.data as Task).volunteersNeeded}
@@ -948,7 +952,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                   className="mt-2.5 w-full py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors flex items-center justify-center gap-1.5"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  Pencocokan Relawan AI
+                  {isEn ? 'AI Volunteer Matching' : 'Pencocokan Relawan AI'}
                 </button>
               )}
             </div>
@@ -961,21 +965,21 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
         <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-lg p-1 shadow-lg flex flex-col gap-1">
           <button
             onClick={() => handleZoom(1)}
-            title="Perbesar"
+            title={isEn ? 'Zoom In' : 'Perbesar'}
             className="map-control-btn p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
           >
             <ZoomIn className="w-4 h-4" />
           </button>
           <button
             onClick={() => handleZoom(-1)}
-            title="Perkecil"
+            title={isEn ? 'Zoom Out' : 'Perkecil'}
             className="map-control-btn p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
           >
             <ZoomOut className="w-4 h-4" />
           </button>
           <button
             onClick={resetToJakarta}
-            title="Fokus Jakarta"
+            title={isEn ? 'Focus Jakarta' : 'Fokus Jakarta'}
             className="map-control-btn p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
           >
             <Compass className="w-4 h-4" />
@@ -994,7 +998,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
             onClick={resetToBanten}
             className="map-control-btn px-2 py-1 text-[11px] font-semibold text-slate-300 hover:text-white hover:bg-slate-800 rounded text-left transition-colors whitespace-nowrap"
           >
-            Pesisir Banten
+            {isEn ? 'Banten Coast' : 'Pesisir Banten'}
           </button>
         </div>
 
@@ -1002,11 +1006,11 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
         {selectedDisaster && (
           <button
             onClick={() => setIsGoogleMapsModalOpen(true)}
-            title="Cari Faskes Terdekat Google Maps"
+            title={isEn ? 'Find Nearby Facilities on Google Maps' : 'Cari Faskes Terdekat Google Maps'}
             className="map-control-btn px-2.5 py-1.5 text-[11px] font-semibold text-emerald-300 bg-emerald-950/90 hover:bg-emerald-900 border border-emerald-700/80 rounded-lg shadow-lg transition-colors flex items-center gap-1.5 whitespace-nowrap"
           >
             <MapPin className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Faskes Google Maps</span>
+            <span>{isEn ? 'Google Maps Facilities' : 'Faskes Google Maps'}</span>
           </button>
         )}
       </div>
@@ -1021,7 +1025,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
               showDisasters ? 'bg-red-950/80 text-red-200 border border-red-800/80' : 'text-slate-400 hover:text-white'
             }`}
           >
-            Bencana ({disasters.length})
+            {isEn ? 'Disasters' : 'Bencana'} ({disasters.length})
           </button>
           <button
             onClick={() => setShowVolunteers(!showVolunteers)}
@@ -1029,7 +1033,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
               showVolunteers ? 'bg-emerald-950/80 text-emerald-200 border border-emerald-800/80' : 'text-slate-400 hover:text-white'
             }`}
           >
-            Relawan ({volunteers.length})
+            {isEn ? 'Volunteers' : 'Relawan'} ({volunteers.length})
           </button>
           <button
             onClick={() => setShowTasks(!showTasks)}
@@ -1037,7 +1041,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
               showTasks ? 'bg-blue-950/80 text-blue-200 border border-blue-800/80' : 'text-slate-400 hover:text-white'
             }`}
           >
-            Tugas ({tasks.length})
+            {isEn ? 'Tasks' : 'Tugas'} ({tasks.length})
           </button>
 
           {/* Marker Clustering Toggle */}
@@ -1072,7 +1076,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                 activeVolunteerFilter === 'all' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white'
               }`}
             >
-              Semua
+              {isEn ? 'All' : 'Semua'}
             </button>
             <button
               onClick={() => setActiveVolunteerFilter('available')}
@@ -1080,7 +1084,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                 activeVolunteerFilter === 'available' ? 'bg-emerald-900/60 text-emerald-300' : 'text-slate-400 hover:text-white'
               }`}
             >
-              Siaga
+              {isEn ? 'Standby' : 'Siaga'}
             </button>
             <button
               onClick={() => setActiveVolunteerFilter('busy')}
@@ -1088,7 +1092,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                 activeVolunteerFilter === 'busy' ? 'bg-amber-900/60 text-amber-300' : 'text-slate-400 hover:text-white'
               }`}
             >
-              Bertugas
+              {isEn ? 'On Duty' : 'Bertugas'}
             </button>
           </div>
         )}
@@ -1097,11 +1101,11 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       {/* Bottom Map Info Footer */}
       <div className="absolute bottom-3 left-4 right-4 z-20 flex items-center justify-between pointer-events-none text-[11px] text-slate-400 font-mono">
         <div className="bg-slate-950/80 backdrop-blur-sm px-2.5 py-1 rounded border border-slate-800/80 tabular-nums">
-          Pusat: {center.lat.toFixed(4)}°S, {center.lng.toFixed(4)}°E · Zoom {zoom}
-          {clusteringEnabled && clusters ? ` · ${clusters.length} gugus marker aktif` : ''}
+          {isEn ? 'Center' : 'Pusat'}: {center.lat.toFixed(4)}°S, {center.lng.toFixed(4)}°E · Zoom {zoom}
+          {clusteringEnabled && clusters ? ` · ${clusters.length} ${isEn ? 'active marker clusters' : 'gugus marker aktif'}` : ''}
         </div>
         <div className="bg-slate-950/80 backdrop-blur-sm px-2.5 py-1 rounded border border-slate-800/80">
-          Klik gugus angka untuk memperluas marker wilayah
+          {isEn ? 'Click numbered cluster badge to zoom in and inspect area' : 'Klik gugus angka untuk memperluas marker wilayah'}
         </div>
       </div>
 

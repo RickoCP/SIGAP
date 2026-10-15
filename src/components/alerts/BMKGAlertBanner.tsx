@@ -47,7 +47,7 @@ export const BMKGAlertBanner: React.FC<BMKGAlertBannerProps> = ({
                 onClick={onOpenEarlyWarningTab}
                 className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/40 text-[11px] font-bold transition"
               >
-                <span>Buka EWS Publik & Evakuasi &gt;</span>
+                <span>{language === 'id' ? 'Buka EWS Publik & Evakuasi >' : 'Open Public EWS & Evacuation >'}</span>
               </button>
             )}
             <span className="text-[11px] text-amber-400/80 hidden lg:inline font-mono tabular-nums">
@@ -74,7 +74,7 @@ export const BMKGAlertBanner: React.FC<BMKGAlertBannerProps> = ({
                 <div className="flex items-center justify-between text-xs mb-1">
                   <span className="font-semibold text-amber-200">{a.eventType}</span>
                   <span className="text-[10px] text-amber-400 font-mono tabular-nums">
-                    {new Date(a.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
+                    {new Date(a.timestamp).toLocaleTimeString(language === 'id' ? 'id-ID' : 'en-US', { hour: '2-digit', minute: '2-digit' })} {language === 'id' ? 'WIB' : 'UTC+7'}
                   </span>
                 </div>
                 <p className="text-xs text-amber-100/90 line-clamp-2">{a.title}</p>

@@ -157,7 +157,7 @@ export const GamificationView: React.FC<GamificationViewProps> = ({
             onClick={() => setClaimSuccessMessage(null)}
             className="text-emerald-400 hover:text-white text-xs font-bold px-2 py-1 rounded bg-emerald-900/50"
           >
-            Tutup
+            {language === 'id' ? 'Tutup' : 'Dismiss'}
           </button>
         </div>
       )}
@@ -184,11 +184,13 @@ export const GamificationView: React.FC<GamificationViewProps> = ({
                         ? 'bg-amber-950 text-amber-300 border border-amber-800'
                         : 'bg-emerald-950 text-emerald-300 border border-emerald-800'
                     }`}>
-                      {currentVolunteer.category === 'sar_official' ? '🛡️ Tim SAR Basarnas / Potensi' : '🤝 Masyarakat Umum / Komunitas'}
+                      {currentVolunteer.category === 'sar_official' 
+                        ? (language === 'id' ? '🛡️ Tim SAR Basarnas / Potensi' : '🛡️ Official SAR / Basarnas Unit') 
+                        : (language === 'id' ? '🤝 Masyarakat Umum / Komunitas' : '🤝 General Public / Community Responder')}
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1">
-                    {currentVolunteer.sarUnitOrRole || currentVolunteer.organization || 'Relawan Tanggap Darurat'}
+                    {currentVolunteer.sarUnitOrRole || currentVolunteer.organization || (language === 'id' ? 'Relawan Tanggap Darurat' : 'Emergency Response Volunteer')}
                   </p>
                 </div>
               </div>
@@ -202,7 +204,7 @@ export const GamificationView: React.FC<GamificationViewProps> = ({
                   Level {level} : {levelTitle}
                 </span>
                 <span className="font-mono text-white font-extrabold tabular-nums">
-                  {volunteerPoints} <span className="text-[10px] font-normal text-slate-400">XP Poin</span>
+                  {volunteerPoints} <span className="text-[10px] font-normal text-slate-400">{language === 'id' ? 'XP Poin' : 'XP Points'}</span>
                 </span>
               </div>
               <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
@@ -213,29 +215,39 @@ export const GamificationView: React.FC<GamificationViewProps> = ({
               </div>
               <div className="flex justify-between text-[10px] text-slate-400 font-mono">
                 <span>{volunteerPoints} XP</span>
-                <span>Target Level Berikutnya: {nextLevelPoints} XP</span>
+                <span>{language === 'id' ? `Target Level Berikutnya: ${nextLevelPoints} XP` : `Next Level Target: ${nextLevelPoints} XP`}</span>
               </div>
             </div>
 
             {/* Quick Metrics */}
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                <div className="text-[10px] text-slate-400 uppercase font-semibold">Tugas Selesai</div>
+                <div className="text-[10px] text-slate-400 uppercase font-semibold">
+                  {language === 'id' ? 'Tugas Selesai' : 'Tasks Completed'}
+                </div>
                 <div className="text-xl font-black text-white tabular-nums mt-0.5">{missionsCompleted}</div>
-                <div className="text-[10px] text-emerald-400 mt-0.5">Tervalidasi Koordinator</div>
+                <div className="text-[10px] text-emerald-400 mt-0.5">
+                  {language === 'id' ? 'Tervalidasi Koordinator' : 'Coordinator Validated'}
+                </div>
               </div>
               <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                <div className="text-[10px] text-slate-400 uppercase font-semibold">Jam Pengabdian</div>
-                <div className="text-xl font-black text-white tabular-nums mt-0.5">{hoursContributed} Jam</div>
-                <div className="text-[10px] text-blue-400 mt-0.5">Di Area Merah</div>
+                <div className="text-[10px] text-slate-400 uppercase font-semibold">
+                  {language === 'id' ? 'Jam Pengabdian' : 'Service Hours'}
+                </div>
+                <div className="text-xl font-black text-white tabular-nums mt-0.5">{hoursContributed} {language === 'id' ? 'Jam' : 'Hrs'}</div>
+                <div className="text-[10px] text-blue-400 mt-0.5">
+                  {language === 'id' ? 'Di Area Merah' : 'In Red Zone'}
+                </div>
               </div>
             </div>
 
             {/* Badges Collection */}
             <div>
               <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2.5 flex items-center justify-between">
-                <span>Lencana Kehormatan ({GAMIFICATION_BADGES.length})</span>
-                <span className="text-[10px] text-amber-400 font-mono">Terbuka 3 Lencana</span>
+                <span>{language === 'id' ? `Lencana Kehormatan (${GAMIFICATION_BADGES.length})` : `Honor Badges (${GAMIFICATION_BADGES.length})`}</span>
+                <span className="text-[10px] text-amber-400 font-mono">
+                  {language === 'id' ? 'Terbuka 3 Lencana' : '3 Badges Unlocked'}
+                </span>
               </h4>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 {GAMIFICATION_BADGES.map((badge, idx) => {

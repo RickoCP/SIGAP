@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Plus, MapPin, AlertTriangle } from 'lucide-react';
 import { Disaster, DisasterSeverity, DisasterType } from '../../types/index.ts';
+import { useLanguage } from '../../context/LanguageContext.tsx';
 
 interface CreateDisasterModalProps {
   onClose: () => void;
@@ -11,6 +12,9 @@ export const CreateDisasterModal: React.FC<CreateDisasterModalProps> = ({
   onClose,
   onCreate,
 }) => {
+  const { language } = useLanguage();
+  const isEn = language === 'en';
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<DisasterType>('flood');
@@ -22,7 +26,9 @@ export const CreateDisasterModal: React.FC<CreateDisasterModalProps> = ({
   const [affectedPeople, setAffectedPeople] = useState<number>(1000);
   const [affectedHouseholds, setAffectedHouseholds] = useState<number>(300);
   const [evacuationCenterCount, setEvacuationCenterCount] = useState<number>(2);
-  const [keyNeedsInput, setKeyNeedsInput] = useState<string>('Perahu Karet, Makanan Siap Saji, Selimut');
+  const [keyNeedsInput, setKeyNeedsInput] = useState<string>(
+    isEn ? 'Rubber Boats, Ready-to-eat Meals, Blankets' : 'Perahu Karet, Makanan Siap Saji, Selimut'
+  );
   const [submitting, setSubmitting] = useState(false);
 
   // Preset location helper
@@ -79,7 +85,7 @@ export const CreateDisasterModal: React.FC<CreateDisasterModalProps> = ({
         affectedPeople,
         affectedHouseholds,
         evacuationCenterCount,
-        keyNeeds: needs.length > 0 ? needs : ['Bantuan Medis', 'Logistik Pangan'],
+        keyNeeds: needs.length > 0 ? needs : (isEn ? ['Medical Aid', 'Food Supplies'] : ['Bantuan Medis', 'Logistik Pangan']),
       });
 
       onClose();
@@ -101,10 +107,12 @@ export const CreateDisasterModal: React.FC<CreateDisasterModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-white">
-                Lapor Kejadian Bencana Baru
+                {isEn ? 'Declare New Disaster Operation' : 'Lapor Kejadian Bencana Baru'}
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                Daftarkan kejadian bencana untuk memulai mobilisasi dan koordinasi relawan terpadu
+                {isEn 
+                  ? 'Register a crisis event to initiate coordinated volunteer mobilization and command response'
+                  : 'Daftarkan kejadian bencana untuk memulai mobilisasi dan koordinasi relawan terpadu'}
               </p>
             </div>
           </div>
@@ -119,47 +127,53 @@ export const CreateDisasterModal: React.FC<CreateDisasterModalProps> = ({
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
           <div>
-            <label className="block text-slate-400 mb-1 font-medium">Judul Kejadian Bencana</label>
+            <label className="block text-slate-400 mb-1 font-medium">
+              {isEn ? 'Disaster Operation Title' : 'Judul Kejadian Bencana'}
+            </label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Contoh: Banjir Bandang Luapan Kali Pesanggrahan"
+              placeholder={isEn ? 'e.g. Flash Flood - Kali Pesanggrahan Overflow' : 'Contoh: Banjir Bandang Luapan Kali Pesanggrahan'}
               className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:border-blue-500"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-slate-400 mb-1 font-medium">Jenis Bencana</label>
+              <label className="block text-slate-400 mb-1 font-medium">
+                {isEn ? 'Disaster Hazard Type' : 'Jenis Bencana'}
+              </label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as DisasterType)}
                 className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:border-blue-500 font-mono"
               >
-                <option value="flood">Banjir (Flood)</option>
-                <option value="earthquake">Gempa Bumi (Earthquake)</option>
-                <option value="fire">Kebakaran Permukiman (Fire)</option>
-                <option value="landslide">Tanah Longsor (Landslide)</option>
-                <option value="tsunami">Tsunami</option>
-                <option value="storm">Cuaca Ekstrem / Badai (Storm)</option>
-                <option value="volcanic">Erupsi Gunung Berapi</option>
-                <option value="other">Bencana Lainnya</option>
+                <option value="flood">{isEn ? 'Flood' : 'Banjir (Flood)'}</option>
+                <option value="earthquake">{isEn ? 'Earthquake' : 'Gempa Bumi (Earthquake)'}</option>
+                <option value="fire">{isEn ? 'Wildfire / Urban Fire' : 'Kebakaran Hutan / Permukiman'}</option>
+                <option value="landslide">{isEn ? 'Landslide' : 'Tanah Longsor (Landslide)'}</option>
+                <option value="tsunami">{isEn ? 'Tsunami' : 'Tsunami'}</option>
+                <option value="storm">{isEn ? 'Severe Weather / Storm' : 'Cuaca Ekstrem / Badai (Storm)'}</option>
+                <option value="volcanic">{isEn ? 'Volcanic Eruption' : 'Erupsi Gunung Berapi'}</option>
+                <option value="other">{isEn ? 'Other Hazard' : 'Bencana Lainnya'}</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-slate-400 mb-1 font-medium">Tingkat Keparahan (Severity)</label>
+              <label className="block text-slate-400 mb-1 font-medium">
+                {isEn ? 'Severity Level' : 'Tingkat Keparahan (Severity)'}
+              </label>
               <select
                 value={severity}
                 onChange={(e) => setSeverity(e.target.value as DisasterSeverity)}
                 className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:border-blue-500 font-mono"
               >
-                <option value="critical">Kritis - Tanggap Darurat Utama (Level 1)</option>
-                <option value="high">Tinggi - Kerusakan Parah & Korban (Level 2)</option>
-                <option value="medium">Sedang - Penanganan Posko Wilayah</option>
-                <option value="low">Rendah - Siaga Pemantauan</option>
+                <option value="critical">{isEn ? 'Critical - Level 1 Emergency' : 'Kritis - Tanggap Darurat Utama (Level 1)'}</option>
+                <option value="high">{isEn ? 'High - Level 2 Severe Damage' : 'Tinggi - Kerusakan Parah & Korban (Level 2)'}</option>
+                <option value="medium">{isEn ? 'Medium - Regional Posko Response' : 'Sedang - Penanganan Posko Wilayah'}</option>
+                <option value="low">{isEn ? 'Low - Advisory Standby' : 'Rendah - Siaga Pemantauan'}</option>
               </select>
             </div>
           </div>
@@ -169,7 +183,7 @@ export const CreateDisasterModal: React.FC<CreateDisasterModalProps> = ({
             <div className="flex items-center justify-between">
               <span className="text-slate-400 font-medium flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-blue-400" />
-                Lokasi & Koordinat Geografis
+                {isEn ? 'Geographic Location & Coordinates' : 'Lokasi & Koordinat Geografis'}
               </span>
               <div className="flex items-center gap-1">
                 <button
@@ -197,13 +211,15 @@ export const CreateDisasterModal: React.FC<CreateDisasterModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-slate-400 mb-1">Alamat Lengkap / Wilayah Titik Bencana</label>
+              <label className="block text-slate-400 mb-1">
+                {isEn ? 'Full Address / Hazard Epicenter' : 'Alamat Lengkap / Wilayah Titik Bencana'}
+              </label>
               <input
                 type="text"
                 required
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="Jl. Perintis Kemerdekaan RT 04/RW 02..."
+                placeholder={isEn ? 'e.g. Jl. Perintis Kemerdekaan, Jatinegara...' : 'Jl. Perintis Kemerdekaan RT 04/RW 02...'}
                 className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-white focus:outline-none focus:border-blue-500"
               />
             </div>
@@ -235,12 +251,14 @@ export const CreateDisasterModal: React.FC<CreateDisasterModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-slate-400 mb-1 font-medium">Deskripsi Situasi Lapangan</label>
+            <label className="block text-slate-400 mb-1 font-medium">
+              {isEn ? 'Field Situation Narrative' : 'Deskripsi Situasi Lapangan'}
+            </label>
             <textarea
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Jelaskan dampak awal, ketinggian air / magnitudo gempa, jumlah korban terperangkap..."
+              placeholder={isEn ? 'Describe flood water depth, trapped victims, access road status...' : 'Jelaskan dampak awal, ketinggian air / magnitudo gempa, jumlah korban terperangkap...'}
               className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:border-blue-500"
             />
           </div>
@@ -248,7 +266,9 @@ export const CreateDisasterModal: React.FC<CreateDisasterModalProps> = ({
           {/* Impact estimates */}
           <div className="grid grid-cols-3 gap-3 font-mono tabular-nums">
             <div>
-              <label className="block text-slate-400 mb-1 text-[11px]">Estimasi Terdampak (Jiwa)</label>
+              <label className="block text-slate-400 mb-1 text-[11px]">
+                {isEn ? 'Est. Affected People' : 'Estimasi Terdampak (Jiwa)'}
+              </label>
               <input
                 type="number"
                 value={affectedPeople}
@@ -257,7 +277,9 @@ export const CreateDisasterModal: React.FC<CreateDisasterModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-slate-400 mb-1 text-[11px]">Kepala Keluarga (KK)</label>
+              <label className="block text-slate-400 mb-1 text-[11px]">
+                {isEn ? 'Households (KK)' : 'Kepala Keluarga (KK)'}
+              </label>
               <input
                 type="number"
                 value={affectedHouseholds}
@@ -266,7 +288,9 @@ export const CreateDisasterModal: React.FC<CreateDisasterModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-slate-400 mb-1 text-[11px]">Titik Posko Pengungsi</label>
+              <label className="block text-slate-400 mb-1 text-[11px]">
+                {isEn ? 'Evacuation Shelters' : 'Titik Posko Pengungsi'}
+              </label>
               <input
                 type="number"
                 value={evacuationCenterCount}
@@ -278,13 +302,13 @@ export const CreateDisasterModal: React.FC<CreateDisasterModalProps> = ({
 
           <div>
             <label className="block text-slate-400 mb-1 font-medium">
-              Kebutuhan Logistik Mendesak (pisahkan dengan koma)
+              {isEn ? 'Urgent Supplies Needed (comma separated)' : 'Kebutuhan Logistik Mendesak (pisahkan dengan koma)'}
             </label>
             <input
               type="text"
               value={keyNeedsInput}
               onChange={(e) => setKeyNeedsInput(e.target.value)}
-              placeholder="Perahu Karet, Tenda Pleton, Dapur Umum, P3K, Genset"
+              placeholder={isEn ? 'Rubber Boats, Tents, Soup Kitchen, First Aid Kits' : 'Perahu Karet, Tenda Pleton, Dapur Umum, P3K, Genset'}
               className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:border-blue-500"
             />
           </div>
@@ -296,7 +320,7 @@ export const CreateDisasterModal: React.FC<CreateDisasterModalProps> = ({
               onClick={onClose}
               className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white"
             >
-              Batal
+              {isEn ? 'Cancel' : 'Batal'}
             </button>
             <button
               type="submit"
@@ -304,7 +328,7 @@ export const CreateDisasterModal: React.FC<CreateDisasterModalProps> = ({
               className="px-5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors shadow-sm shadow-blue-600/30 flex items-center gap-1.5"
             >
               <Plus className="w-4 h-4" />
-              {submitting ? 'Menyimpan...' : 'Lapor & Aktifkan Operasi'}
+              {submitting ? (isEn ? 'Saving...' : 'Menyimpan...') : (isEn ? 'Declare & Mobilize' : 'Lapor & Aktifkan Operasi')}
             </button>
           </div>
         </form>

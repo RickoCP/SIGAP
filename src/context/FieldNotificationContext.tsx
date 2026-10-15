@@ -87,6 +87,11 @@ export const FieldNotificationProvider: React.FC<{ children: React.ReactNode }> 
       distKm = calculateDistance(userLat, userLng, task.locationLat, task.locationLng);
     }
 
+    let isEn = false;
+    try {
+      isEn = localStorage.getItem('sigap_language') === 'en';
+    } catch {}
+
     const newNotification: FieldTaskNotification = {
       id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       taskId: task.id,
@@ -94,17 +99,17 @@ export const FieldNotificationProvider: React.FC<{ children: React.ReactNode }> 
       taskDescription: task.description,
       priority: task.priority || 'high',
       requiredSkillCategory: task.requiredSkillCategory || 'sar',
-      requiredSkillName: task.requiredSkillName || 'Penyelamatan & SAR',
+      requiredSkillName: task.requiredSkillName || (isEn ? 'Search & Rescue (SAR)' : 'Penyelamatan & SAR'),
       volunteersNeeded: task.volunteersNeeded || 4,
       disasterId: task.disasterId,
-      disasterTitle: disaster?.title || 'Posko Tanggap Darurat Lapangan',
-      disasterAddress: task.address || disaster?.address || 'Area Bencana Lapangan',
+      disasterTitle: disaster?.title || (isEn ? 'Field Disaster Incident Base' : 'Posko Tanggap Darurat Lapangan'),
+      disasterAddress: task.address || disaster?.address || (isEn ? 'Disaster Incident Area' : 'Area Bencana Lapangan'),
       locationLat: task.locationLat || -6.2251,
       locationLng: task.locationLng || 106.8621,
       distanceKm: distKm,
       timestamp: new Date().toISOString(),
       status: 'unread',
-      source: source || 'Pusdalops Komando Lapangan',
+      source: source || (isEn ? 'Field Command Operations (Pusdalops)' : 'Pusdalops Komando Lapangan'),
       autoExpireAt: Date.now() + 20000, // 20 seconds auto dismiss
     };
 
@@ -167,6 +172,11 @@ export const FieldNotificationProvider: React.FC<{ children: React.ReactNode }> 
 
   // Quick simulation helper
   const simulateIncomingFieldTask = useCallback(() => {
+    let isEn = false;
+    try {
+      isEn = localStorage.getItem('sigap_language') === 'en';
+    } catch {}
+
     const demoScenarios: Array<{
       title: string;
       desc: string;
@@ -178,56 +188,107 @@ export const FieldNotificationProvider: React.FC<{ children: React.ReactNode }> 
       lng: number;
       needed: number;
       disasterTitle: string;
-    }> = [
-      {
-        title: 'Panggilan Cepat: Evakuasi 3 Balita & Lansia Terisolir Genangan',
-        desc: 'Air naik hingga 180cm di Gang Arus RT 05. Dibutuhkan perahu karet LCR & personel bersertifikasi Water Rescue.',
-        skillName: 'Water Rescue & Evakuasi Air',
-        skillCat: 'sar',
-        priority: 'urgent',
-        address: 'Jl. Otista III Gang Arus, Kampung Melayu, Jaktim',
-        lat: -6.2290,
-        lng: 106.8640,
-        needed: 4,
-        disasterTitle: 'Banjir Luapan Sungai Ciliwung',
-      },
-      {
-        title: 'Distribusi Cepat Obat & Oksigen Portabel Posko Pengungsi',
-        desc: 'Warga lansia mengalami sesak nafas dan dehidrasi ringan. Butuh supir ambulans atau motoris taktis pengantar logistik medis.',
-        skillName: 'Pertolongan Pertama Medis & Ambulans',
-        skillCat: 'medical',
-        priority: 'high',
-        address: 'Posko Pengungsian GOR Remaja Otista',
-        lat: -6.2341,
-        lng: 106.8682,
-        needed: 2,
-        disasterTitle: 'Banjir Luapan Sungai Ciliwung',
-      },
-      {
-        title: 'Penyaluran 200 Paket Makanan Hangat Balai Warga',
-        desc: 'Dapur umum induk telah menyelesaikan batch nasi bungkus siap saji. Butuh personel relawan pengantar ke lokasi blok B.',
-        skillName: 'Logistik & Distribusi Dapur Umum',
-        skillCat: 'food',
-        priority: 'medium',
-        address: 'Dapur Umum Balai Warga RW 02 Rawajati',
-        lat: -6.2520,
-        lng: 106.8590,
-        needed: 3,
-        disasterTitle: 'Banjir Luapan Sungai Ciliwung',
-      },
-      {
-        title: 'Bantuan Penanganan Tanah Longsor Akses Jalan Utama',
-        desc: 'Material longsor menutup separuh badan jalan evakuasi. Butuh regu SAR & relawan dengan perkakas cangkul/chainsaw.',
-        skillName: 'Penyelamatan SAR Darat & Reruntuhan',
-        skillCat: 'sar',
-        priority: 'urgent',
-        address: 'Jl. Raya Puncak KM 78 Cisarua, Bogor',
-        lat: -6.6912,
-        lng: 106.9421,
-        needed: 6,
-        disasterTitle: 'Longsor Perbukitan Puncak Bogor',
-      }
-    ];
+    }> = isEn
+      ? [
+          {
+            title: 'Urgent Dispatch: Evacuation of 3 Toddlers & Isolated Elderly',
+            desc: 'Water level reached 180cm in Alley 5. Rubber boats (LCR) and certified Water Rescue personnel required immediately.',
+            skillName: 'Water Rescue & Boat Evacuation',
+            skillCat: 'sar',
+            priority: 'urgent',
+            address: 'Jl. Otista III Gang Arus, East Jakarta',
+            lat: -6.2290,
+            lng: 106.8640,
+            needed: 4,
+            disasterTitle: 'Ciliwung River Overflow Flood',
+          },
+          {
+            title: 'Rapid Distribution: Portable Oxygen & First Aid to Shelter',
+            desc: 'Elderly residents reporting respiratory distress and mild dehydration. Need emergency ambulance driver or tactical motorcycle.',
+            skillName: 'Emergency Medical & Paramedic',
+            skillCat: 'medical',
+            priority: 'high',
+            address: 'GOR Youth Center Evacuation Shelter, Otista',
+            lat: -6.2341,
+            lng: 106.8682,
+            needed: 2,
+            disasterTitle: 'Ciliwung River Overflow Flood',
+          },
+          {
+            title: 'Distribution of 200 Warm Prepared Meal Packs to Community Hall',
+            desc: 'Central field kitchen completed a fresh batch of ready-to-eat meals. Need volunteer couriers to Block B.',
+            skillName: 'Logistics & Community Kitchen',
+            skillCat: 'food',
+            priority: 'medium',
+            address: 'RW 02 Community Kitchen, Rawajati',
+            lat: -6.2520,
+            lng: 106.8590,
+            needed: 3,
+            disasterTitle: 'Ciliwung River Overflow Flood',
+          },
+          {
+            title: 'Emergency Landslide Road Clearing: Main Evacuation Route',
+            desc: 'Debris covering half the road. Need ground SAR team and volunteers equipped with chainsaws and digging tools.',
+            skillName: 'Ground SAR & Collapse Rescue',
+            skillCat: 'sar',
+            priority: 'urgent',
+            address: 'Jl. Raya Puncak KM 78 Cisarua, Bogor',
+            lat: -6.6912,
+            lng: 106.9421,
+            needed: 6,
+            disasterTitle: 'Puncak Mountain Slope Landslide',
+          }
+        ]
+      : [
+          {
+            title: 'Panggilan Cepat: Evakuasi 3 Balita & Lansia Terisolir Genangan',
+            desc: 'Air naik hingga 180cm di Gang Arus RT 05. Dibutuhkan perahu karet LCR & personel bersertifikasi Water Rescue.',
+            skillName: 'Water Rescue & Evakuasi Air',
+            skillCat: 'sar',
+            priority: 'urgent',
+            address: 'Jl. Otista III Gang Arus, Kampung Melayu, Jaktim',
+            lat: -6.2290,
+            lng: 106.8640,
+            needed: 4,
+            disasterTitle: 'Banjir Luapan Sungai Ciliwung',
+          },
+          {
+            title: 'Distribusi Cepat Obat & Oksigen Portabel Posko Pengungsi',
+            desc: 'Warga lansia mengalami sesak nafas dan dehidrasi ringan. Butuh supir ambulans atau motoris taktis pengantar logistik medis.',
+            skillName: 'Pertolongan Pertama Medis & Ambulans',
+            skillCat: 'medical',
+            priority: 'high',
+            address: 'Posko Pengungsian GOR Remaja Otista',
+            lat: -6.2341,
+            lng: 106.8682,
+            needed: 2,
+            disasterTitle: 'Banjir Luapan Sungai Ciliwung',
+          },
+          {
+            title: 'Penyaluran 200 Paket Makanan Hangat Balai Warga',
+            desc: 'Dapur umum induk telah menyelesaikan batch nasi bungkus siap saji. Butuh personel relawan pengantar ke lokasi blok B.',
+            skillName: 'Logistik & Distribusi Dapur Umum',
+            skillCat: 'food',
+            priority: 'medium',
+            address: 'Dapur Umum Balai Warga RW 02 Rawajati',
+            lat: -6.2520,
+            lng: 106.8590,
+            needed: 3,
+            disasterTitle: 'Banjir Luapan Sungai Ciliwung',
+          },
+          {
+            title: 'Bantuan Penanganan Tanah Longsor Akses Jalan Utama',
+            desc: 'Material longsor menutup separuh badan jalan evakuasi. Butuh regu SAR & relawan dengan perkakas cangkul/chainsaw.',
+            skillName: 'Penyelamatan SAR Darat & Reruntuhan',
+            skillCat: 'sar',
+            priority: 'urgent',
+            address: 'Jl. Raya Puncak KM 78 Cisarua, Bogor',
+            lat: -6.6912,
+            lng: 106.9421,
+            needed: 6,
+            disasterTitle: 'Longsor Perbukitan Puncak Bogor',
+          }
+        ];
 
     const pick = demoScenarios[Math.floor(Math.random() * demoScenarios.length)];
     const simulatedTask: Task = {

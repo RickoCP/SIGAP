@@ -162,7 +162,7 @@ export const FieldNotificationBell: React.FC<FieldNotificationBellProps> = ({
                       {n.status === 'accepted' ? (
                         <span className="shrink-0 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30 flex items-center gap-1">
                           <CheckCircle className="w-3 h-3" />
-                          <span>Diterima</span>
+                          <span>{language === 'id' ? 'Diterima' : 'Accepted'}</span>
                         </span>
                       ) : (
                         <button
@@ -190,7 +190,7 @@ export const FieldNotificationBell: React.FC<FieldNotificationBellProps> = ({
                           className="text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1 shrink-0"
                         >
                           <Compass className="w-3 h-3" />
-                          <span>Peta</span>
+                          <span>{language === 'id' ? 'Peta' : 'Map'}</span>
                         </button>
                       )}
                     </div>

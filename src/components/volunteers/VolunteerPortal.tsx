@@ -243,7 +243,7 @@ export const VolunteerPortal: React.FC<VolunteerPortalProps> = ({
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
-              {volunteerInfo.organization || 'Relawan SIGAP'} • {volunteerInfo.city} • Golongan Darah: {volunteerInfo.bloodType || 'O+'}
+              {volunteerInfo.organization || (language === 'id' ? 'Relawan SIGAP' : 'SIGAP Volunteer')} • {volunteerInfo.city} • {language === 'id' ? 'Golongan Darah:' : 'Blood Type:'} {volunteerInfo.bloodType || 'O+'}
             </p>
           </div>
         </div>
@@ -262,7 +262,7 @@ export const VolunteerPortal: React.FC<VolunteerPortalProps> = ({
             }`}
           >
             <span className="w-2 h-2 rounded-full bg-amber-950"></span>
-            <span>Standby</span>
+            <span>{language === 'id' ? 'Siaga' : 'Standby'}</span>
           </button>
           <button
             onClick={() => handleDutyToggle('on_duty')}
@@ -273,7 +273,7 @@ export const VolunteerPortal: React.FC<VolunteerPortalProps> = ({
             }`}
           >
             <span className="w-2 h-2 rounded-full bg-emerald-950"></span>
-            <span>Bertugas</span>
+            <span>{language === 'id' ? 'Bertugas' : 'On Duty'}</span>
           </button>
           <button
             onClick={() => handleDutyToggle('off_duty')}
@@ -284,7 +284,7 @@ export const VolunteerPortal: React.FC<VolunteerPortalProps> = ({
             }`}
           >
             <span className="w-2 h-2 rounded-full bg-slate-400"></span>
-            <span>Istirahat</span>
+            <span>{language === 'id' ? 'Istirahat' : 'Off Duty'}</span>
           </button>
         </div>
       </div>
@@ -377,13 +377,17 @@ export const VolunteerPortal: React.FC<VolunteerPortalProps> = ({
                   <Shield className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-black tracking-wider text-blue-300">KTA RELAWAN SIGAP</h4>
-                  <p className="text-[9px] text-slate-400">BADAN KOORDINASI PENANGGULANGAN BENCANA</p>
+                  <h4 className="text-xs font-black tracking-wider text-blue-300">
+                    {language === 'id' ? 'KTA RELAWAN SIGAP' : 'SIGAP VOLUNTEER ID'}
+                  </h4>
+                  <p className="text-[9px] text-slate-400">
+                    {language === 'id' ? 'BADAN KOORDINASI PENANGGULANGAN BENCANA' : 'DISASTER COORDINATION & RELIEF AGENCY'}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
                 <Check className="w-3 h-3" />
-                <span>AKTIF</span>
+                <span>{language === 'id' ? 'AKTIF' : 'ACTIVE'}</span>
               </div>
             </div>
 
@@ -400,11 +404,17 @@ export const VolunteerPortal: React.FC<VolunteerPortalProps> = ({
                 </div>
               )}
               <div className="min-w-0 space-y-1">
-                <p className="text-[10px] font-semibold text-slate-400">NAMA LENGKAP</p>
+                <p className="text-[10px] font-semibold text-slate-400">
+                  {language === 'id' ? 'NAMA LENGKAP' : 'FULL NAME'}
+                </p>
                 <h3 className="text-sm font-bold text-white leading-tight truncate">{volunteerInfo.name}</h3>
-                <p className="text-[10px] font-semibold text-slate-400 mt-2">ID RELAWAN</p>
+                <p className="text-[10px] font-semibold text-slate-400 mt-2">
+                  {language === 'id' ? 'ID RELAWAN' : 'VOLUNTEER ID'}
+                </p>
                 <p className="text-xs font-mono font-bold text-amber-400">ID-SIGAP-{currentUser?.uid ? currentUser.uid.substring(0, 8).toUpperCase() : '88921B'}</p>
-                <p className="text-[10px] text-slate-400">WILAYAH: <span className="text-slate-200 font-semibold">{volunteerInfo.city}</span></p>
+                <p className="text-[10px] text-slate-400">
+                  {language === 'id' ? 'WILAYAH:' : 'REGION:'} <span className="text-slate-200 font-semibold">{volunteerInfo.city}</span>
+                </p>
               </div>
             </div>
 
@@ -412,12 +422,14 @@ export const VolunteerPortal: React.FC<VolunteerPortalProps> = ({
               <div className="flex items-center gap-2">
                 <QrCode className="w-8 h-8 text-slate-300" />
                 <div className="text-[9px] text-slate-400">
-                  <p>QR Terverifikasi</p>
+                  <p>{language === 'id' ? 'QR Terverifikasi' : 'Verified QR'}</p>
                   <p className="text-slate-300 font-mono">auth.google.sigap</p>
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-[10px] text-slate-400 block">GOLONGAN DARAH</span>
+                <span className="text-[10px] text-slate-400 block">
+                  {language === 'id' ? 'GOLONGAN DARAH' : 'BLOOD TYPE'}
+                </span>
                 <span className="text-sm font-black text-red-400">{volunteerInfo.bloodType || 'O+'}</span>
               </div>
             </div>
@@ -536,8 +548,12 @@ export const VolunteerPortal: React.FC<VolunteerPortalProps> = ({
               <div className="p-4 bg-emerald-950/60 border border-emerald-500/40 rounded-xl text-emerald-300 text-xs flex items-center gap-3 animate-in fade-in">
                 <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
                 <div>
-                  <p className="font-bold">Laporan Lapangan Berhasil Dikirim ke Pusat Komando!</p>
-                  <p className="text-[11px] text-emerald-400/80">Anda mendapatkan +25 XP Poin atas kontribusi informasi situasi lapangan.</p>
+                  <p className="font-bold">
+                    {language === 'id' ? 'Laporan Lapangan Berhasil Dikirim ke Pusat Komando!' : 'Field Report Successfully Transmitted to Command Center!'}
+                  </p>
+                  <p className="text-[11px] text-emerald-400/80">
+                    {language === 'id' ? 'Anda mendapatkan +25 XP Poin atas kontribusi informasi situasi lapangan.' : 'You earned +25 XP Points for contributing ground intelligence.'}
+                  </p>
                 </div>
               </div>
             ) : (
@@ -566,9 +582,9 @@ export const VolunteerPortal: React.FC<VolunteerPortalProps> = ({
                       onChange={e => setReportUrgency(e.target.value as any)}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
                     >
-                      <option value="darurat">🚨 Darurat (Perlu Evakuasi Cepat)</option>
-                      <option value="tinggi">⚠️ Tinggi (Kekurangan Logistik/Medis)</option>
-                      <option value="sedang">ℹ️ Sedang (Pemantauan Rutin)</option>
+                      <option value="darurat">{language === 'id' ? '🚨 Darurat (Perlu Evakuasi Cepat)' : '🚨 Urgent (Immediate Evacuation)'}</option>
+                      <option value="tinggi">{language === 'id' ? '⚠️ Tinggi (Kekurangan Logistik/Medis)' : '⚠️ High (Logistics / Medical Shortage)'}</option>
+                      <option value="sedang">{language === 'id' ? 'ℹ️ Sedang (Pemantauan Rutin)' : 'ℹ️ Moderate (Routine Monitoring)'}</option>
                     </select>
                   </div>
                 </div>
@@ -579,7 +595,7 @@ export const VolunteerPortal: React.FC<VolunteerPortalProps> = ({
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Perahu karet 2 unit, air mineral 20 dus, selimut bayi"
+                    placeholder={language === 'id' ? 'Contoh: Perahu karet 2 unit, air mineral 20 dus, selimut bayi' : 'e.g. 2 rubber boats, 20 cases of bottled water, baby blankets'}
                     value={reportNeeds}
                     onChange={e => setReportNeeds(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
@@ -593,7 +609,7 @@ export const VolunteerPortal: React.FC<VolunteerPortalProps> = ({
                   <textarea
                     required
                     rows={3}
-                    placeholder="Laporkan kondisi air, korban yang terisolir, hambatan akses jalan, atau kendala lapangan lainnya..."
+                    placeholder={language === 'id' ? 'Laporkan kondisi air, korban yang terisolir, hambatan akses jalan, atau kendala lapangan lainnya...' : 'Report water depth, isolated survivors, road blockage, or other field challenges...'}
                     value={reportDescription}
                     onChange={e => setReportDescription(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
@@ -607,7 +623,7 @@ export const VolunteerPortal: React.FC<VolunteerPortalProps> = ({
                     className="flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-red-600/30 disabled:opacity-50"
                   >
                     <Send className="w-4 h-4" />
-                    <span>{submittingReport ? 'Mengirim...' : (language === 'id' ? 'Kirim ke Posko Komando' : 'Send to Command Post')}</span>
+                    <span>{submittingReport ? (language === 'id' ? 'Mengirim...' : 'Sending...') : (language === 'id' ? 'Kirim ke Posko Komando' : 'Send to Command Post')}</span>
                   </button>
                 </div>
               </form>

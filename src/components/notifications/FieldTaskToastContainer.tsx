@@ -257,7 +257,7 @@ const FieldTaskToastCard: React.FC<FieldTaskToastCardProps> = ({
               className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-950/50 transition-all active:scale-95 disabled:opacity-50"
             >
               <CheckCircle className="w-3.5 h-3.5" />
-              <span>{isAccepting ? 'Memproses...' : `${t.fieldToastAccept} (+35 XP)`}</span>
+              <span>{isAccepting ? (language === 'id' ? 'Memproses...' : 'Processing...') : `${t.fieldToastAccept} (+35 XP)`}</span>
             </button>
 
             <button

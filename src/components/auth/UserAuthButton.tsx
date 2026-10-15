@@ -190,11 +190,15 @@ export const UserAuthButton: React.FC<UserAuthButtonProps> = ({
             {userProfile?.isVolunteer ? (
               <div className="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
                 <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="text-slate-400 font-medium">Status Siaga Lapangan:</span>
+                  <span className="text-slate-400 font-medium">
+                    {language === 'id' ? 'Status Siaga Lapangan:' : 'Field Readiness Status:'}
+                  </span>
                   <span className="font-bold text-emerald-400">
                     {userProfile.volunteerData?.dutyStatus === 'on_duty' 
-                      ? 'Sedang Bertugas' 
-                      : (userProfile.volunteerData?.dutyStatus === 'standby' ? 'Siaga (Standby)' : 'Istirahat')}
+                      ? (language === 'id' ? 'Sedang Bertugas' : 'On Duty') 
+                      : (userProfile.volunteerData?.dutyStatus === 'standby' 
+                          ? (language === 'id' ? 'Siaga (Standby)' : 'Standby') 
+                          : (language === 'id' ? 'Istirahat' : 'Off Duty'))}
                   </span>
                 </div>
                 {/* Duty Switcher */}
@@ -207,7 +211,7 @@ export const UserAuthButton: React.FC<UserAuthButtonProps> = ({
                         : 'bg-slate-800 text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    Siaga
+                    {language === 'id' ? 'Siaga' : 'Standby'}
                   </button>
                   <button
                     onClick={() => updateDutyStatus('on_duty')}
@@ -217,7 +221,7 @@ export const UserAuthButton: React.FC<UserAuthButtonProps> = ({
                         : 'bg-slate-800 text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    Tugas
+                    {language === 'id' ? 'Tugas' : 'Duty'}
                   </button>
                   <button
                     onClick={() => updateDutyStatus('off_duty')}
@@ -227,7 +231,7 @@ export const UserAuthButton: React.FC<UserAuthButtonProps> = ({
                         : 'bg-slate-800 text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    Off
+                    {language === 'id' ? 'Istirahat' : 'Off'}
                   </button>
                 </div>
               </div>
@@ -256,7 +260,7 @@ export const UserAuthButton: React.FC<UserAuthButtonProps> = ({
                 <span>{language === 'id' ? 'Kartu ID & Misi Relawan' : 'Volunteer ID & Tasks'}</span>
               </span>
               <span className="text-[10px] text-amber-400 font-bold bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-800/40">
-                {userProfile?.volunteerData?.points || 0} Poin
+                {userProfile?.volunteerData?.points || 0} {language === 'id' ? 'Poin' : 'Pts'}
               </span>
             </button>
           </div>
@@ -289,7 +293,7 @@ export const UserAuthButton: React.FC<UserAuthButtonProps> = ({
               >
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-slate-400"></span>
-                  <span>1. Umum / Publik</span>
+                  <span>{language === 'id' ? '1. Umum / Publik' : '1. General Public'}</span>
                 </span>
                 {effectiveRole === 'public' && <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />}
               </button>
@@ -304,7 +308,7 @@ export const UserAuthButton: React.FC<UserAuthButtonProps> = ({
               >
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                  <span>2. User Terdaftar (Relawan)</span>
+                  <span>{language === 'id' ? '2. User Terdaftar (Relawan)' : '2. Registered Volunteer'}</span>
                 </span>
                 {effectiveRole === 'volunteer' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
               </button>
@@ -319,7 +323,7 @@ export const UserAuthButton: React.FC<UserAuthButtonProps> = ({
               >
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-red-400"></span>
-                  <span>3. Koordinator / Tim Berwenang</span>
+                  <span>{language === 'id' ? '3. Koordinator / Tim Berwenang' : '3. Command Coordinator'}</span>
                 </span>
                 {effectiveRole === 'coordinator' && <CheckCircle2 className="w-3.5 h-3.5 text-red-400" />}
               </button>

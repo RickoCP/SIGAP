@@ -15,6 +15,7 @@ import {
 import { Disaster, CitizenSafetyReport } from '../../types/index.ts';
 import { earlyWarningService } from '../../services/earlyWarningService.ts';
 import { useAuth } from '../../context/AuthContext.tsx';
+import { useLanguage } from '../../context/LanguageContext.tsx';
 
 interface CitizenSafetyCheckinModalProps {
   disasters: Disaster[];
@@ -31,6 +32,8 @@ export const CitizenSafetyCheckinModal: React.FC<CitizenSafetyCheckinModalProps>
   onClose,
   onSuccess
 }) => {
+  const { language } = useLanguage();
+  const isEn = language === 'en';
   const { currentUser, userProfile } = useAuth();
 
   const [status, setStatus] = useState<'safe' | 'needs_evacuation' | 'emergency_trapped'>(initialStatus);
@@ -62,7 +65,7 @@ export const CitizenSafetyCheckinModal: React.FC<CitizenSafetyCheckinModalProps>
         phone,
         familyCount,
         status,
-        locationAddress: locationAddress.trim() || 'Lokasi dalam pantauan darurat',
+        locationAddress: locationAddress.trim() || (isEn ? 'Monitored area' : 'Lokasi dalam pantauan darurat'),
         urgentNeeds
       });
 
@@ -100,102 +103,114 @@ export const CitizenSafetyCheckinModal: React.FC<CitizenSafetyCheckinModalProps>
                 ? 'bg-amber-600 text-white'
                 : 'bg-emerald-600 text-white'
             }`}>
-              <Radio className="w-5 h-5" />
+              {status === 'emergency_trapped' ? (
+                <AlertTriangle className="w-6 h-6" />
+              ) : status === 'needs_evacuation' ? (
+                <Users className="w-6 h-6" />
+              ) : (
+                <ShieldCheck className="w-6 h-6" />
+              )}
             </div>
             <div>
-              <h3 className="font-bold text-base text-white">
-                Lapor Status Keselamatan Warga
+              <h3 className="font-bold text-sm sm:text-base">
+                {isEn ? 'Citizen Evacuation & Safety Check-In' : 'Lapor Status Keselamatan & Evakuasi Warga'}
               </h3>
-              <p className="text-xs text-slate-300">
-                Data terhubung langsung ke Satgas Pusdalops & Posko SAR
+              <p className="text-[11px] opacity-80">
+                {isEn ? 'Real-time telemetry sync with Pusdalops command post' : 'Sinkronisasi langsung ke posko komando Pusdalops'}
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
+            className="p-1 rounded-lg hover:bg-black/20 text-white transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
+        {/* Modal Form */}
         {isSuccess ? (
-          <div className="p-8 text-center space-y-4 text-slate-200">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto shadow-xl">
-              <CheckCircle2 className="w-8 h-8" />
+          <div className="p-8 text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/40">
+              <CheckCircle2 className="w-10 h-10" />
             </div>
-            <h4 className="text-xl font-bold text-white">
-              Status Keselamatan Berhasil Dilaporkan!
+            <h4 className="font-extrabold text-white text-lg">
+              {isEn ? 'Safety Report Transmitted!' : 'Laporan Keselamatan Terkirim!'}
             </h4>
-            <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
-              Laporan Anda telah tercatat pada Pusat Komando Penanggulangan Bencana. Tim relawan di lapangan memantau posisi dan kebutuhan Anda.
+            <p className="text-xs text-slate-300 max-w-sm mx-auto leading-relaxed">
+              {isEn
+                ? 'Your safety status has been logged into the incident command board. Stay calm and head to the nearest verified shelter.'
+                : 'Data status Anda telah dicatat di dasbor pemantauan posko komando. Tetap tenang dan ikuti arahan petugas menuju shelter aman.'}
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="p-5 space-y-4 text-slate-200">
+          <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 text-xs">
             
-            {/* Status Selector Pills */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-2">
-                Pilih Kondisi Anda Saat Ini:
+            {/* Status Selector */}
+            <div className="space-y-2">
+              <label className="font-bold text-slate-300 block">
+                {isEn ? 'Choose Your Current Condition:' : 'Pilih Kondisi Anda Saat Ini:'}
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => setStatus('safe')}
-                  className={`p-3 rounded-xl border text-center transition flex flex-col items-center gap-1 ${
+                  className={`p-3 rounded-xl border text-left font-bold transition flex flex-col justify-between ${
                     status === 'safe'
-                      ? 'bg-emerald-950/80 border-emerald-500 text-white shadow-lg shadow-emerald-950/50'
+                      ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200 ring-1 ring-emerald-500'
                       : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
                   }`}
                 >
-                  <span className="text-lg">🟢</span>
-                  <span className="text-xs font-bold text-emerald-400">Saya Selamat</span>
-                  <span className="text-[10px] text-slate-400">Kondisi aman</span>
+                  <span className="text-sm">🟢 {isEn ? 'Safe' : 'Selamat'}</span>
+                  <span className="text-[10px] font-normal opacity-80 mt-1">
+                    {isEn ? 'Safe shelter' : 'Di lokasi aman / tidak terluka'}
+                  </span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setStatus('needs_evacuation')}
-                  className={`p-3 rounded-xl border text-center transition flex flex-col items-center gap-1 ${
+                  className={`p-3 rounded-xl border text-left font-bold transition flex flex-col justify-between ${
                     status === 'needs_evacuation'
-                      ? 'bg-amber-950/80 border-amber-500 text-white shadow-lg shadow-amber-950/50'
+                      ? 'bg-amber-950/80 border-amber-500 text-amber-200 ring-1 ring-amber-500'
                       : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
                   }`}
                 >
-                  <span className="text-lg">🟡</span>
-                  <span className="text-xs font-bold text-amber-400">Butuh Evakuasi</span>
-                  <span className="text-[10px] text-slate-400">Lansia/medis/anak</span>
+                  <span className="text-sm">🟡 {isEn ? 'Need Evac' : 'Butuh Evakuasi'}</span>
+                  <span className="text-[10px] font-normal opacity-80 mt-1">
+                    {isEn ? 'Elderly/Infants/Sick' : 'Ada lansia, balita, atau sakit'}
+                  </span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setStatus('emergency_trapped')}
-                  className={`p-3 rounded-xl border text-center transition flex flex-col items-center gap-1 ${
+                  className={`p-3 rounded-xl border text-left font-bold transition flex flex-col justify-between ${
                     status === 'emergency_trapped'
-                      ? 'bg-red-950/80 border-red-500 text-white shadow-lg shadow-red-950/50 animate-pulse'
+                      ? 'bg-red-950/80 border-red-500 text-red-200 ring-1 ring-red-500 animate-pulse'
                       : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
                   }`}
                 >
-                  <span className="text-lg">🔴</span>
-                  <span className="text-xs font-bold text-red-400">SOS Terjebak</span>
-                  <span className="text-[10px] text-slate-400">Arus/reruntuhan</span>
+                  <span className="text-sm">🔴 {isEn ? 'Urgent SOS' : 'SOS Terjebak'}</span>
+                  <span className="text-[10px] font-normal opacity-80 mt-1">
+                    {isEn ? 'Need rescue boat/SAR' : 'Terkepung arus / reruntuhan'}
+                  </span>
                 </button>
               </div>
             </div>
 
             {/* Target Disaster */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Wilayah Bencana Terkait:
+            <div className="space-y-1.5">
+              <label className="font-semibold text-slate-300 block">
+                {isEn ? 'Disaster Incident:' : 'Kejadian Bencana:'}
               </label>
               <select
                 value={selectedDisasterId}
                 onChange={(e) => setSelectedDisasterId(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+                className="w-full py-2.5 px-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-blue-500"
               >
-                {disasters.map((d) => (
+                {disasters.map(d => (
                   <option key={d.id} value={d.id}>
                     {d.title} ({d.province})
                   </option>
@@ -203,114 +218,113 @@ export const CitizenSafetyCheckinModal: React.FC<CitizenSafetyCheckinModalProps>
               </select>
             </div>
 
-            {/* Citizen Details */}
+            {/* Name & Phone */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Nama Anda / Kepala Keluarga:
+              <div className="space-y-1.5">
+                <label className="font-semibold text-slate-300 block">
+                  {isEn ? 'Full Name / Head of Household *' : 'Nama Lengkap / Kepala Keluarga *'}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Contoh: Bpk. Bambang Supriyanto"
                   value={citizenName}
                   onChange={(e) => setCitizenName(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                  placeholder={isEn ? 'e.g. Budi Santoso' : 'contoh: Budi Santoso'}
+                  className="w-full py-2.5 px-3 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Nomor HP / WhatsApp Aktif:
+              <div className="space-y-1.5">
+                <label className="font-semibold text-slate-300 block">
+                  {isEn ? 'WhatsApp Phone Number *' : 'Nomor Handphone / WhatsApp *'}
                 </label>
                 <input
                   type="tel"
-                  placeholder="Contoh: 08123456789"
+                  required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                  placeholder="0812-xxxx-xxxx"
+                  className="w-full py-2.5 px-3 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Jumlah Jiwa (Keluarga):
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="50"
-                  value={familyCount}
-                  onChange={(e) => setFamilyCount(Number(e.target.value))}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Lokasi / Posisi Terkini:
-                </label>
-                <input
-                  type="text"
-                  placeholder="Contoh: Lantai 2 Rumah No. 12 RT 03/02 atau Posko Balai Desa"
-                  value={locationAddress}
-                  onChange={(e) => setLocationAddress(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                />
-              </div>
-            </div>
-
-            {/* Urgent Needs note */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Kebutuhan Darurat Khusus (Obat, Susu Bayi, Perahu, dll.):
+            {/* Family Members Count */}
+            <div className="space-y-1.5">
+              <label className="font-semibold text-slate-300 block">
+                {isEn ? 'Number of Family Members in Your Group:' : 'Jumlah Jiwa Anggota Keluarga Bersama Anda:'}
               </label>
-              <textarea
-                rows={2}
-                placeholder="Contoh: Butuh perahu evakuasi untuk 1 lansia stroke dan tabung oksigen..."
-                value={urgentNeeds}
-                onChange={(e) => setUrgentNeeds(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
+              <div className="flex items-center gap-2">
+                {[1, 2, 3, 4, 5, 6].map(num => (
+                  <button
+                    key={num}
+                    type="button"
+                    onClick={() => setFamilyCount(num)}
+                    className={`flex-1 py-2 rounded-xl font-bold border transition ${
+                      familyCount === num
+                        ? 'bg-blue-600 text-white border-blue-500'
+                        : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+                    }`}
+                  >
+                    {num === 6 ? '6+' : num}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Address / Landmark */}
+            <div className="space-y-1.5">
+              <label className="font-semibold text-slate-300 block">
+                {isEn ? 'Exact Address / Landmark / Floor Position:' : 'Alamat / Titik Posisi Saat Ini:'}
+              </label>
+              <input
+                type="text"
+                value={locationAddress}
+                onChange={(e) => setLocationAddress(e.target.value)}
+                placeholder={isEn ? 'e.g. RT 04/RW 02 Kampung Melayu, 2nd floor roof' : 'contoh: RT 04/RW 02 Kampung Melayu, lantai 2 dekat masjid'}
+                className="w-full py-2.5 px-3 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
               />
             </div>
 
-            {/* Submit Button */}
-            <div className="pt-2 flex items-center justify-between gap-3">
+            {/* Urgent Needs (if any) */}
+            <div className="space-y-1.5">
+              <label className="font-semibold text-slate-300 block">
+                {isEn ? 'Urgent Needs (Infant milk, insulin, rescue boat):' : 'Kebutuhan Mendesak (Susu bayi, insulin, perahu karet):'}
+              </label>
+              <textarea
+                rows={2}
+                value={urgentNeeds}
+                onChange={(e) => setUrgentNeeds(e.target.value)}
+                placeholder={isEn ? 'Explain any medical conditions or supplies needed...' : 'Jelaskan jika ada anggota keluarga luka atau membutuhkan obat khusus...'}
+                className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition"
+                className="py-2.5 px-4 rounded-xl text-slate-400 hover:text-white font-semibold transition"
               >
-                Batal
+                {isEn ? 'Cancel' : 'Batal'}
               </button>
 
               <button
                 type="submit"
-                disabled={isSubmitting || !citizenName.trim()}
-                className={`flex-1 py-2.5 px-5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 ${
-                  status === 'emergency_trapped'
-                    ? 'bg-red-600 hover:bg-red-500 text-white shadow-red-950/40'
-                    : status === 'needs_evacuation'
-                    ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-amber-950/40'
-                    : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950/40'
-                }`}
+                disabled={isSubmitting}
+                className="py-2.5 px-5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition flex items-center gap-2 shadow-lg shadow-blue-600/30"
               >
-                {isSubmitting ? (
-                  <span>Mengirim Laporan...</span>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    <span>Kirim Laporan Status Keselamatan</span>
-                  </>
-                )}
+                <Send className="w-4 h-4" />
+                <span>
+                  {isSubmitting 
+                    ? (isEn ? 'Submitting...' : 'Mengirimkan...') 
+                    : (isEn ? 'Transmit Safety Check-In' : 'Kirim Laporan Keselamatan')}
+                </span>
               </button>
             </div>
-
           </form>
         )}
-
       </div>
     </div>
   );

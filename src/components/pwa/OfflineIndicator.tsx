@@ -1,6 +1,7 @@
 import React from 'react';
 import { WifiOff, Database, MapPin, HardDrive, RefreshCw } from 'lucide-react';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus.ts';
+import { useLanguage } from '../../context/LanguageContext.tsx';
 
 interface OfflineIndicatorProps {
   onOpenCacheManager?: () => void;
@@ -12,6 +13,8 @@ export const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({
   cachedTilesCount = 0,
 }) => {
   const { isOnline, connectionInfo } = useOnlineStatus();
+  const { language } = useLanguage();
+  const isEn = language === 'en';
 
   if (isOnline && connectionInfo.effectiveType !== 'slow-2g' && connectionInfo.effectiveType !== '2g') {
     return null;
@@ -21,7 +24,7 @@ export const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({
 
   return (
     <aside
-      aria-label="Status Konektivitas Jaringan Bencana"
+      aria-label={isEn ? 'Field Disaster Network Connectivity Status' : 'Status Konektivitas Jaringan Bencana'}
       className="fixed bottom-4 left-4 z-50 max-w-md w-[calc(100vw-2rem)] sm:w-auto"
     >
       <div
@@ -42,14 +45,20 @@ export const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold tracking-tight text-white">
-                {!isOnline ? 'Mode Offline Lapangan (Zona Tanpa Sinyal)' : 'Koneksi Rendah Terdeteksi'}
+                {!isOnline 
+                  ? (isEn ? 'Field Offline Mode (Zero Signal Zone)' : 'Mode Offline Lapangan (Zona Tanpa Sinyal)') 
+                  : (isEn ? 'Weak Cellular Signal Detected' : 'Koneksi Rendah Terdeteksi')}
               </span>
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
             </div>
             <p className="text-[11px] opacity-90 truncate">
               {!isOnline
-                ? `Peta taktis & data posko aktif dari cache Service Worker (${cachedTilesCount > 0 ? `${cachedTilesCount} tile tersimpan` : 'Lokal'})`
-                : `Jaringan lemah (${connectionInfo.effectiveType?.toUpperCase() || '2G'}). Mengutamakan cache offline.`}
+                ? (isEn 
+                    ? `Tactical maps & shelter data served from Service Worker cache (${cachedTilesCount > 0 ? `${cachedTilesCount} tiles cached` : 'Local'})`
+                    : `Peta taktis & data posko aktif dari cache Service Worker (${cachedTilesCount > 0 ? `${cachedTilesCount} tile tersimpan` : 'Lokal'})`)
+                : (isEn
+                    ? `Weak network (${connectionInfo.effectiveType?.toUpperCase() || '2G'}). Prioritizing offline cache.`
+                    : `Jaringan lemah (${connectionInfo.effectiveType?.toUpperCase() || '2G'}). Mengutamakan cache offline.`)}
             </p>
           </div>
         </div>
@@ -59,7 +68,7 @@ export const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({
             onClick={onOpenCacheManager}
             className="shrink-0 px-2.5 py-1 text-xs font-semibold rounded-lg bg-amber-750 hover:bg-amber-700 text-white border border-amber-500/40 transition whitespace-nowrap shadow-sm"
           >
-            Kelola Peta
+            {isEn ? 'Manage Maps' : 'Kelola Peta'}
           </button>
         )}
       </div>

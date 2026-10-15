@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Plus, MapPin, Users, Award } from 'lucide-react';
 import { Task, Disaster, SkillCategory, TaskPriority } from '../../types/index.ts';
 import { SEED_SKILLS } from '../../data/seedData.ts';
+import { useLanguage } from '../../context/LanguageContext.tsx';
 
 interface CreateTaskModalProps {
   disasters: Disaster[];
@@ -16,6 +17,9 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
   onClose,
   onCreate,
 }) => {
+  const { language } = useLanguage();
+  const isEn = language === 'en';
+
   const [disasterId, setDisasterId] = useState<string>(
     defaultDisasterId || (disasters[0]?.id ?? '')
   );
@@ -24,7 +28,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
   const [selectedSkillId, setSelectedSkillId] = useState<string>('skill-sar-1');
   const [priority, setPriority] = useState<TaskPriority>('high');
   const [volunteersNeeded, setVolunteersNeeded] = useState<number>(4);
-  const [targetCompletionTime, setTargetCompletionTime] = useState<string>('3 jam');
+  const [targetCompletionTime, setTargetCompletionTime] = useState<string>(isEn ? '3 hours' : '3 jam');
   const [address, setAddress] = useState('');
   const [locationLat, setLocationLat] = useState<number>(-6.2251);
   const [locationLng, setLocationLng] = useState<number>(106.8621);
@@ -58,7 +62,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
         priority,
         volunteersNeeded,
         targetCompletionTime,
-        address: address || 'Posko Utama Lapangan',
+        address: address || (isEn ? 'Main Field Base (Posko)' : 'Posko Utama Lapangan'),
         locationLat,
         locationLng,
       });
@@ -81,10 +85,12 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-white">
-                Buat Tugas Penugasan Lapangan
+                {isEn ? 'Create Field Mission Task' : 'Buat Tugas Penugasan Lapangan'}
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                Definisikan kebutuhan tugas spesifik agar dapat langsung dicocokkan dengan relawan yang tersedia
+                {isEn 
+                  ? 'Define specific task needs so they can be matched with available volunteers immediately'
+                  : 'Definisikan kebutuhan tugas spesifik agar dapat langsung dicocokkan dengan relawan yang tersedia'}
               </p>
             </div>
           </div>
@@ -99,7 +105,9 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
           <div>
-            <label className="block text-slate-400 mb-1 font-medium">Bencana Terkait</label>
+            <label className="block text-slate-400 mb-1 font-medium">
+              {isEn ? 'Related Disaster Operation' : 'Bencana Terkait'}
+            </label>
             <select
               value={disasterId}
               onChange={(e) => handleDisasterChange(e.target.value)}
@@ -114,31 +122,37 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-slate-400 mb-1 font-medium">Judul Tugas Penugasan</label>
+            <label className="block text-slate-400 mb-1 font-medium">
+              {isEn ? 'Task Title' : 'Judul Tugas Penugasan'}
+            </label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Contoh: Evakuasi Lansia Terjebak via Perahu Karet di RW 03"
+              placeholder={isEn ? 'e.g. Evacuate elderly residents via rubber boats in Sector 3' : 'Contoh: Evakuasi Lansia Terjebak via Perahu Karet di RW 03'}
               className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:border-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-slate-400 mb-1 font-medium">Deskripsi Lengkap & Instruksi</label>
+            <label className="block text-slate-400 mb-1 font-medium">
+              {isEn ? 'Detailed Instructions & Description' : 'Deskripsi Lengkap & Instruksi'}
+            </label>
             <textarea
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Jelaskan titik sasaran, kendala medan, peralatan yang harus dibawa..."
+              placeholder={isEn ? 'Detail target coordinates, obstacles, gear required...' : 'Jelaskan titik sasaran, kendala medan, peralatan yang harus dibawa...'}
               className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:border-blue-500"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-slate-400 mb-1 font-medium">Keahlian yang Dibutuhkan</label>
+              <label className="block text-slate-400 mb-1 font-medium">
+                {isEn ? 'Required Skill Certification' : 'Keahlian yang Dibutuhkan'}
+              </label>
               <select
                 value={selectedSkillId}
                 onChange={(e) => setSelectedSkillId(e.target.value)}
@@ -153,23 +167,27 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-slate-400 mb-1 font-medium">Prioritas Tugas</label>
+              <label className="block text-slate-400 mb-1 font-medium">
+                {isEn ? 'Task Priority' : 'Prioritas Tugas'}
+              </label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as TaskPriority)}
                 className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:border-blue-500 font-mono"
               >
-                <option value="urgent">Mendesak (Urgent) - Penyelamatan Jiwa</option>
-                <option value="high">Tinggi (High) - Kebutuhan Pokok Posko</option>
-                <option value="medium">Sedang (Medium) - Dukungan Operasional</option>
-                <option value="low">Rendah (Low) - Inventori & Pembersihan</option>
+                <option value="urgent">{isEn ? 'Urgent - Life Saving / Immediate Evacuation' : 'Mendesak (Urgent) - Penyelamatan Jiwa'}</option>
+                <option value="high">{isEn ? 'High - Essential Relief Support' : 'Tinggi (High) - Kebutuhan Pokok Posko'}</option>
+                <option value="medium">{isEn ? 'Medium - Field Operations' : 'Sedang (Medium) - Dukungan Operasional'}</option>
+                <option value="low">{isEn ? 'Low - Logistics & Camp Cleanup' : 'Rendah (Low) - Inventori & Pembersihan'}</option>
               </select>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono tabular-nums">
             <div>
-              <label className="block text-slate-400 mb-1">Jumlah Relawan Dibutuhkan</label>
+              <label className="block text-slate-400 mb-1">
+                {isEn ? 'Number of Volunteers Needed' : 'Jumlah Relawan Dibutuhkan'}
+              </label>
               <input
                 type="number"
                 min="1"
@@ -181,12 +199,14 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-slate-400 mb-1">Target Waktu Penyelesaian</label>
+              <label className="block text-slate-400 mb-1">
+                {isEn ? 'Target Completion Time' : 'Target Waktu Penyelesaian'}
+              </label>
               <input
                 type="text"
                 value={targetCompletionTime}
                 onChange={(e) => setTargetCompletionTime(e.target.value)}
-                placeholder="2 jam / 4 jam / 1 hari"
+                placeholder={isEn ? '2 hours / 4 hours / 1 day' : '2 jam / 4 jam / 1 hari'}
                 className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white"
               />
             </div>
@@ -196,16 +216,18 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
           <div className="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800 space-y-3">
             <span className="text-slate-400 font-medium flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-blue-400" />
-              Lokasi Titik Tugas
+              {isEn ? 'Task Location Details' : 'Lokasi Titik Tugas'}
             </span>
 
             <div>
-              <label className="block text-slate-400 mb-1">Alamat Sasaran Tugas</label>
+              <label className="block text-slate-400 mb-1">
+                {isEn ? 'Specific Target Address' : 'Alamat Sasaran Tugas'}
+              </label>
               <input
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="Gang Arus RT 08/RW 02, Kampung Melayu..."
+                placeholder={isEn ? 'Jatinegara, East Jakarta...' : 'Gang Arus RT 08/RW 02, Kampung Melayu...'}
                 className="w-full px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-white"
               />
             </div>
@@ -241,7 +263,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
               onClick={onClose}
               className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white"
             >
-              Batal
+              {isEn ? 'Cancel' : 'Batal'}
             </button>
             <button
               type="submit"
@@ -249,7 +271,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
               className="px-5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors shadow-sm shadow-blue-600/30 flex items-center gap-1.5"
             >
               <Plus className="w-4 h-4" />
-              {submitting ? 'Menyimpan...' : 'Terbitkan Tugas'}
+              {submitting ? (isEn ? 'Saving...' : 'Menyimpan...') : (isEn ? 'Dispatch Task' : 'Terbitkan Tugas')}
             </button>
           </div>
         </form>

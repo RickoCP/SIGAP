@@ -50,6 +50,7 @@ export const TacticalLiveTrackingPanel: React.FC<TacticalLiveTrackingPanelProps>
   onToggleCollapse
 }) => {
   const { language, t } = useLanguage();
+  const isEn = language === 'en';
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
@@ -212,7 +213,7 @@ export const TacticalLiveTrackingPanel: React.FC<TacticalLiveTrackingPanelProps>
                             ? 'text-orange-400 bg-orange-950/80' 
                             : 'text-emerald-400 bg-emerald-950/80'
                         }`}>
-                          {isSar ? 'SAR RESMI' : 'RELAWAN WARGA'}
+                          {isSar ? (isEn ? 'OFFICIAL SAR' : 'SAR RESMI') : (isEn ? 'CITIZEN VOLUNTEER' : 'RELAWAN WARGA')}
                         </span>
                       </div>
                     </div>
@@ -226,17 +227,17 @@ export const TacticalLiveTrackingPanel: React.FC<TacticalLiveTrackingPanelProps>
 
                   {/* Mission / Duty pill */}
                   <div className="text-[10px] text-slate-300 bg-slate-900 px-2 py-1 rounded-md border border-slate-800/80 truncate mb-2">
-                    <span className="text-slate-400 font-mono">Tugas:</span> {tel.dutyType}
+                    <span className="text-slate-400 font-mono">{isEn ? 'Duty:' : 'Tugas:'}</span> {tel.dutyType}
                   </div>
 
                   {/* Telemetry Metrics Grid */}
                   <div className="grid grid-cols-3 gap-1 text-[10px] font-mono tabular-nums text-slate-300 mb-2">
                     <div className="bg-slate-900/80 p-1.5 rounded border border-slate-800/60 text-center">
-                      <span className="text-[8px] text-slate-400 block">SPEED</span>
+                      <span className="text-[8px] text-slate-400 block">{isEn ? 'SPEED' : 'KECEPATAN'}</span>
                       <span className="font-bold text-amber-400">{tel.speedKmh} km/h</span>
                     </div>
                     <div className="bg-slate-900/80 p-1.5 rounded border border-slate-800/60 text-center flex flex-col items-center justify-center">
-                      <span className="text-[8px] text-slate-400 block">ARAH</span>
+                      <span className="text-[8px] text-slate-400 block">{isEn ? 'HEADING' : 'ARAH'}</span>
                       <div className="flex items-center gap-0.5 font-bold text-blue-400">
                         <span style={{ display: 'inline-block', transform: `rotate(${tel.headingDeg}deg)` }}>
                           ➤
@@ -245,7 +246,7 @@ export const TacticalLiveTrackingPanel: React.FC<TacticalLiveTrackingPanelProps>
                       </div>
                     </div>
                     <div className="bg-slate-900/80 p-1.5 rounded border border-slate-800/60 text-center">
-                      <span className="text-[8px] text-slate-400 block">BATTERAI</span>
+                      <span className="text-[8px] text-slate-400 block">{isEn ? 'BATTERY' : 'BATERAI'}</span>
                       <span className="font-bold text-emerald-400">{tel.batteryLevel}%</span>
                     </div>
                   </div>
