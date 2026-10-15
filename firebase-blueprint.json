@@ -1,0 +1,176 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with role, volunteer metadata, and activity points",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "description": "User email address" },
+        "displayName": { "type": "string", "description": "Full name of the user" },
+        "photoURL": { "type": "string", "description": "Profile picture URL" },
+        "role": { "type": "string", "enum": ["public", "volunteer", "coordinator"], "description": "System role" },
+        "isVolunteer": { "type": "boolean", "description": "Whether user is registered as a volunteer" },
+        "volunteerStatus": { "type": "string", "enum": ["pending", "verified", "active", "suspended"], "description": "Verification status" },
+        "phone": { "type": "string", "description": "WhatsApp/Phone number" },
+        "skills": { "type": "array", "description": "Disaster response skill sets" },
+        "city": { "type": "string", "description": "City of residence" },
+        "province": { "type": "string", "description": "Province" },
+        "bloodType": { "type": "string", "description": "Blood type" },
+        "emergencyContact": { "type": "string", "description": "Emergency contact name and phone" },
+        "availability": { "type": "string", "description": "Deployment availability" },
+        "points": { "type": "number", "description": "Gamification activity points" },
+        "tier": { "type": "string", "description": "Volunteer rank tier" },
+        "assignedDisasterId": { "type": "string", "description": "ID of active assigned disaster or null" },
+        "createdAt": { "type": "string", "description": "ISO timestamp of registration" },
+        "updatedAt": { "type": "string", "description": "ISO timestamp of last profile update" }
+      },
+      "required": ["id", "email", "role"]
+    },
+    "Disaster": {
+      "title": "Disaster",
+      "description": "Disaster incident tracking record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique disaster ID" },
+        "name": { "type": "string", "description": "Disaster title/name" },
+        "type": { "type": "string", "description": "Disaster type (Gempa, Banjir, Erupsi, etc.)" },
+        "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"], "description": "Severity level" },
+        "status": { "type": "string", "enum": ["active", "contained", "resolved"], "description": "Disaster operational status" },
+        "locationName": { "type": "string", "description": "Location description" },
+        "latitude": { "type": "number", "description": "Latitude coordinate" },
+        "longitude": { "type": "number", "description": "Longitude coordinate" },
+        "affectedCount": { "type": "number", "description": "Estimated victims affected" },
+        "evacuatedCount": { "type": "number", "description": "Number of evacuated victims" },
+        "logisticsNeeded": { "type": "array", "description": "Required logistics items" },
+        "coordinatorName": { "type": "string", "description": "Name of lead coordinator" },
+        "reportedAt": { "type": "string", "description": "Incident report timestamp" },
+        "updatedAt": { "type": "string", "description": "Last status update timestamp" }
+      },
+      "required": ["id", "name", "type", "severity", "status", "locationName"]
+    },
+    "FieldReport": {
+      "title": "FieldReport",
+      "description": "Situation report submitted by registered volunteer or public citizen",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique report ID" },
+        "authorId": { "type": "string", "description": "User UID who submitted the report" },
+        "authorName": { "type": "string", "description": "Author display name" },
+        "disasterId": { "type": "string", "description": "Associated disaster ID" },
+        "locationName": { "type": "string", "description": "Observed location" },
+        "description": { "type": "string", "description": "Observation summary" },
+        "needs": { "type": "string", "description": "Immediate urgent needs" },
+        "urgency": { "type": "string", "enum": ["darurat", "tinggi", "sedang", "info"], "description": "Urgency rating" },
+        "status": { "type": "string", "enum": ["baru", "diverifikasi", "ditindaklanjuti"], "description": "Report status" },
+        "createdAt": { "type": "string", "description": "Timestamp created" }
+      },
+      "required": ["id", "authorId", "authorName", "description", "urgency", "createdAt"]
+    },
+    "Donation": {
+      "title": "Donation",
+      "description": "Public disaster relief donation record for funds or logistics packages",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique donation transaction ID" },
+        "disasterId": { "type": "string", "description": "Associated disaster target ID" },
+        "disasterName": { "type": "string", "description": "Target disaster title" },
+        "donorName": { "type": "string", "description": "Donor name or Anonymous" },
+        "isAnonymous": { "type": "boolean", "description": "Whether donor name is hidden publicly" },
+        "email": { "type": "string", "description": "Donor email for e-receipt" },
+        "phone": { "type": "string", "description": "Donor WhatsApp number" },
+        "amount": { "type": "number", "description": "Donation amount in IDR Rupiah" },
+        "type": { "type": "string", "enum": ["cash", "logistics_package"], "description": "Donation type" },
+        "packageTitle": { "type": "string", "description": "Logistics package name if applicable" },
+        "paymentMethod": { "type": "string", "enum": ["qris", "va_bca", "va_mandiri", "va_bri", "va_bni", "gopay", "ovo", "dana"], "description": "Payment channel used" },
+        "status": { "type": "string", "enum": ["verified", "pending", "allocated"], "description": "Payment verification status" },
+        "prayerMessage": { "type": "string", "description": "Words of encouragement for disaster survivors" },
+        "referenceNumber": { "type": "string", "description": "Official receipt serial reference number" },
+        "createdAt": { "type": "string", "description": "ISO timestamp of transaction" }
+      },
+      "required": ["id", "disasterId", "donorName", "amount", "paymentMethod", "status", "createdAt"]
+    },
+    "CitizenSafetyStatus": {
+      "title": "CitizenSafetyStatus",
+      "description": "Self-reported citizen safety status and emergency evacuation request in disaster zones",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique safety report ID" },
+        "disasterId": { "type": "string", "description": "Associated disaster ID" },
+        "citizenName": { "type": "string", "description": "Citizen/family representative name" },
+        "phone": { "type": "string", "description": "Contact telephone or WhatsApp" },
+        "familyCount": { "type": "number", "description": "Number of family members with reporter" },
+        "status": { "type": "string", "enum": ["safe", "needs_evacuation", "emergency_trapped"], "description": "Current citizen condition" },
+        "locationAddress": { "type": "string", "description": "Physical address description" },
+        "latitude": { "type": "number", "description": "Latitude coordinate" },
+        "longitude": { "type": "number", "description": "Longitude coordinate" },
+        "urgentNeeds": { "type": "string", "description": "Critical emergency assistance required" },
+        "reportedAt": { "type": "string", "description": "ISO timestamp when check-in occurred" }
+      },
+      "required": ["id", "citizenName", "status", "reportedAt"]
+    },
+    "EarlyWarningAlert": {
+      "title": "EarlyWarningAlert",
+      "description": "Public hazard early warning broadcast alert published by authority",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Alert notice ID" },
+        "disasterId": { "type": "string", "description": "Related disaster operation ID" },
+        "title": { "type": "string", "description": "Headline alert notice" },
+        "hazardType": { "type": "string", "description": "Type of disaster threat" },
+        "alertLevel": { "type": "string", "enum": ["awas", "siaga", "waspada", "normal"], "description": "Official BMKG/BNPB level" },
+        "dangerRadiusKm": { "type": "number", "description": "Immediate impact buffer in km" },
+        "locationName": { "type": "string", "description": "Impacted geographic area" },
+        "latitude": { "type": "number", "description": "Epicenter latitude" },
+        "longitude": { "type": "number", "description": "Epicenter longitude" },
+        "soundAlarm": { "type": "boolean", "description": "Whether siren should trigger" },
+        "evacuationAdvice": { "type": "string", "description": "Immediate life-saving instruction" },
+        "issuedAt": { "type": "string", "description": "Timestamp of alert issuance" }
+      },
+      "required": ["id", "title", "hazardType", "alertLevel", "dangerRadiusKm", "issuedAt"]
+    },
+    "Coordinator": {
+      "title": "Coordinator",
+      "description": "Authorized coordinator record granting elevated command privileges",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "User UID with coordinator privileges" },
+        "email": { "type": "string", "description": "Email address" },
+        "role": { "type": "string", "enum": ["lead_coordinator", "field_coordinator", "logistics_officer"], "description": "Coordinator designation" },
+        "assignedBy": { "type": "string", "description": "Who authorized this coordinator" },
+        "assignedAt": { "type": "string", "description": "Timestamp granted" }
+      },
+      "required": ["userId", "email", "role"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User accounts, volunteer profiles, and access tier information"
+    },
+    "/disasters/{disasterId}": {
+      "schema": "Disaster",
+      "description": "Disaster operations, coordinates, and emergency command records"
+    },
+    "/field_reports/{reportId}": {
+      "schema": "FieldReport",
+      "description": "Field situation and urgent logistics requests submitted by responders"
+    },
+    "/donations/{donationId}": {
+      "schema": "Donation",
+      "description": "Public disaster relief donations collected for disaster relief"
+    },
+    "/citizen_safety/{safetyId}": {
+      "schema": "CitizenSafetyStatus",
+      "description": "Public safety check-ins and emergency SOS rescue requests"
+    },
+    "/early_warnings/{warningId}": {
+      "schema": "EarlyWarningAlert",
+      "description": "Active public early warnings and siren hazard notices"
+    },
+    "/coordinators/{userId}": {
+      "schema": "Coordinator",
+      "description": "List of authorized command center coordinators"
+    }
+  }
+}

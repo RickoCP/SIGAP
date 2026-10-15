@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="128" fill="#0f172a"/>
+  <circle cx="256" cy="256" r="210" stroke="#0284c7" stroke-width="20" stroke-opacity="0.6"/>
+  <circle cx="256" cy="256" r="170" fill="#dc2626"/>
+  <!-- Shield and rescue emblem -->
+  <path d="M256 120 L350 160 V260 C350 330 256 390 256 390 C256 390 162 330 162 260 V160 Z" fill="#b91c1c" stroke="#ffffff" stroke-width="12" stroke-linejoin="round"/>
+  <!-- White Cross -->
+  <rect x="236" y="190" width="40" height="120" rx="8" fill="#ffffff"/>
+  <rect x="196" y="230" width="120" height="40" rx="8" fill="#ffffff"/>
+  <!-- Radio wave arcs -->
+  <path d="M120 180 A190 190 0 0 1 120 332" stroke="#38bdf8" stroke-width="14" stroke-linecap="round" fill="none"/>
+  <path d="M392 180 A190 190 0 0 0 392 332" stroke="#38bdf8" stroke-width="14" stroke-linecap="round" fill="none"/>
+</svg>

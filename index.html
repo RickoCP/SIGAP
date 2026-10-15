@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SIGAP Koordinator - Sistem Integrasi Gerakan Aksi Peduli</title>
+    <meta name="description" content="Platform AI-powered untuk koordinasi relawan tanggap bencana di Indonesia dengan pencocokan cerdas Gemini AI dan pemetaan taktis." />
+    <meta property="og:title" content="SIGAP Koordinator - Koordinasi Relawan Bencana AI" />
+    <meta property="og:description" content="Platform AI-powered untuk koordinasi relawan tanggap bencana di Indonesia dengan pencocokan cerdas Gemini AI dan pemetaan taktis." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="SIGAP" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+      // Suppress benign Vite HMR websocket disconnect warnings in sandboxed preview iframe
+      window.addEventListener('error', function(e) {
+        if (e.message && (e.message.includes('WebSocket') || e.message.includes('vite') || e.message.includes('closed without opened'))) {
+          e.stopImmediatePropagation();
+        }
+      });
+      window.addEventListener('unhandledrejection', function(e) {
+        var str = String(e.reason && (e.reason.message || e.reason));
+        if (str.includes('WebSocket') || str.includes('vite') || str.includes('closed without opened')) {
+          e.stopImmediatePropagation();
+          e.preventDefault();
+        }
+      });
+    </script>
+  </head>
+  <body class="bg-slate-900 text-slate-100 antialiased font-sans selection:bg-blue-600 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

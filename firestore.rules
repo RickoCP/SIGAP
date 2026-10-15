@@ -1,0 +1,116 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isCoordinator() {
+      return isSignedIn() && (
+        request.auth.token.email == 'ricko.caesar.putra@gmail.com' ||
+        request.auth.token.email == 'admin@bnpb.go.id' ||
+        request.auth.token.email == 'koordinator@sigap.id' ||
+        exists(/databases/$(database)/documents/coordinators/$(request.auth.uid))
+      );
+    }
+
+    // Connection health check document
+    match /test/connection {
+      allow read: if true;
+    }
+
+    // User Profiles & Volunteer Accounts
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      
+      // User can create their own profile upon signing in / registering as volunteer
+      allow create: if isOwner(userId) &&
+        (!('role' in incoming()) || incoming().role in ['public', 'volunteer', 'coordinator']);
+      
+      // User can update their own profile; Coordinators can update roles and verification status
+      allow update: if isOwner(userId) || isCoordinator();
+
+      allow delete: if isCoordinator();
+    }
+
+    // Disasters: Public can read, only Coordinators can create/update/delete
+    match /disasters/{disasterId} {
+      allow read: if true;
+      allow create: if isCoordinator() && isValidId(disasterId) &&
+        (!('name' in incoming()) || incoming().name is string);
+      allow update: if isCoordinator() || (
+        // Allow public donation accumulation (fundsRaised increment)
+        incoming().diff(existing()).affectedKeys().hasOnly(['fundsRaised', 'donationsCount', 'updatedAt'])
+      );
+      allow delete: if isCoordinator();
+    }
+
+    // Field Reports: Anyone can read, signed in users/volunteers can submit
+    match /field_reports/{reportId} {
+      allow read: if true;
+      allow create: if isValidId(reportId) &&
+        (!('authorId' in incoming()) || !isSignedIn() || incoming().authorId == request.auth.uid);
+      allow update: if isSignedIn() && (
+        !('authorId' in existing()) ||
+        resource.data.authorId == request.auth.uid || 
+        isCoordinator()
+      );
+      allow delete: if isCoordinator();
+    }
+
+    // Disaster Donations: Public transparency, public create, coordinator manage
+    match /donations/{donationId} {
+      allow read: if true;
+      allow create: if isValidId(donationId) && 
+        incoming().amount is number && incoming().amount > 0 &&
+        incoming().disasterId is string &&
+        incoming().donorName is string;
+      allow update, delete: if isCoordinator();
+    }
+
+    // Citizen Safety Check-ins & SOS Requests: Public create & read, coordinator manage
+    match /citizen_safety/{safetyId} {
+      allow read: if true;
+      allow create: if isValidId(safetyId) &&
+        incoming().citizenName is string &&
+        incoming().status in ['safe', 'needs_evacuation', 'emergency_trapped'];
+      allow update, delete: if isCoordinator();
+    }
+
+    // Early Warning Hazard Broadcasts: Public read, coordinator manage
+    match /early_warnings/{warningId} {
+      allow read: if true;
+      allow create, update, delete: if isCoordinator();
+    }
+
+    // Coordinators list
+    match /coordinators/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isCoordinator();
+    }
+
+    // Default deny all other documents
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

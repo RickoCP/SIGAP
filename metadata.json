@@ -1,0 +1,6 @@
+{
+  "name": "SIGAP Koordinator",
+  "description": "Platform AI-powered untuk koordinasi relawan tanggap bencana di Indonesia dengan pencocokan cerdas Gemini AI dan pemetaan taktis.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
