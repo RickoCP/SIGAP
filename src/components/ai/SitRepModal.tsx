@@ -57,7 +57,7 @@ export const SitRepModal: React.FC<SitRepModalProps> = ({ disaster, onClose }) =
     if (!report) return;
     const textToCopy = isEn
       ? `OFFICIAL SITUATION REPORT (SITREP - SIGAP)
-Incident: ${disaster.title}
+Incident: ${disaster.titleEn || disaster.title}
 Timestamp: ${new Date().toLocaleString('en-US')}
 Severity Level: ${disaster.severity.toUpperCase()}
 Location: ${disaster.address}

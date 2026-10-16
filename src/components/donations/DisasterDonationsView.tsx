@@ -225,11 +225,11 @@ export const DisasterDonationsView: React.FC<DisasterDonationsViewProps> = ({
                   </div>
 
                   <h3 className="font-bold text-white text-base line-clamp-2 group-hover:text-pink-300 transition">
-                    {disaster.title}
+                    {isEn ? (disaster.titleEn || disaster.title) : disaster.title}
                   </h3>
 
                   <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
-                    {disaster.description}
+                    {isEn ? (disaster.descriptionEn || disaster.description) : disaster.description}
                   </p>
 
                   {/* Funding Progress Bar */}
@@ -313,10 +313,10 @@ export const DisasterDonationsView: React.FC<DisasterDonationsViewProps> = ({
 
                 <div>
                   <h3 className="font-bold text-white text-sm group-hover:text-blue-300 transition">
-                    {pkg.title}
+                    {isEn ? (pkg.titleEn || pkg.title) : pkg.title}
                   </h3>
                   <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                    {pkg.description}
+                    {isEn ? (pkg.descriptionEn || pkg.description) : pkg.description}
                   </p>
                 </div>
 
@@ -325,7 +325,7 @@ export const DisasterDonationsView: React.FC<DisasterDonationsViewProps> = ({
                   <span className="text-[10px] text-slate-500 uppercase font-semibold block">
                     {isEn ? 'Contents of Package:' : 'Isi Paket Logistik:'}
                   </span>
-                  {(pkg.itemsIncluded || []).map((item: string, i: number) => (
+                  {((isEn ? pkg.itemsIncludedEn : null) || pkg.itemsIncluded || []).map((item: string, i: number) => (
                     <div key={i} className="text-xs text-slate-300 flex items-center gap-1.5">
                       <span className="text-blue-400">•</span>
                       <span>{item}</span>
@@ -498,17 +498,21 @@ export const DisasterDonationsView: React.FC<DisasterDonationsViewProps> = ({
 
                     <div className="text-[11px] text-pink-400 font-bold font-mono">
                       Rp {d.amount.toLocaleString(isEn ? 'en-US' : 'id-ID')}
-                      {d.packageTitle && <span className="text-slate-400 font-normal"> ({d.packageTitle})</span>}
+                      {d.packageTitle && (
+                        <span className="text-slate-400 font-normal">
+                          {' '}({isEn ? (d.packageTitleEn || d.packageTitle) : d.packageTitle})
+                        </span>
+                      )}
                     </div>
 
                     {d.prayerMessage && (
                       <p className="text-xs text-slate-300 italic line-clamp-1">
-                        "{d.prayerMessage}"
+                        "{isEn ? (d.prayerMessageEn || d.prayerMessage) : d.prayerMessage}"
                       </p>
                     )}
 
                     <div className="text-[10px] text-slate-500 font-mono">
-                      {d.disasterTitle} • {new Date(d.createdAt).toLocaleDateString(isEn ? 'en-US' : 'id-ID', { day: 'numeric', month: 'short' })}
+                      {isEn ? (d.disasterTitleEn || d.disasterTitle) : d.disasterTitle} • {new Date(d.createdAt).toLocaleDateString(isEn ? 'en-US' : 'id-ID', { day: 'numeric', month: 'short' })}
                     </div>
                   </div>
                 </div>

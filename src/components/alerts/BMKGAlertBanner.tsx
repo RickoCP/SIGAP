@@ -36,7 +36,7 @@ export const BMKGAlertBanner: React.FC<BMKGAlertBannerProps> = ({
             </span>
             <span className="font-semibold text-amber-300 shrink-0">{t.alertBannerEarlyWarning}</span>
             <span className="truncate text-amber-100 font-medium">
-              {primaryAlert.title} · {primaryAlert.location}
+              {language === 'en' ? (primaryAlert.titleEn || primaryAlert.title) : primaryAlert.title} · {primaryAlert.location}
               {primaryAlert.magnitude ? ` (${primaryAlert.magnitude}, ${depthLabel} ${primaryAlert.depth})` : ''}
             </span>
           </div>
@@ -77,7 +77,9 @@ export const BMKGAlertBanner: React.FC<BMKGAlertBannerProps> = ({
                     {new Date(a.timestamp).toLocaleTimeString(language === 'id' ? 'id-ID' : 'en-US', { hour: '2-digit', minute: '2-digit' })} {language === 'id' ? 'WIB' : 'UTC+7'}
                   </span>
                 </div>
-                <p className="text-xs text-amber-100/90 line-clamp-2">{a.title}</p>
+                <p className="text-xs text-amber-100/90 line-clamp-2">
+                  {language === 'en' ? (a.titleEn || a.title) : a.title}
+                </p>
                 <div className="mt-1.5 flex items-center gap-2 text-[11px] text-amber-300/80">
                   <Radio className="w-3 h-3 text-amber-400" />
                   <span className="truncate">{a.location}</span>

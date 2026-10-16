@@ -145,9 +145,9 @@ export const RegionalDisasterHeatmap: React.FC<RegionalDisasterHeatmapProps> = (
                 </span>
                 <span class="text-[11px] font-mono text-slate-400">${p.frequency} ${language === 'id' ? 'Kejadian' : 'Events'}</span>
               </div>
-              <h5 class="font-bold text-xs text-white mb-1">${p.name}</h5>
+              <h5 class="font-bold text-xs text-white mb-1">${language === 'en' ? (p.nameEn || p.name) : p.name}</h5>
               <div class="text-[10px] text-slate-400 mb-2">${p.province} (${p.yearRange})</div>
-              <p class="text-[11px] text-slate-300 leading-snug bg-slate-950/80 p-2 rounded border border-slate-800">${p.description}</p>
+              <p class="text-[11px] text-slate-300 leading-snug bg-slate-950/80 p-2 rounded border border-slate-800">${language === 'en' ? (p.descriptionEn || p.description) : p.description}</p>
             </div>
           `;
 
@@ -382,7 +382,9 @@ export const RegionalDisasterHeatmap: React.FC<RegionalDisasterHeatmapProps> = (
                 }`}>
                   {language === 'id' ? `Zona ${activePoint.riskLevel}` : `${activePoint.riskLevel === 'Kritis' ? 'Critical' : 'High'} Risk Zone`}
                 </span>
-                <h4 className="font-bold text-sm text-white mt-1 leading-snug">{activePoint.name}</h4>
+                <h4 className="font-bold text-sm text-white mt-1 leading-snug">
+                  {language === 'en' ? (activePoint.nameEn || activePoint.name) : activePoint.name}
+                </h4>
                 <div className="text-[11px] text-slate-400">{activePoint.province}</div>
               </div>
               <button
@@ -399,7 +401,7 @@ export const RegionalDisasterHeatmap: React.FC<RegionalDisasterHeatmapProps> = (
             </div>
 
             <p className="text-[11px] text-slate-300 leading-relaxed bg-slate-900/60 p-2 rounded border border-slate-800/80">
-              {activePoint.description}
+              {language === 'en' ? (activePoint.descriptionEn || activePoint.description) : activePoint.description}
             </p>
 
             <button

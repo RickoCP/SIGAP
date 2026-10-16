@@ -22,7 +22,8 @@ import {
 import { Disaster } from '../../types/index.ts';
 import { 
   RealTimeWeatherData, 
-  fetchRealTimeWeather 
+  fetchRealTimeWeather,
+  interpretWmoCode 
 } from '../../services/weatherService.ts';
 
 interface TacticalWeatherPanelProps {

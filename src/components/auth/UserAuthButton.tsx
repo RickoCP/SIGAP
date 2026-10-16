@@ -115,7 +115,7 @@ export const UserAuthButton: React.FC<UserAuthButtonProps> = ({
 
           <div className="hidden sm:flex flex-col">
             <span className="text-xs font-semibold text-slate-200 group-hover:text-white transition-colors leading-tight max-w-[80px] lg:max-w-[110px] truncate">
-              {currentUser.displayName || 'Pengguna Google'}
+              {currentUser.displayName || (language === 'id' ? 'Pengguna Google' : 'Google User')}
             </span>
             <div className="flex items-center gap-1 mt-0.5">
               <span className={`w-1.5 h-1.5 rounded-full ${currentBadge.dot}`}></span>
@@ -173,7 +173,7 @@ export const UserAuthButton: React.FC<UserAuthButtonProps> = ({
             )}
             <div className="flex-1 min-w-0">
               <h4 className="text-sm font-bold text-white truncate">
-                {currentUser?.displayName || 'Pengguna SIGAP'}
+                {currentUser?.displayName || (language === 'id' ? 'Pengguna SIGAP' : 'SIGAP User')}
               </h4>
               <p className="text-xs text-slate-400 truncate">
                 {currentUser?.email}

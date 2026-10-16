@@ -99,10 +99,10 @@ export const VolunteerPortal: React.FC<VolunteerPortalProps> = ({
   };
 
   const volunteerInfo = userProfile?.volunteerData || {
-    name: currentUser?.displayName || 'Relawan Kemanusiaan',
+    name: currentUser?.displayName || (language === 'id' ? 'Relawan Kemanusiaan' : 'Humanitarian Volunteer'),
     phone: '0812-3456-7890',
     city: 'Jakarta',
-    organization: 'Relawan SIGAP Mandiri',
+    organization: language === 'id' ? 'Relawan SIGAP Mandiri' : 'SIGAP Independent Volunteer',
     category: 'public_community' as const,
     skills: [{ skillId: 'skill-med-1', proficiency: 'intermediate' as const }],
     bloodType: 'O+',
@@ -499,15 +499,21 @@ export const VolunteerPortal: React.FC<VolunteerPortalProps> = ({
                       }`}>
                         {t.priority.toUpperCase()}
                       </span>
-                      <h4 className="text-sm font-bold text-slate-200">{t.title}</h4>
+                      <h4 className="text-sm font-bold text-slate-200">
+                        {language === 'en' ? (t.titleEn || t.title) : t.title}
+                      </h4>
                     </div>
-                    <p className="text-xs text-slate-400 line-clamp-1">{t.description}</p>
+                    <p className="text-xs text-slate-400 line-clamp-1">
+                      {language === 'en' ? (t.descriptionEn || t.description) : t.description}
+                    </p>
                     <div className="flex items-center gap-3 text-[11px] text-slate-500 pt-1">
                       <span className="flex items-center gap-1">
                         <MapPin className="w-3 h-3 text-slate-400" />
-                        <span>Posko Sektor B</span>
+                        <span>{language === 'id' ? 'Posko Sektor B' : 'Sector B Command Post'}</span>
                       </span>
-                      <span>Dibutuhkan: {t.volunteersNeeded} personel</span>
+                      <span>
+                        {language === 'id' ? `Dibutuhkan: ${t.volunteersNeeded} personel` : `Required: ${t.volunteersNeeded} personnel`}
+                      </span>
                     </div>
                   </div>
 

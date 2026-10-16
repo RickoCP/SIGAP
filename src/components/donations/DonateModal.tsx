@@ -181,7 +181,7 @@ export const DonateModal: React.FC<DonateModalProps> = ({
               >
                 {disasters.map(d => (
                   <option key={d.id} value={d.id}>
-                    {d.title} ({d.province})
+                    {isEn ? (d.titleEn || d.title) : d.title} ({d.province})
                   </option>
                 ))}
               </select>
@@ -272,8 +272,10 @@ export const DonateModal: React.FC<DonateModalProps> = ({
                       <div className="flex items-center gap-2.5">
                         <span className="text-xl">{pkg.icon}</span>
                         <div>
-                          <div className="font-bold">{pkg.title}</div>
-                          <div className="text-[10px] text-slate-400">{(pkg.itemsIncluded || []).slice(0, 2).join(', ')}...</div>
+                          <div className="font-bold">{isEn ? (pkg.titleEn || pkg.title) : pkg.title}</div>
+                          <div className="text-[10px] text-slate-400">
+                            {((isEn ? pkg.itemsIncludedEn : null) || pkg.itemsIncluded || []).slice(0, 2).join(', ')}...
+                          </div>
                         </div>
                       </div>
                       <span className="font-mono font-bold text-emerald-400 whitespace-nowrap">

@@ -206,8 +206,12 @@ export const VolunteerProfileModal: React.FC<VolunteerProfileModalProps> = ({
                 return (
                   <div key={idx} className="p-3 flex items-center justify-between">
                     <div>
-                      <span className="font-semibold text-white block text-xs">{skillObj.name}</span>
-                      <span className="text-slate-400 text-[11px]">{skillObj.description}</span>
+                      <span className="font-semibold text-white block text-xs">
+                        {isEn ? (skillObj.nameEn || skillObj.name) : skillObj.name}
+                      </span>
+                      <span className="text-slate-400 text-[11px]">
+                        {isEn ? (skillObj.descriptionEn || skillObj.description) : skillObj.description}
+                      </span>
                     </div>
                     <span
                       className={`text-[10px] font-semibold px-2 py-0.5 rounded font-mono ${
@@ -253,10 +257,10 @@ export const VolunteerProfileModal: React.FC<VolunteerProfileModalProps> = ({
                   </span>
                   <div className="min-w-0">
                     <span className="font-bold text-white text-xs block truncate">
-                      {badge.name}
+                      {isEn ? (badge.nameEn || badge.name) : badge.name}
                     </span>
                     <span className="text-[10px] text-slate-400 block line-clamp-1">
-                      {badge.description}
+                      {isEn ? (badge.descriptionEn || badge.description) : badge.description}
                     </span>
                   </div>
                 </div>
@@ -279,7 +283,7 @@ export const VolunteerProfileModal: React.FC<VolunteerProfileModalProps> = ({
                         className="px-2 py-1 rounded bg-slate-900 border border-emerald-700/60 text-[11px] text-emerald-300 font-medium flex items-center gap-1"
                       >
                         <span>{item.icon}</span>
-                        <span>{item.title}</span>
+                        <span>{isEn ? (item.titleEn || item.title) : item.title}</span>
                       </span>
                     ) : null;
                   })}

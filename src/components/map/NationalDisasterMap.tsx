@@ -166,8 +166,8 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
               ${typeLabel} • ${severityBadge}
             </span>
           </div>
-          <h4 class="font-bold text-xs text-slate-900 leading-tight mb-1">${d.title}</h4>
-          <p class="text-[11px] text-slate-600 mb-2 leading-relaxed line-clamp-2">${d.description}</p>
+          <h4 class="font-bold text-xs text-slate-900 leading-tight mb-1">${language === 'en' ? (d.titleEn || d.title) : d.title}</h4>
+          <p class="text-[11px] text-slate-600 mb-2 leading-relaxed line-clamp-2">${language === 'en' ? (d.descriptionEn || d.description) : d.description}</p>
           <div class="flex items-center justify-between text-[10px] text-slate-500 border-t pt-1.5 mb-2">
             <span>${affectedLabel}: <strong>${d.affectedPeople.toLocaleString()} ${soulsLabel}</strong></span>
             <span>${sheltersLabel}: <strong>${d.evacuationCenterCount}</strong></span>
@@ -498,7 +498,9 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
                     <div className="flex items-center gap-2.5 min-w-0">
                       <span className="text-base shrink-0">{isFire ? '🔥' : isFlood ? '🌊' : '⚠️'}</span>
                       <div className="min-w-0">
-                        <div className="text-xs font-bold text-white truncate">{d.title}</div>
+                        <div className="text-xs font-bold text-white truncate">
+                          {language === 'en' ? (d.titleEn || d.title) : d.title}
+                        </div>
                         <div className="text-[10px] text-slate-400">
                           {d.province} • {d.affectedPeople.toLocaleString()} {t.natMapSouls}
                         </div>

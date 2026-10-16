@@ -212,7 +212,7 @@ export const CitizenSafetyCheckinModal: React.FC<CitizenSafetyCheckinModalProps>
               >
                 {disasters.map(d => (
                   <option key={d.id} value={d.id}>
-                    {d.title} ({d.province})
+                    {isEn ? (d.titleEn || d.title) : d.title} ({d.province})
                   </option>
                 ))}
               </select>

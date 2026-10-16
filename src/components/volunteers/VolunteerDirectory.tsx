@@ -419,19 +419,19 @@ export const VolunteerDirectory: React.FC<VolunteerDirectoryProps> = ({
                 onClick={() => applyPreset('sar_water')}
                 className="px-2 py-0.5 rounded bg-slate-950 hover:bg-amber-950/80 hover:text-amber-300 text-slate-400 border border-slate-800 text-[10px] font-semibold transition"
               >
-                🌊 SAR Air
+                🌊 {language === 'id' ? 'SAR Air' : 'Water SAR'}
               </button>
               <button
                 onClick={() => applyPreset('medical_trauma')}
                 className="px-2 py-0.5 rounded bg-slate-950 hover:bg-emerald-950/80 hover:text-emerald-300 text-slate-400 border border-slate-800 text-[10px] font-semibold transition"
               >
-                🩺 Medis Trauma
+                🩺 {language === 'id' ? 'Medis Trauma' : 'Trauma Medic'}
               </button>
               <button
                 onClick={() => applyPreset('logistics_quick')}
                 className="px-2 py-0.5 rounded bg-slate-950 hover:bg-indigo-950/80 hover:text-indigo-300 text-slate-400 border border-slate-800 text-[10px] font-semibold transition"
               >
-                📦 Logistik Cepat
+                📦 {language === 'id' ? 'Logistik Cepat' : 'Fast Logistics'}
               </button>
             </div>
           </div>
@@ -537,7 +537,7 @@ export const VolunteerDirectory: React.FC<VolunteerDirectoryProps> = ({
                         : 'bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-850 border-slate-800'
                     }`}
                   >
-                    <span>{s.name}</span>
+                    <span>{language === 'en' ? (s.nameEn || s.name) : s.name}</span>
                     <span className={`text-[10px] font-mono px-1 rounded ${
                       isSkillSelected ? 'bg-blue-800 text-blue-100' : 'bg-slate-950 text-slate-400'
                     }`}>
@@ -726,7 +726,9 @@ export const VolunteerDirectory: React.FC<VolunteerDirectoryProps> = ({
                     <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
                       <span>{language === 'id' ? 'Sertifikasi Keahlian:' : 'Verified Skills:'}</span>
                       {vol.gamification?.hoursContributed && (
-                        <span className="text-amber-400 font-bold">{vol.gamification.hoursContributed} jam misi</span>
+                        <span className="text-amber-400 font-bold">
+                          {vol.gamification.hoursContributed} {language === 'id' ? 'jam misi' : 'mission hrs'}
+                        </span>
                       )}
                     </div>
                     <div className="flex flex-wrap gap-1">
@@ -753,7 +755,7 @@ export const VolunteerDirectory: React.FC<VolunteerDirectoryProps> = ({
                             }`}
                           >
                             {isMatch && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>}
-                            <span>{skillObj.name.split('/')[0].trim()}</span>
+                            <span>{language === 'en' ? (skillObj.nameEn || skillObj.name).split('/')[0].trim() : skillObj.name.split('/')[0].trim()}</span>
                             <span className={`text-[8px] uppercase font-mono px-1 rounded ${
                               isExpert 
                                 ? 'bg-amber-950 text-amber-300 border border-amber-800/80' 

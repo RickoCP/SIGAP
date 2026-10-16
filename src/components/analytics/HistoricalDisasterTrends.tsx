@@ -523,9 +523,9 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
                     <div className="flex items-center gap-2">
                       <span className="text-lg">{isFire ? '🔥' : '🌊'}</span>
                       <div>
-                        <h4 className="font-bold text-sm text-white">{win.title}</h4>
+                        <h4 className="font-bold text-sm text-white">{isEn ? (win.titleEn || win.title) : win.title}</h4>
                         <span className="text-[10px] text-slate-400 font-mono">
-                          {isEn ? 'Peak Risk Period: ' : 'Puncak Bahaya: '}{win.peakRiskPeriod}
+                          {isEn ? 'Peak Risk Period: ' : 'Puncak Bahaya: '}{isEn ? (win.peakRiskPeriodEn || win.peakRiskPeriod) : win.peakRiskPeriod}
                         </span>
                       </div>
                     </div>
@@ -541,7 +541,7 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
                     <div className="text-[10px] text-amber-400 font-bold uppercase flex items-center gap-1 mb-0.5">
                       <Clock className="w-3 h-3" /> {isEn ? 'Mandatory Early Action Window:' : 'Periode Wajib Aksi Dini:'}
                     </div>
-                    <div className="font-bold text-white text-xs">{win.criticalMitigationWindow}</div>
+                    <div className="font-bold text-white text-xs">{isEn ? (win.criticalMitigationWindowEn || win.criticalMitigationWindow) : win.criticalMitigationWindow}</div>
                   </div>
 
                   <div>
@@ -549,7 +549,10 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
                       {isEn ? 'Coordinator Preemptive Action Checklist:' : 'Checklist Aksi Dini Koordinator:'}
                     </div>
                     <ul className="space-y-1.5 text-xs text-slate-300">
-                      {win.recommendedActions.map((act, i) => (
+                      {((isEn && win.recommendedActionsEn && win.recommendedActionsEn.length > 0)
+                        ? win.recommendedActionsEn
+                        : win.recommendedActions
+                      ).map((act, i) => (
                         <li key={i} className="flex items-start gap-2 bg-slate-900/60 p-2 rounded border border-slate-800/80">
                           <span className="text-emerald-400 font-bold shrink-0">✓</span>
                           <span>{act}</span>
@@ -819,7 +822,7 @@ ${narrativeReport.volunteerAndLogisticsPrepositioning}`;
           </div>
 
           <p className="text-slate-300 leading-relaxed text-[11px]">
-            {narrativeReport ? narrativeReport.executiveHeadline : historicalAnalysisNotes}
+            {narrativeReport ? narrativeReport.executiveHeadline : (isEn ? (historicalData.historicalAnalysisNotesEn || historicalAnalysisNotes) : historicalAnalysisNotes)}
           </p>
         </div>
       )}

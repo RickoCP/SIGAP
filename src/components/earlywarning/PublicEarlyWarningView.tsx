@@ -82,7 +82,8 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
   const proximityStatus: CitizenProximityStatus = evaluateCitizenProximity(
     userCoords.lat,
     userCoords.lng,
-    alerts
+    alerts,
+    language
   );
 
   const toggleSiren = () => {
@@ -413,7 +414,7 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
                   {/* Title & Location */}
                   <div>
                     <h3 className="font-bold text-sm text-white line-clamp-2">
-                      {alert.title}
+                      {isEn ? (alert.titleEn || alert.title) : alert.title}
                     </h3>
                     <div className="text-xs text-slate-400 mt-1 flex items-center gap-1">
                       <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
@@ -427,7 +428,7 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
                       {isEn ? 'Official Evacuation Advice:' : 'Arahan Evakuasi Mandiri:'}
                     </span>
                     <p className="text-xs text-slate-200 leading-relaxed">
-                      {alert.evacuationAdvice}
+                      {isEn ? (alert.evacuationAdviceEn || alert.evacuationAdvice) : alert.evacuationAdvice}
                     </p>
                   </div>
 
@@ -437,7 +438,10 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
                       {isEn ? 'Rapid Life-Saving Action Steps:' : 'Langkah Aksi Cepat Penyelamatan Jiwa:'}
                     </span>
                     <div className="space-y-1">
-                      {alert.keyActionSteps.slice(0, 3).map((step, idx) => (
+                      {((isEn && alert.keyActionStepsEn && alert.keyActionStepsEn.length > 0)
+                        ? alert.keyActionStepsEn
+                        : alert.keyActionSteps
+                      ).slice(0, 3).map((step, idx) => (
                         <div key={idx} className="flex items-start gap-1.5 text-xs text-slate-300">
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
                           <span>{step}</span>

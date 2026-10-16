@@ -2,53 +2,237 @@ import { Skill, Volunteer, Disaster, Task, Assignment, BMKGAlert } from '../type
 
 export const SEED_SKILLS: Skill[] = [
   // Medical
-  { id: 'skill-med-1', name: 'Dokter Umum & Darurat', category: 'medical', description: 'Triase medis darurat dan penanganan trauma akut' },
-  { id: 'skill-med-2', name: 'Perawat Gawat Darurat', category: 'medical', description: 'Perawatan luka, infus, dan pendampingan medis kritis' },
-  { id: 'skill-med-3', name: 'Paramedis Lapangan', category: 'medical', description: 'Ambulans, resusitasi, dan evakuasi korban terluka' },
-  { id: 'skill-med-4', name: 'First Aid / P3K Sertifikasi', category: 'medical', description: 'Pertolongan pertama pada kecelakaan dan balut bidai' },
+  { 
+    id: 'skill-med-1', 
+    name: 'Dokter Umum & Darurat', 
+    nameEn: 'General & Emergency Physician',
+    category: 'medical', 
+    description: 'Triase medis darurat dan penanganan trauma akut',
+    descriptionEn: 'Emergency medical triage and acute trauma stabilization'
+  },
+  { 
+    id: 'skill-med-2', 
+    name: 'Perawat Gawat Darurat', 
+    nameEn: 'Emergency & Trauma Nurse',
+    category: 'medical', 
+    description: 'Perawatan luka, infus, dan pendampingan medis kritis',
+    descriptionEn: 'Wound care, IV fluid infusion, and critical patient stabilization'
+  },
+  { 
+    id: 'skill-med-3', 
+    name: 'Paramedis Lapangan', 
+    nameEn: 'Field Paramedic & EMT',
+    category: 'medical', 
+    description: 'Ambulans, resusitasi, dan evakuasi korban terluka',
+    descriptionEn: 'Ambulance operation, field CPR, and injured victim extrication'
+  },
+  { 
+    id: 'skill-med-4', 
+    name: 'First Aid / P3K Sertifikasi', 
+    nameEn: 'Certified First Aid Responder',
+    category: 'medical', 
+    description: 'Pertolongan pertama pada kecelakaan dan balut bidai',
+    descriptionEn: 'Basic first aid, splinting fractures, and hemorrhage control'
+  },
   
   // SAR
-  { id: 'skill-sar-1', name: 'Tim SAR Water Rescue', category: 'sar', description: 'Evakuasi air deras, perahu karet LCR, dan penyelamatan banjir' },
-  { id: 'skill-sar-2', name: 'Penyelam Evakuasi', category: 'sar', description: 'Penyelaman darurat dan pencarian bawah air' },
-  { id: 'skill-sar-3', name: 'Vertical Rescue / Panjat Tebing', category: 'sar', description: 'Evakuasi tebing terjal dan gedung tinggi runtuh' },
-  { id: 'skill-sar-4', name: 'Urban Search and Rescue (USAR)', category: 'sar', description: 'Pencarian korban di reruntuhan bangunan akibat gempa' },
+  { 
+    id: 'skill-sar-1', 
+    name: 'Tim SAR Water Rescue', 
+    nameEn: 'Water Rescue SAR Specialist',
+    category: 'sar', 
+    description: 'Evakuasi air deras, perahu karet LCR, dan penyelamatan banjir',
+    descriptionEn: 'Swiftwater evacuation, inflatable boat (LCR) handling, and flood rescue'
+  },
+  { 
+    id: 'skill-sar-2', 
+    name: 'Penyelam Evakuasi', 
+    nameEn: 'Emergency Rescue Diver',
+    category: 'sar', 
+    description: 'Penyelaman darurat dan pencarian bawah air',
+    descriptionEn: 'Zero-visibility search, submerged vehicle extrication, and underwater recovery'
+  },
+  { 
+    id: 'skill-sar-3', 
+    name: 'Vertical Rescue / Panjat Tebing', 
+    nameEn: 'High-Angle / Vertical Rope Rescue',
+    category: 'sar', 
+    description: 'Evakuasi tebing terjal dan gedung tinggi runtuh',
+    descriptionEn: 'Steep cliff rappelling, elevated hoist systems, and high-rise structural rope access'
+  },
+  { 
+    id: 'skill-sar-4', 
+    name: 'Urban Search and Rescue (USAR)', 
+    nameEn: 'Urban Search and Rescue (USAR)',
+    category: 'sar', 
+    description: 'Pencarian korban di reruntuhan bangunan akibat gempa',
+    descriptionEn: 'Earthquake rubble victim detection, acoustic listening, and structural shoring'
+  },
 
   // Logistics
-  { id: 'skill-log-1', name: 'Distribusi Bantuan Lapangan', category: 'logistics', description: 'Penyaluran sembako dan logistik langsung ke warga' },
-  { id: 'skill-log-2', name: 'Manajemen Pergudangan Darurat', category: 'logistics', description: 'Pengelolaan stok, sortir barang masuk/keluar, dan packing' },
-  { id: 'skill-log-3', name: 'Pencatatan Inventori & Audit', category: 'logistics', description: 'Sistem pencatatan logistik berbasis digital dan manifest' },
+  { 
+    id: 'skill-log-1', 
+    name: 'Distribusi Bantuan Lapangan', 
+    nameEn: 'Field Relief Aid Distribution',
+    category: 'logistics', 
+    description: 'Penyaluran sembako dan logistik langsung ke warga',
+    descriptionEn: 'Direct household delivery of food rations and relief essentials'
+  },
+  { 
+    id: 'skill-log-2', 
+    name: 'Manajemen Pergudangan Darurat', 
+    nameEn: 'Emergency Supply Warehouse Manager',
+    category: 'logistics', 
+    description: 'Pengelolaan stok, sortir barang masuk/keluar, dan packing',
+    descriptionEn: 'Buffer stock management, incoming donation sorting, and relief pallet packing'
+  },
+  { 
+    id: 'skill-log-3', 
+    name: 'Pencatatan Inventori & Audit', 
+    nameEn: 'Digital Logistics Inventory Auditor',
+    category: 'logistics', 
+    description: 'Sistem pencatatan logistik berbasis digital dan manifest',
+    descriptionEn: 'Digital cargo manifest tracking and supply chain verification'
+  },
 
   // Transport
-  { id: 'skill-trn-1', name: 'Operator Perahu Karet (LCR)', category: 'transport', description: 'Pengemudian perahu motor tempel di arus banjir' },
-  { id: 'skill-trn-2', name: 'Pengemudi Ambulans Darurat', category: 'transport', description: 'Navigasi cepat dan aman di area darurat bencana' },
-  { id: 'skill-trn-3', name: 'Pengemudi Truk Logistik (SIM B1)', category: 'transport', description: 'Pengiriman muatan berat logistik ke titik posko' },
-  { id: 'skill-trn-4', name: 'Pengendara Motor Trail Relief', category: 'transport', description: 'Penetrasi jalur terputus, jalan sempit, dan medan lumpur' },
+  { 
+    id: 'skill-trn-1', 
+    name: 'Operator Perahu Karet (LCR)', 
+    nameEn: 'Inflatable Boat (LCR) Pilot',
+    category: 'transport', 
+    description: 'Pengemudian perahu motor tempel di arus banjir',
+    descriptionEn: 'Outboard motor boat navigation through hazardous flood debris'
+  },
+  { 
+    id: 'skill-trn-2', 
+    name: 'Pengemudi Ambulans Darurat', 
+    nameEn: 'Emergency Ambulance Driver',
+    category: 'transport', 
+    description: 'Navigasi cepat dan aman di area darurat bencana',
+    descriptionEn: 'High-speed defensive driving and route clearing through disaster bottlenecks'
+  },
+  { 
+    id: 'skill-trn-3', 
+    name: 'Pengemudi Truk Logistik (SIM B1)', 
+    nameEn: 'Heavy Relief Truck Driver (Commercial License)',
+    category: 'transport', 
+    description: 'Pengiriman muatan berat logistik ke titik posko',
+    descriptionEn: 'Heavy payload transit navigating broken roads to forward distribution hubs'
+  },
+  { 
+    id: 'skill-trn-4', 
+    name: 'Pengendara Motor Trail Relief', 
+    nameEn: 'Off-Road Trail Bike Courier',
+    category: 'transport', 
+    description: 'Penetrasi jalur terputus, jalan sempit, dan medan lumpur',
+    descriptionEn: 'Penetrating cut-off mountainous trails, narrow alleys, and deep mud'
+  },
 
   // Food
-  { id: 'skill-food-1', name: 'Koki Dapur Umum Bencana', category: 'food', description: 'Memasak porsi massal higienis (500-2000 porsi/hari)' },
-  { id: 'skill-food-2', name: 'Distribusi Makanan Hangat Siap Saji', category: 'food', description: 'Pengantaran rantang/nasi bungkus ke tenda pengungsian' },
-  { id: 'skill-food-3', name: 'Pemeriksaan Higienitas & Gizi Darurat', category: 'food', description: 'Skrining keamanan pangan dan nutrisi balita/ibu hamil' },
+  { 
+    id: 'skill-food-1', 
+    name: 'Koki Dapur Umum Bencana', 
+    nameEn: 'Mass Emergency Kitchen Chef',
+    category: 'food', 
+    description: 'Memasak porsi massal higienis (500-2000 porsi/hari)',
+    descriptionEn: 'Hygienic mass meal preparation (500-2,000 rations/day)'
+  },
+  { 
+    id: 'skill-food-2', 
+    name: 'Distribusi Makanan Hangat Siap Saji', 
+    nameEn: 'Hot Prepared Meal Distribution',
+    category: 'food', 
+    description: 'Pengantaran rantang/nasi bungkus ke tenda pengungsian',
+    descriptionEn: 'Door-to-tent delivery of freshly cooked meals to displaced families'
+  },
+  { 
+    id: 'skill-food-3', 
+    name: 'Pemeriksaan Higienitas & Gizi Darurat', 
+    nameEn: 'Nutrition & Food Hygiene Inspector',
+    category: 'food', 
+    description: 'Skrining keamanan pangan dan nutrisi balita/ibu hamil',
+    descriptionEn: 'Food safety screening and infant / maternal nutrition compliance'
+  },
 
   // Shelter
-  { id: 'skill-she-1', name: 'Pemasangan Tenda Pengungsi BNPB', category: 'shelter', description: 'Pemasangan tenda pleton, tenda keluarga, dan pasak' },
-  { id: 'skill-she-2', name: 'Konstruksi Hunian Sementara (Huntara)', category: 'shelter', description: 'Pemasangan terpal, bambu, kayu, dan sanitasi darurat' },
-  { id: 'skill-she-3', name: 'Spesialis Sanitasi & Air Bersih (WASH)', category: 'shelter', description: 'Instalasi tandon air bersih, MCK darurat, dan kaporit' },
+  { 
+    id: 'skill-she-1', 
+    name: 'Pemasangan Tenda Pengungsi BNPB', 
+    nameEn: 'BNPB Emergency Shelter Rigger',
+    category: 'shelter', 
+    description: 'Pemasangan tenda pleton, tenda keluarga, dan pasak',
+    descriptionEn: 'Rigging platoon command tents, family shelters, and high-wind anchor stakes'
+  },
+  { 
+    id: 'skill-she-2', 
+    name: 'Konstruksi Hunian Sementara (Huntara)', 
+    nameEn: 'Transitional Shelter (Huntara) Builder',
+    category: 'shelter', 
+    description: 'Pemasangan terpal, bambu, kayu, dan sanitasi darurat',
+    descriptionEn: 'Rapid carpentry with lumber, bamboo, and weatherproof membrane tarpaulins'
+  },
+  { 
+    id: 'skill-she-3', 
+    name: 'Spesialis Sanitasi & Air Bersih (WASH)', 
+    nameEn: 'WASH Water & Sanitation Specialist',
+    category: 'shelter', 
+    description: 'Instalasi tandon air bersih, MCK darurat, dan kaporit',
+    descriptionEn: 'Potable water bladder setup, emergency latrines, and water chlorination'
+  },
 
   // Communication
-  { id: 'skill-com-1', name: 'Operator Radio Komunikasi (HT/ORARI/RAPI)', category: 'communication', description: 'Penghubung komunikasi saat jaringan seluler lumpuh' },
-  { id: 'skill-com-2', name: 'Koordinator Posko Lapangan', category: 'communication', description: 'Pusat komando lokal, bridging relawan, dan pencatatan warga' },
-  { id: 'skill-com-3', name: 'Penerjemah Bahasa & Budaya Daerah', category: 'communication', description: 'Komunikasi persuasif dengan sesepuh dan warga lokal' },
+  { 
+    id: 'skill-com-1', 
+    name: 'Operator Radio Komunikasi (HT/ORARI/RAPI)', 
+    nameEn: 'Emergency Radio Operator (HF/VHF/Ham)',
+    category: 'communication', 
+    description: 'Penghubung komunikasi saat jaringan seluler lumpuh',
+    descriptionEn: 'Relaying tactical traffic over repeater and HF radio networks when cell towers fail'
+  },
+  { 
+    id: 'skill-com-2', 
+    name: 'Koordinator Posko Lapangan', 
+    nameEn: 'Forward Command Post Coordinator',
+    category: 'communication', 
+    description: 'Pusat komando lokal, bridging relawan, dan pencatatan warga',
+    descriptionEn: 'Incident command liaison, volunteer registration, and casualty tracking'
+  },
+  { 
+    id: 'skill-com-3', 
+    name: 'Penerjemah Bahasa & Budaya Daerah', 
+    nameEn: 'Local Dialect & Cultural Liaison',
+    category: 'communication', 
+    description: 'Komunikasi persuasif dengan sesepuh dan warga lokal',
+    descriptionEn: 'Culturally attuned communication with village elders and regional language speakers'
+  },
 
   // Psychosocial
-  { id: 'skill-psy-1', name: 'Konselor Trauma Healing Anak', category: 'psychosocial', description: 'Aktivitas bermain terapeutik dan pendampingan trauma balita' },
-  { id: 'skill-psy-2', name: 'Pendamping Psikososial Lansia & Dewasa', category: 'psychosocial', description: 'Dukungan psikologis bagi keluarga korban dan penyintas' }
+  { 
+    id: 'skill-psy-1', 
+    name: 'Konselor Trauma Healing Anak', 
+    nameEn: 'Child Trauma Recovery Specialist',
+    category: 'psychosocial', 
+    description: 'Aktivitas bermain terapeutik dan pendampingan trauma balita',
+    descriptionEn: 'Therapeutic play, psychological first aid, and story interventions for displaced children'
+  },
+  { 
+    id: 'skill-psy-2', 
+    name: 'Pendamping Psikososial Lansia & Dewasa', 
+    nameEn: 'Adult & Senior Psychosocial Counselor',
+    category: 'psychosocial', 
+    description: 'Dukungan psikologis bagi keluarga korban dan penyintas',
+    descriptionEn: 'Grief counseling, anxiety decompression, and survivor mental resilience support'
+  }
 ];
 
 export const SEED_DISASTERS: Disaster[] = [
   {
     id: 'disaster-1',
     title: 'Banjir Luapan Kali Ciliwung - Kampung Melayu & Bukit Duri',
+    titleEn: 'Ciliwung River Basin Flash Flood - Kampung Melayu & Bukit Duri',
     description: 'Hujan intensitas ekstrem di kawasan hulu Puncak Bogor menyebabkan debit air Katulampa Siaga 1 (220 cm). Kali Ciliwung meluap merendam pemukiman padat RW 01, 02, 03 Kampung Melayu (Jaktim) dan Bukit Duri (Jaksel) dengan ketinggian air 1.5 - 2.8 meter. Warga lansia dan balita terjebak di lantai dua rumah.',
+    descriptionEn: 'Torrential rainfall in the upstream Puncak Bogor watershed pushed Katulampa Dam to Alert Level 1 (220 cm). Ciliwung River overtopped banks, submerging densely populated neighborhoods in East and South Jakarta under 1.5 to 2.8 meters of water with seniors and infants stranded on upper floors.',
     type: 'flood',
     severity: 'critical',
     locationLat: -6.2251,
@@ -62,12 +246,15 @@ export const SEED_DISASTERS: Disaster[] = [
     affectedHouseholds: 1420,
     evacuationCenterCount: 4,
     keyNeeds: ['Perahu Karet Evakuasi', 'Dapur Umum 3000 Porsi', 'Obat Kulit & Diare', 'Susu Balita & Pampers', 'Penerangan Genset'],
+    keyNeedsEn: ['Inflatable Evacuation Boats', 'Field Kitchen 3,000 Portions', 'Dermatological & Antidiarrheal Meds', 'Infant Formula & Diapers', 'Auxiliary Generator Lighting'],
     waterLevelCm: 280
   },
   {
     id: 'disaster-2',
     title: 'Gempa Bumi Tektonik Selat Sunda - Dampak Anyer & Labuan',
+    titleEn: 'Sunda Strait Tectonic Earthquake - Anyer & Labuan Coastal Impact',
     description: 'Gempa berkekuatan M 6.2 kedalaman 18 km berpusat di Selat Sunda mengakibatkan guncangan kuat skala VI MMI di pesisir barat Pandeglang dan Anyer. 78 unit rumah warga roboh sebagian, retakan pada dinding fasilitas kesehatan, dan jaringan listrik lokal padam. Diperlukan evakuasi darurat dan tim medis trauma.',
+    descriptionEn: 'A magnitude 6.2 shallow earthquake (18km depth) centered in the Sunda Strait generated strong MMI VI ground motion across coastal Pandeglang and Anyer. 78 homes partially collapsed, healthcare facilities suffered structural fissures, and local power grids failed, requiring urgent trauma stabilization and rubble extrication.',
     type: 'earthquake',
     severity: 'high',
     locationLat: -6.4022,
@@ -80,12 +267,15 @@ export const SEED_DISASTERS: Disaster[] = [
     affectedPeople: 2100,
     affectedHouseholds: 560,
     evacuationCenterCount: 3,
-    keyNeeds: ['Tim Medis Luka Fraktur', 'USAR Reruntuhan', 'Tenda Pleton BNPB', 'Genset & Radio HT', 'Air Bersih Tangki']
+    keyNeeds: ['Tim Medis Luka Fraktur', 'USAR Reruntuhan', 'Tenda Pleton BNPB', 'Genset & Radio HT', 'Air Bersih Tangki'],
+    keyNeedsEn: ['Orthopedic Trauma Medics', 'Collapsed Structure USAR Team', 'BNPB Platoon Tents', 'Generators & VHF Radios', 'Potable Water Tankers']
   },
   {
     id: 'disaster-3',
     title: 'Kebakaran Permukiman Padat Tambora - Kalianyar',
+    titleEn: 'High-Density Residential Conflagration - Tambora, Kalianyar',
     description: 'Korsleting arus pendek di pemukiman padat semi-permanen memicu kobaran api cepat menyebar menghanguskan 62 rumah di Gang Kancil Kalianyar Tambora. Akses jalan sempit menyulitkan mobil pemadam. Warga mengungsi di halaman masjid dan aula serbaguna kelurahan.',
+    descriptionEn: 'An electrical short circuit in an ultra-dense informal settlement triggered a rapid blaze gutting 62 homes in Kalianyar Tambora. Narrow 1-meter alleyways severely impeded fire trucks. Displaced residents are sheltered in community halls and mosque courtyards.',
     type: 'fire',
     severity: 'high',
     locationLat: -6.1512,
@@ -98,12 +288,15 @@ export const SEED_DISASTERS: Disaster[] = [
     affectedPeople: 620,
     affectedHouseholds: 185,
     evacuationCenterCount: 2,
-    keyNeeds: ['Selimut & Pakaian Bersih', 'Dapur Umum Segera', 'Kits Sanitasi Higienis', 'Konseling Anak Sekolah']
+    keyNeeds: ['Selimut & Pakaian Bersih', 'Dapur Umum Segera', 'Kits Sanitasi Higienis', 'Konseling Anak Sekolah'],
+    keyNeedsEn: ['Warm Blankets & Clean Garments', 'Rapid Soup Kitchen', 'Hygiene Care Kits', 'Schoolchild Psychosocial Counseling']
   },
   {
     id: 'disaster-4',
     title: 'Kebakaran Hutan & Lahan Gambut (Karhutla) Siak & Pelalawan',
+    titleEn: 'Peatland Wildfire Crisis (Karhutla) - Siak & Pelalawan Regencies',
     description: 'Kemarau panjang memicu kebakaran lahan gambut di kedalaman 1.5 meter pada zona penyangga TN Tesso Nilo. Terpantau 68 titik hotspot aktif BMKG dengan ISPU kategori Sangat Tidak Sehat (285 AQI). Asap tebal mengancam pemukiman dan penerbangan di Pekanbaru. Tim gabungan Manggala Agni membutuhkan tambahan relawan pemadam darat dan masker N95.',
+    descriptionEn: 'Severe prolonged drought ignited subterranean peat fires at 1.5m depth in the Tesso Nilo National Park buffer zone. BMKG satellites tracked 68 thermal hotspots generating hazardous air quality (AQI 285). Dense smog disrupts Pekanbaru airspace; Manggala Agni ground crews require extra volunteers and N95 masks.',
     type: 'fire',
     severity: 'critical',
     locationLat: 0.7893,
@@ -117,13 +310,16 @@ export const SEED_DISASTERS: Disaster[] = [
     affectedHouseholds: 2350,
     evacuationCenterCount: 5,
     keyNeeds: ['Masker Respirator N95 50.000 Pcs', 'Pompa Apung & Selang Pemadam 2.5 Inch', 'Tetes Mata & Oksigen Portabel', 'Drone Pemantau Titik Panas Thermal', 'Dapur Umum Mandiri'],
+    keyNeedsEn: ['N95 Respirators 50,000 Pcs', 'Floating Pumps & 2.5 Inch Hoses', 'Eye Drops & Portable O2 Concentrators', 'Thermal Infrared Spotter Drones', 'Grassroots Field Kitchen'],
     activeHotspots: 68,
     fireIntensity: 'extreme'
   },
   {
     id: 'disaster-5',
     title: 'Karhutla Lahan Gambut Palangka Raya & Taman Nasional Sebangau',
+    titleEn: 'Palangka Raya & Sebangau National Park Peatland Wildfire',
     description: 'Titik api berkobar di kawasan gambut kering lingkar luar Palangka Raya dan Sebangau. Kabut asap pekat membatasi jarak pandang hingga 200 meter. Manggala Agni dan Masyarakat Peduli Api (MPA) kewalahan karena sumber air parit mengering. Memerlukan relawan operasi sekat bakar dan mobilisasi pompa bertekanan tinggi.',
+    descriptionEn: 'Intense fire outbreaks across desiccated peat domes on Palangka Raya’s outer ring and Sebangau. Hazardous haze reduced visibility to under 200 meters. Manggala Agni and community fire brigades struggle as drainage canals run dry, requiring firebreak cutters and high-pressure pumps.',
     type: 'fire',
     severity: 'critical',
     locationLat: -2.2087,
@@ -137,13 +333,16 @@ export const SEED_DISASTERS: Disaster[] = [
     affectedHouseholds: 3600,
     evacuationCenterCount: 6,
     keyNeeds: ['Tangki Air Darurat 5000L', 'Regu Pemadam Ground Fire', 'Tabung Oksigen Puskesmas', 'Kacamata Google Pelindung Asap', 'Logistik Dapur Pleton'],
+    keyNeedsEn: ['Emergency 5,000L Water Bowsers', 'Ground Subsurface Firefighting Squads', 'Clinic Oxygen Cylinders', 'Aerosol Smoke Safety Goggles', 'Platoon Field Rations'],
     activeHotspots: 94,
     fireIntensity: 'extreme'
   },
   {
     id: 'disaster-6',
     title: 'Banjir Bandang & Tanggul Sungai Wulan Jebol - Demak & Kudus',
+    titleEn: 'Wulan River Levee Breach Catastrophic Flood - Demak & Kudus',
     description: 'Debit air Sungai Wulan meluap ekstrem menjebol tanggul sepanjang 25 meter di Desa Ketanjung, Kecamatan Karanganyar, Demak. Air berarus deras merendam ribuan rumah hingga atap (2.5 meter) dan memutus total jalur utama Pantura Semarang-Surabaya. Puluhan warga terjebak di genting rumah menunggu evakuasi LCR.',
+    descriptionEn: 'Extreme flood discharge on the Wulan River breached a 25-meter levee section in Karanganyar, Demak. Torrential water submerged thousands of homes up to rooflines (2.5 meters) and severed the critical Semarang-Surabaya Pantura highway, leaving dozens of families stranded on rooftops.',
     type: 'flood',
     severity: 'critical',
     locationLat: -6.8944,
@@ -157,12 +356,15 @@ export const SEED_DISASTERS: Disaster[] = [
     affectedHouseholds: 4900,
     evacuationCenterCount: 8,
     keyNeeds: ['Perahu Karet Mesin Tempel 15 PK', 'Tali Tambat & Life Jacket Dewasa/Anak', 'Makanan Siap Santap Hangat', 'Tenda Pengungsi Lapangan', 'Tenaga Medis Trauma & Hipotermia'],
+    keyNeedsEn: ['Inflatable Boats with 15HP Outboard', 'Mooring Ropes & Lifejackets', 'Hot Ready-to-Eat Meals', 'Disaster Platoon Tents', 'Hypothermia & Trauma Medics'],
     waterLevelCm: 250
   },
   {
     id: 'disaster-7',
     title: 'Banjir Luapan DAS Bengawan Solo - Bojonegoro & Tuban',
+    titleEn: 'Bengawan Solo Basin Inundation - Bojonegoro & Tuban',
     description: 'Hujan deras berhari-hari di hulu Jawa Timur dan Waduk Gajah Mungkur memicu status Siaga Merah Bengawan Solo. Sebanyak 14 desa di bantaran sungai tergenang air setinggi 1.2 - 1.8 meter. Sawah siap panen terendam dan akses jalan antar kecamatan terputus.',
+    descriptionEn: 'Days of severe downpours across East Java and heavy spillway discharge from Gajah Mungkur Reservoir triggered Red Alert status on the Bengawan Solo River, inundating 14 riparian villages under 1.2 to 1.8 meters of floodwaters and cutting inter-district roadways.',
     type: 'flood',
     severity: 'high',
     locationLat: -7.1502,
@@ -176,12 +378,15 @@ export const SEED_DISASTERS: Disaster[] = [
     affectedHouseholds: 1650,
     evacuationCenterCount: 4,
     keyNeeds: ['Pompa Alkon 3 Inch', 'Bronjong Kawat Penahan Tanggul', 'Selimut & Terpal', 'Dapur Umum Posko'],
+    keyNeedsEn: ['3-Inch Portable Suction Pumps', 'Wire Gabions for Bank Stabilization', 'Fleece Blankets & Tarps', 'Basecamp Soup Kitchen'],
     waterLevelCm: 160
   },
   {
     id: 'disaster-8',
     title: 'Banjir Bandang Galodo & Aliran Lahar - Agam & Tanah Datar',
+    titleEn: 'Cold Lahar Volcanic Debris Torrent (Galodo) - Agam & Tanah Datar',
     description: 'Hujan lebat di lereng Gunung Marapi membawa material lahar dingin dan bongkahan batu besar menerjang pemukiman warga di Nagari Bukik Batabuah Agam. Jembatan utama putus dan lumpur setebal 1 meter menimbun puluhan rumah serta lahan pertanian warga.',
+    descriptionEn: 'Heavy cloudbursts on the slopes of Mount Marapi unleashed a destructive cold lahar torrent carrying volcanic boulders and dense mud through Nagari Bukik Batabuah. Bridges collapsed and a 1-meter mud layer buried dozens of homes and agricultural terraces.',
     type: 'flood',
     severity: 'critical',
     locationLat: -0.3275,
@@ -195,12 +400,15 @@ export const SEED_DISASTERS: Disaster[] = [
     affectedHouseholds: 890,
     evacuationCenterCount: 4,
     keyNeeds: ['Alat Berat Ekskavator Mini', 'Tim USAR Anjing Pelacak K9', 'Air Bersih Tangki PDAM', 'Dapur Umum Trauma Center', 'Pakaian Layak Pakai'],
+    keyNeedsEn: ['Mini Tracked Excavators', 'K9 Search & Rescue Teams', 'Utility Potable Water Bowsers', 'Trauma Recovery Soup Kitchen', 'Wearable Clean Clothing'],
     waterLevelCm: 190
   },
   {
     id: 'disaster-9',
     title: 'Kebakaran Hutan & Lahan Gambut Ketapang - Kendawangan',
+    titleEn: 'Peatland Forest Fires - Ketapang & Kendawangan Coast',
     description: 'Hotspot karhutla terpantau di 42 lokasi di kawasan lahan gambut Ketapang. Angin kencang memperluas rembetan api ke arah kebun kelapa sawit rakyat dan hutan lindung. Dibutuhkan tim pemadam darat yang dapat menjangkau lokasi menggunakan motor trail.',
+    descriptionEn: 'Satellite telemetry detected 42 active fire hotspots across Ketapang’s coastal peatlands. Gusty winds are fanning the fireline towards smallholder plantations and protected reserves. Rapid ground suppression teams with trail bikes are urgently dispatched.',
     type: 'fire',
     severity: 'high',
     locationLat: -2.3508,
@@ -214,13 +422,16 @@ export const SEED_DISASTERS: Disaster[] = [
     affectedHouseholds: 950,
     evacuationCenterCount: 3,
     keyNeeds: ['Selang Pemadam 2 Inch & Nozzle', 'Masker Karbon Aktif', 'Motor Trail Pengangkut Pompa', 'Makanan Ringan Energi Tinggi'],
+    keyNeedsEn: ['2-Inch Fire Hoses & Adjustable Nozzles', 'Activated Carbon Particulate Masks', 'Pump-Equipped Offroad Trail Bikes', 'High-Calorie Field Rations'],
     activeHotspots: 42,
     fireIntensity: 'high'
   },
   {
     id: 'disaster-10',
     title: 'Banjir Luapan DAS Barito - Banjar & Martapura',
+    titleEn: 'Barito & Martapura River Basin Flood - Banjar Regency',
     description: 'Tingginya curah hujan di pegunungan Meratus menyebabkan Sungai Martapura meluap menggenangi pemukiman tepian sungai dengan ketinggian air 80-140 cm. Perahu jukung tradisional dikerahkan relawan lokal untuk mobilitas bantuan beras dan air bersih.',
+    descriptionEn: 'Incessant torrential rains in the Meratus Mountains pushed the Martapura River over capacity, submerging riverside communities under 80 to 140 cm of water. Traditional wooden canoes (jukung) have been mobilized by local responders for relief logistics.',
     type: 'flood',
     severity: 'medium',
     locationLat: -3.4147,
@@ -234,6 +445,7 @@ export const SEED_DISASTERS: Disaster[] = [
     affectedHouseholds: 1200,
     evacuationCenterCount: 3,
     keyNeeds: ['Beras & Minyak Goreng', 'Kaporit Penjernih Air', 'Obat Salep Kulit', 'Pelampung'],
+    keyNeedsEn: ['Rice & Cooking Oil Supplies', 'Chlorine Water Purification Tablets', 'Antifungal Skin Salves', 'PFD Buoyancy Vests'],
     waterLevelCm: 130
   }
 ];
@@ -245,9 +457,12 @@ export const SEED_TASKS: Task[] = [
     id: 'task-1-1',
     disasterId: 'disaster-1',
     title: 'Evakuasi Balita dan Lansia Terjebak Genangan 2.5m di RW 02',
+    titleEn: 'Evacuate Infants and Seniors Trapped in 2.5m Floodwaters at RW 02',
     description: 'Penyisiran lorong pemukiman sempit menggunakan 3 unit perahu LCR bermesin kecil dan manual dayung. Prioritaskan 14 lansia yang terjebak di lantai dua tanpa listrik.',
+    descriptionEn: 'Sweep congested narrow alleys utilizing 3 shallow-draft inflatable LCR boats with small outboards and oars. Prioritize 14 seniors stranded on unpowered upper floors.',
     requiredSkillCategory: 'sar',
     requiredSkillName: 'Tim SAR Water Rescue',
+    requiredSkillNameEn: 'Water Rescue SAR Specialist',
     priority: 'urgent',
     locationLat: -6.2248,
     locationLng: 106.8630,
@@ -262,9 +477,12 @@ export const SEED_TASKS: Task[] = [
     id: 'task-1-2',
     disasterId: 'disaster-1',
     title: 'Operasional Dapur Umum Posko Kantor Kelurahan (1.500 Nasi Bungkus)',
+    titleEn: 'Community Sub-District Hall Mass Soup Kitchen (1,500 Packaged Meals)',
     description: 'Pengolahan dan pengemasan makan siang pengungsi banjir. Menu higienis: nasi telur kecap sayur sop. Memerlukan relawan pemotong sayur dan pengepak.',
+    descriptionEn: 'Cooking and packing nutritious hot lunch rations for flood evacuees: rice, braised eggs, vegetable soup. Veggie prep and meal box packaging volunteers needed.',
     requiredSkillCategory: 'food',
     requiredSkillName: 'Koki Dapur Umum Bencana',
+    requiredSkillNameEn: 'Mass Emergency Kitchen Chef',
     priority: 'high',
     locationLat: -6.2260,
     locationLng: 106.8610,
@@ -279,9 +497,12 @@ export const SEED_TASKS: Task[] = [
     id: 'task-1-3',
     disasterId: 'disaster-1',
     title: 'Pemeriksaan Kesehatan Kulit, Hipotermia, dan Diare Posko 1',
+    titleEn: 'Medical Outpost 1 Health Screening: Dermatitis, Hypothermia & Diarrhea',
     description: 'Skrining dan pengobatan anak-anak serta lansia yang terendam air kotor lebih dari 6 jam. Persiapan salep antijamur, oralit, dan parasetamol.',
+    descriptionEn: 'Clinical screening and triage for children and elders exposed to stagnant wastewater over 6 hours. Administering antifungal ointments, oral rehydration salts, and analgesics.',
     requiredSkillCategory: 'medical',
     requiredSkillName: 'Dokter Umum & Darurat',
+    requiredSkillNameEn: 'General & Emergency Physician',
     priority: 'high',
     locationLat: -6.2255,
     locationLng: 106.8615,
@@ -296,9 +517,12 @@ export const SEED_TASKS: Task[] = [
     id: 'task-1-4',
     disasterId: 'disaster-1',
     title: 'Distribusi Air Mineral dan Makanan Kering via Perahu Dayung',
+    titleEn: 'Paddle Boat Door-to-Door Drinking Water & Dry Rations Delivery',
     description: 'Distribusi pintu-ke-pintu untuk warga yang masih menjaga rumah di lantai dua dan enggan dievakuasi.',
+    descriptionEn: 'Door-to-door delivery for residents holding guard on second floors who declined immediate shelter evacuation.',
     requiredSkillCategory: 'logistics',
     requiredSkillName: 'Distribusi Bantuan Lapangan',
+    requiredSkillNameEn: 'Field Relief Aid Distribution',
     priority: 'medium',
     locationLat: -6.2242,
     locationLng: 106.8640,
@@ -313,9 +537,12 @@ export const SEED_TASKS: Task[] = [
     id: 'task-1-5',
     disasterId: 'disaster-1',
     title: 'Instalasi Repeater dan Pos Radio Komunikasi Darurat HT',
+    titleEn: 'Deploy Emergency VHF Repeater Mast & Incident Command Radio Post',
     description: 'Memasang antena darurat 12 meter di atap kantor kecamatan untuk menghubungkan posko lapangan dengan BPBD DKI Jakarta saat tower seluler padam.',
+    descriptionEn: 'Erect a 12m portable antenna mast atop subdistrict headquarters to establish reliable radio communications with Jakarta BPBD while cellular base stations remain offline.',
     requiredSkillCategory: 'communication',
     requiredSkillName: 'Operator Radio Komunikasi (HT/ORARI/RAPI)',
+    requiredSkillNameEn: 'Emergency Radio Operator (HF/VHF/Ham)',
     priority: 'urgent',
     locationLat: -6.2270,
     locationLng: 106.8600,
@@ -330,9 +557,12 @@ export const SEED_TASKS: Task[] = [
     id: 'task-1-6',
     disasterId: 'disaster-1',
     title: 'Pendampingan Trauma Healing Anak Pengungsi di Tenda 2',
+    titleEn: 'Child Friendly Space Psychosocial Recovery Sessions at Tent 2',
     description: 'Sesi mendongeng, mewarnai, dan permainan interaktif untuk 65 anak yang mengungsi agar meredakan cemas pasca evakuasi banjir mendadak subuh tadi.',
+    descriptionEn: 'Storytelling, expressive art, and games for 65 displaced children to alleviate acute psychological stress from rapid pre-dawn flood evacuations.',
     requiredSkillCategory: 'psychosocial',
     requiredSkillName: 'Konselor Trauma Healing Anak',
+    requiredSkillNameEn: 'Child Trauma Recovery Specialist',
     priority: 'medium',
     locationLat: -6.2263,
     locationLng: 106.8618,
@@ -349,9 +579,12 @@ export const SEED_TASKS: Task[] = [
     id: 'task-2-1',
     disasterId: 'disaster-2',
     title: 'Pencarian & Ekstrikasi Korban Reruntuhan Tembok Puskesmas Labuan',
+    titleEn: 'USAR Rubble Search & Extrication at Collapsed Labuan Clinic Wall',
     description: 'Tim USAR dengan peralatan pemotong beton dan sensor deteksi mencari kemungkinan 2 staf perawat yang tertimpa dinding saat gempa subuh.',
+    descriptionEn: 'USAR technical team with acoustic listening probes and hydraulic concrete cutters conducting search for 2 nursing staff trapped by collapsed masonry.',
     requiredSkillCategory: 'sar',
     requiredSkillName: 'Urban Search and Rescue (USAR)',
+    requiredSkillNameEn: 'Urban Search and Rescue (USAR)',
     priority: 'urgent',
     locationLat: -6.4015,
     locationLng: 105.8240,
@@ -366,9 +599,12 @@ export const SEED_TASKS: Task[] = [
     id: 'task-2-2',
     disasterId: 'disaster-2',
     title: 'Pendirian 6 Unit Tenda Darurat Pleton dan MCK Portabel',
+    titleEn: 'Assemble 6 BNPB Platoon Emergency Tents & Portable Field Latrines',
     description: 'Mendirikan tenda keluarga bagi 45 keluarga yang rumahnya mengalami retak struktur berbahaya dan tidak boleh dimasuki lagi.',
+    descriptionEn: 'Erect communal emergency shelter tents for 45 displaced families whose homes sustained dangerous structural fissures and are red-tagged.',
     requiredSkillCategory: 'shelter',
     requiredSkillName: 'Pemasangan Tenda Pengungsi BNPB',
+    requiredSkillNameEn: 'BNPB Emergency Shelter Rigger',
     priority: 'high',
     locationLat: -6.4030,
     locationLng: 105.8225,
@@ -383,9 +619,12 @@ export const SEED_TASKS: Task[] = [
     id: 'task-2-3',
     disasterId: 'disaster-2',
     title: 'Pengiriman Tabung Oksigen & Serum Antibisa via Motor Trail',
+    titleEn: 'Off-Road Trail Bike Dispatch: Oxygen Cylinders & Antivenom Serums',
     description: 'Menembus jalur pesisir yang tertutup retakan aspal menuju posko terisolir di Tanjung Lesung.',
+    descriptionEn: 'Traversing fissured and debris-blocked coastal tracks to reach an isolated coastal aid outpost in Tanjung Lesung with vital medical canisters.',
     requiredSkillCategory: 'transport',
     requiredSkillName: 'Pengendara Motor Trail Relief',
+    requiredSkillNameEn: 'Off-Road Trail Bike Courier',
     priority: 'urgent',
     locationLat: -6.4150,
     locationLng: 105.8150,
@@ -402,9 +641,12 @@ export const SEED_TASKS: Task[] = [
     id: 'task-3-1',
     disasterId: 'disaster-3',
     title: 'Sortir dan Distribusi Pakaian Pantas Pakai & Paket Sanitasi',
+    titleEn: 'Sort & Distribute Clean Wearable Clothes and Hygiene Kits',
     description: 'Penyaluran 350 paket hygiene kit (sabun, sikat gigi, pembalut, handuk) dan seragam sekolah darurat untuk korban kebakaran.',
+    descriptionEn: 'Sorting and staging 350 individual hygiene kits (soap, oral care, sanitary napkins, towels) and school uniforms for fire survivors.',
     requiredSkillCategory: 'logistics',
     requiredSkillName: 'Distribusi Bantuan Lapangan',
+    requiredSkillNameEn: 'Field Relief Aid Distribution',
     priority: 'high',
     locationLat: -6.1510,
     locationLng: 106.8045,
@@ -419,9 +661,12 @@ export const SEED_TASKS: Task[] = [
     id: 'task-3-2',
     disasterId: 'disaster-3',
     title: 'Penanganan Luka Bakar Ringan dan Sesak Napas Asap (ISPA)',
+    titleEn: 'First Aid Treatment: Minor Burns and Smoke Inhalation Respiratory Distress',
     description: 'Pelayanan P3K dan penguapan nebulizer bagi 22 warga yang terpapar asap pekat saat kebakaran semalam.',
+    descriptionEn: 'Field wound treatment, burn dress changes, and nebulizer bronchodilator therapy for 22 residents suffering smoke inhalation.',
     requiredSkillCategory: 'medical',
     requiredSkillName: 'Paramedis Lapangan',
+    requiredSkillNameEn: 'Field Paramedic & EMT',
     priority: 'urgent',
     locationLat: -6.1515,
     locationLng: 106.8038,
@@ -1542,15 +1787,21 @@ export const SEED_BMKG_ALERTS: BMKGAlert[] = [
   {
     id: 'bmkg-01',
     title: 'Peringatan Dini Cuaca Ekstrem Jabodetabek',
+    titleEn: 'Early Warning: Extreme Severe Weather for Greater Jakarta',
     eventType: 'Hujan Lebat & Angin Kencang',
     location: 'Jabodetabek Hulu & Pesisir',
     timestamp: '2026-10-12T04:00:00Z',
     level: 'warning',
-    coordinates: [-6.2088, 106.8456]
+    coordinates: [-6.2088, 106.8456],
+    description: 'Potensi hujan lebat disertai kilat/petir dan angin kencang berdurasi lebih dari 3 jam.',
+    descriptionEn: 'Potential heavy downpours with thunder and strong gusts exceeding 3 hours duration.',
+    instruction: 'Hindari berteduh di bawah pohon rindang atau papan reklame dan waspadai genangan.',
+    instructionEn: 'Avoid sheltering under trees or roadside billboards and stay vigilant of road inundation.'
   },
   {
     id: 'bmkg-02',
     title: 'Gempa Tektonik M 6.2 Selat Sunda',
+    titleEn: 'Sunda Strait M 6.2 Shallow Tectonic Earthquake',
     eventType: 'Gempa Bumi Dangkal',
     magnitude: '6.2 SR',
     depth: '18 km',
@@ -1558,43 +1809,67 @@ export const SEED_BMKG_ALERTS: BMKGAlert[] = [
     timestamp: '2026-10-12T02:35:00Z',
     level: 'alert',
     coordinates: [-6.6110, 105.7420],
-    potentialTsunami: false
+    potentialTsunami: false,
+    description: 'Pusat gempa dangkal di zona subduksi Selat Sunda dirasakan skala V MMI di Anyer.',
+    descriptionEn: 'Shallow hypocenter in Sunda Strait subduction felt at MMI V intensity in Anyer.',
+    instruction: 'Waspadai potensi gempa susulan tektonik dan hindari gedung dengan retakan struktural.',
+    instructionEn: 'Expect tectonic aftershocks and evacuate damaged buildings with structural fissures.'
   },
   {
     id: 'bmkg-03',
     title: 'Tinggi Muka Air Katulampa Siaga 1 (220 cm)',
+    titleEn: 'Katulampa Dam River Level Reached Critical Alert Level 1 (220 cm)',
     eventType: 'Banjir Kiriman',
     location: 'Bendung Katulampa, Bogor',
     timestamp: '2026-10-12T03:10:00Z',
     level: 'warning',
-    coordinates: [-6.6341, 106.8340]
+    coordinates: [-6.6341, 106.8340],
+    description: 'Debit air ekstrem hulu Sungai Ciliwung mengalir deras menuju pintu air Manggarai Jakarta.',
+    descriptionEn: 'Extreme upstream runoff along the Ciliwung River heading swiftly towards Manggarai Sluice.',
+    instruction: 'Warga bantaran Kali Ciliwung segera amankan barang berharga dan siap evakuasi mandiri.',
+    instructionEn: 'Riparian residents along Ciliwung must secure belongings and execute self-evacuation.'
   },
   {
     id: 'bmkg-04',
     title: 'Peringatan Karhutla Siaga Darurat Riau - 68 Hotspot Aktif',
+    titleEn: 'Riau Peatland Wildfire Red Alert - 68 Active Satellite Hotspots',
     eventType: 'Kebakaran Hutan & Kabut Asap (ISPU 285 Sangat Tidak Sehat)',
     location: 'Siak, Pelalawan & Bengkalis, Riau',
     timestamp: '2026-10-12T01:30:00Z',
     level: 'warning',
-    coordinates: [0.7893, 102.0469]
+    coordinates: [0.7893, 102.0469],
+    description: 'Sebaran titik panas lahan gambut memicu asap pekat dan penurunan jarak pandang penerbangan.',
+    descriptionEn: 'Peatland hot spots trigger dense smoke plumes severely reducing aviation visibility.',
+    instruction: 'Wajib gunakan masker respirator N95 di luar ruangan dan batasi aktivitas fisik anak.',
+    instructionEn: 'Mandatory N95 respirator mask usage outdoors; restrict outdoor activities for minors.'
   },
   {
     id: 'bmkg-05',
     title: 'Peringatan Karhutla Gambut Kalteng - 94 Hotspot BMKG',
+    titleEn: 'Central Kalimantan Peatland Wildfire Alert - 94 Thermal Hotspots',
     eventType: 'Kebakaran Gambut Bawah Tanah & Asap Ekstrem',
     location: 'Palangka Raya & Sebangau, Kalimantan Tengah',
     timestamp: '2026-10-11T16:00:00Z',
     level: 'warning',
-    coordinates: [-2.2087, 113.9165]
+    coordinates: [-2.2087, 113.9165],
+    description: 'Titik api bawah tanah menyala di kedalaman 1.5 meter gambut kering Taman Nasional Sebangau.',
+    descriptionEn: 'Subterranean ground fires smoldering at 1.5m depth in desiccated Sebangau peat domes.',
+    instruction: 'Aktivasi pompa bor air tanah dan dilarang menyalakan api terbuka di area perkebunan.',
+    instructionEn: 'Deploy ground tube-well pumps; strict ban on open-flame burning in plantations.'
   },
   {
     id: 'bmkg-06',
     title: 'Peringatan Darurat Banjir Demak - Tanggul Sungai Wulan Kritis',
+    titleEn: 'Demak Riverine Flood Emergency - Wulan River Embankment Near Breach',
     eventType: 'Banjir Bandang & Jalur Pantura Lumpuh',
     location: 'Karanganyar, Demak & Kudus, Jawa Tengah',
     timestamp: '2026-10-12T03:15:00Z',
     level: 'alert',
-    coordinates: [-6.8944, 110.7412]
+    coordinates: [-6.8944, 110.7412],
+    description: 'Limpasan air sungai melebihi bibir tanggul Karanganyar mengancam jalur logistik Pantura.',
+    descriptionEn: 'River surge overtopping Karanganyar levee crest threatening critical Pantura transit artery.',
+    instruction: 'Pengemudi logistik dihimbau ambil rute alternatif lingkar selatan dan evakuasi warga.',
+    instructionEn: 'Transit truckers must reroute to southern bypass; residents evacuate to higher grounds.'
   }
 ];
 
@@ -1674,10 +1949,20 @@ export const SEED_REGIONAL_READINESS: import('../types/index.ts').RegionalReadin
       'Keterbatasan debit air parit saat puncak kemarau untuk pasokan pompa apung',
       'Kabut asap pekat memicu lonjakan kasus ISPA hingga 400% di kalangan anak-anak'
     ],
+    keyVulnerabilitiesEn: [
+          "Dry peatland at 2-3 meter depth is difficult to extinguish from the ground surface",
+          "Canal water deficit during peak drought halts floating pump water intake",
+          "Severe toxic smog triggers up to 400% surge in pediatric acute respiratory infections"
+    ],
     strategicRecommendations: [
       'Perbanyak titik rewetting gambut melalui reaktivasi 500 sekat kanal di Siak dan Pelalawan',
       'Mobilisasi tim Manggala Agni dan Masyarakat Peduli Api (MPA) dengan drone thermal malam hari',
       'Dropping masker N95 gratis dan posko oksigen murni di seluruh Puskesmas terdampak kabut asap'
+    ],
+    strategicRecommendationsEn: [
+          "Expand peat re-wetting zones by reactivating 500 canal blocks in Siak and Pelalawan",
+          "Mobilize Manggala Agni and Community Fire brigades with night thermal reconnaissance drones",
+          "Deploy free N95 respirators and dedicated medical oxygen pods across haze-affected health clinics"
     ]
   },
   {
@@ -1722,10 +2007,20 @@ export const SEED_REGIONAL_READINESS: import('../types/index.ts').RegionalReadin
       'Akses jalan darat ke pedalaman Sebangau terisolasi dan hanya bisa dicapai kelotok/perahu',
       'Kekurangan armada water bombing helikopter kapasitas 4000 liter'
     ],
+    keyVulnerabilitiesEn: [
+          "Smoldering peat fires spread underground without open flames, complicating detection",
+          "Deep Sebangau interior lacks overland access and can only be reached via longboats (kelotok)",
+          "Shortage of heavy water bombing helicopters with 4,000-liter capacity"
+    ],
     strategicRecommendations: [
       'Ajukan penambahan 3 helikopter water bombing Chinook/Kamov ke BNPB Pusat',
       'Bentuk satuan tugas relawan injeksi gambut bertekanan tinggi (nozzle khusus 2 meter)',
       'Sosialisasi moratorium pembukaan lahan ladang berpindah dengan sistem pembakaran'
+    ],
+    strategicRecommendationsEn: [
+          "Request 3 heavy water-bombing helicopters (Chinook/Kamov) from Central BNPB",
+          "Establish high-pressure peat lance injection volunteer units with 2-meter subsoil nozzles",
+          "Enforce educational moratorium against slash-and-burn shifting cultivation"
     ]
   },
   {
@@ -1803,10 +2098,20 @@ export const SEED_REGIONAL_READINESS: import('../types/index.ts').RegionalReadin
       'Penyempitan dan sedimentasi bantaran Kali Ciliwung, Krukut, dan Pesanggrahan',
       'Banjir rob pasang laut bersamaan dengan luapan hulu di muara Pluit dan Marunda'
     ],
+    keyVulnerabilitiesEn: [
+          "Upstream Katulampa flood crest reaches Jakarta within just 9-11 hours",
+          "Canal encroachment and heavy sedimentation along Ciliwung, Krukut, and Pesanggrahan rivers",
+          "Simultaneous coastal astronomical high tides (rob) and upstream fluvial discharge at Pluit/Marunda"
+    ],
     strategicRecommendations: [
       'Optimasi sistem peringatan dini SMS Blast BMKG & BPBD ke warga bantaran kali 6 jam sebelum tiba',
       'Siagakan pompa stasioner waduk Pluit dan mobil pompa damkar mobile berkapasitas 500 liter/detik',
       'Rotasi relawan perahu LCR dan Tagana untuk shift malam di Kampung Melayu, Bidara Cina, dan Bukit Duri'
+    ],
+    strategicRecommendationsEn: [
+          "Optimize automated SMS warning broadcasts to riverside residents 6 hours prior to flood arrival",
+          "Standby stationary reservoir pumps and high-capacity mobile municipal pumper trucks (500 L/s)",
+          "Rotate certified LCR boat rescue crews and Tagana volunteers for 24-hour river patrols"
     ]
   },
   {
@@ -1884,10 +2189,20 @@ export const SEED_REGIONAL_READINESS: import('../types/index.ts').RegionalReadin
       'Terputusnya urat nadi ekonomi Pantura Demak-Kudus menghambat suplai logistik darat',
       'Kekurangan armada perahu karet bermesin untuk evakuasi di air berarus deras'
     ],
+    keyVulnerabilitiesEn: [
+          "Fragile riprap embankments vulnerable to scouring under high-velocity flood surges",
+          "Disruption of Pantura coastal transit corridor paralyzes nationwide overland freight",
+          "Shortage of motorized flood rescue boats capable of navigating turbulent breach currents"
+    ],
     strategicRecommendations: [
       'Pengerahan alat berat amfibi dan tiang pancang bambu/jumbo bag pasir untuk penutupan tanggul darurat',
       'Mobilisasi tim gabungan Basarnas, TNI, dan relawan SIGAP dari Semarang dan Solo',
       'Buka koridor dapur umum massal di SPBU dan masjid jalur lingkar Kudus'
+    ],
+    strategicRecommendationsEn: [
+          "Mobilize amphibious excavators and geotextile jumbo sandbags for emergency breach sealing",
+          "Dispatch joint response teams from Basarnas, military engineers, and SIGAP volunteers",
+          "Open mass relief soup kitchens at highway rest areas and community centers along Kudus bypass"
     ]
   },
   {
@@ -1932,10 +2247,20 @@ export const SEED_REGIONAL_READINESS: import('../types/index.ts').RegionalReadin
       'Keterbatasan pasokan masker anak dan oksigen medis di puskesmas pelosok Ketapang',
       'Minimnya armada motor trail pengangkut mesin pompa alkon ke pelosok semak'
     ],
+    keyVulnerabilitiesEn: [
+          "Rapid wildland fire spread across remote private concessions and Gunung Palung conservation zones",
+          "Shortage of pediatric masks and medical oxygen canisters in remote Ketapang rural clinics",
+          "Limited offroad trail-bike fleet able to haul portable water pumps across peat brush"
+    ],
     strategicRecommendations: [
       'Perkuat patroli terpadu Babinsa, Bhabinkamtibmas dan Relawan Masyarakat Peduli Api',
       'Pengadaan 50 unit pompa punggung (backpack pump) dan selang pemadam tahan panas',
       'Pemasangan plang larangan membakar lahan dengan sanksi pidana tegas di area perbatasan desa'
+    ],
+    strategicRecommendationsEn: [
+          "Strengthen joint military, police, and community fire warden ground patrols",
+          "Procure 50 heat-resistant backpack spray pumps and flame-resistant hose bundles",
+          "Erect zero-burn legal warning signage with strict criminal sanctions at forest concession borders"
     ]
   },
   {
@@ -1980,10 +2305,20 @@ export const SEED_REGIONAL_READINESS: import('../types/index.ts').RegionalReadin
       'Kerentanan longsor tebing di kawasan Puncak Bogor dan Cianjur menyusul curah hujan tinggi',
       'Beban aliran lumpur merusak tanggul drainase pemukiman padat Bekasi dan Karawang'
     ],
+    keyVulnerabilitiesEn: [
+          "Bandung basin lowlands (Dayeuhkolot, Baleendah) experience stagnant multi-week backwater inundations",
+          "Steep slope landslide risks along Puncak Bogor and Cianjur following high-intensity precipitation",
+          "Heavy sediment runoffs damaging drainage infrastructure in high-density Bekasi and Karawang estates"
+    ],
     strategicRecommendations: [
       'Aktivasi polder kolam retensi Cieunteung dan Andir dengan pompa berdaya penuh',
       'Siagakan perahu fiber dan relawan evakuasi untuk jalur sempit gang pemukiman Citarum',
       'Penguatan posko kesehatan penanganan leptospirosis dan penyakit kulit di pengungsian'
+    ],
+    strategicRecommendationsEn: [
+          "Run Cieunteung and Andir retention polder pumping stations at maximum discharge capacity",
+          "Preposition shallow fiberglass rescue dinghies and teams for narrow Citarum alleyways",
+          "Reinforce field health posts against leptospirosis and waterborne infections in shelter clusters"
     ]
   },
   {
@@ -2028,10 +2363,20 @@ export const SEED_REGIONAL_READINESS: import('../types/index.ts').RegionalReadin
       'Potensi banjir bandang lahar hujan di sungai-sungai lereng Gunung Semeru',
       'Keterbatasan pasokan air bersih siap minum saat sumber sumur tercemar banjir'
     ],
+    keyVulnerabilitiesEn: [
+          "Annual Bengawan Solo overbank floods submerge thousands of hectares of productive agricultural paddies",
+          "High-velocity cold volcanic lahar debris flow hazards along Mount Semeru drainage rivers",
+          "Shortage of potable drinking water once shallow domestic wells are contaminated by flood silt"
+    ],
     strategicRecommendations: [
       'Penyediaan unit mobil penjernih air (Water Treatment Unit) bergerak ke Bojonegoro dan Tuban',
       'Pasang sensor EWS early warning di bantaran hulu Bengawan Solo terintegrasi ponsel relawan',
       'Koordinasi alokasi beras cadangan pemerintah (CBP) untuk antisipasi gagal panen'
+    ],
+    strategicRecommendationsEn: [
+          "Deploy mobile trailer-mounted water treatment units to Bojonegoro and Tuban",
+          "Install connected early warning water level sensors linked to volunteer responder alerts",
+          "Coordinate government emergency rice reserves to cushion smallholder crop failure"
     ]
   },
   {
@@ -2076,10 +2421,20 @@ export const SEED_REGIONAL_READINESS: import('../types/index.ts').RegionalReadin
       'Arah angin membawa kabut asap langsung menuju pusat kota metropolitan Palembang',
       'Sumber air parit gambut mengering menyulitkan operasi water pumping darat'
     ],
+    keyVulnerabilitiesEn: [
+          "Extensive Ogan Komering Ilir (OKI) peat domes highly prone to deep smoldering during droughts",
+          "Prevailing southeasterly wind vectors blow dense wildfire haze straight into Palembang metropolitan area",
+          "Dry drainage ditches hinder overland high-volume pumping operations"
+    ],
     strategicRecommendations: [
       'Optimalisasi teknologi modifikasi cuaca (TMC) hujan buatan bekerja sama dengan BRIN dan BMKG',
       'Peningkatan patroli gabungan udara helikopter untuk deteksi dini titik api sebelum membesar',
       'Distribusi masker N95 dan vitamin peningkat imun kepada anak-anak sekolah dasar'
+    ],
+    strategicRecommendationsEn: [
+          "Optimize cloud seeding weather modification operations in coordination with BRIN and BMKG",
+          "Scale up helicopter aerial reconnaissance flights to suppress spot fires before they breach tree canopy",
+          "Distribute free N95 respirators and immunity vitamins to vulnerable primary school students"
     ]
   },
   {
@@ -2124,10 +2479,20 @@ export const SEED_REGIONAL_READINESS: import('../types/index.ts').RegionalReadin
       'Banjir bandang galodo membawa batu besar dan batang pohon yang merusak jembatan dan rumah',
       'Topografi perbukitan curam rawan memutus akses jalur evakuasi antar nagari'
     ],
+    keyVulnerabilitiesEn: [
+          "Millions of cubic meters of volcanic sediment on Mount Marapi slopes primed for flash lahar torrents",
+          "Galodo boulder flows capable of crushing concrete bridges and burying agrarian villages",
+          "Steep hill terrain prone to road severing, cutting off emergency evacuation corridors"
+    ],
     strategicRecommendations: [
       'Pembangunan sabo dam darurat dan pengerukan alur sungai lahar dingin',
       'Pemberlakuan zona merah larangan bermukim 500 meter dari sempadan sungai berhulu Marapi',
       'Pemasangan sensor getaran seismik dan sirene peringatan dini lahar dingin'
+    ],
+    strategicRecommendationsEn: [
+          "Construct emergency debris sabo dams and dredge lahar riverbeds continuously",
+          "Enforce 500-meter mandatory evacuation buffer zones from active Marapi-originating riverbanks",
+          "Install seismic ground vibration geophones and automated downstream acoustic sirens"
     ]
   },
   {
@@ -2172,10 +2537,20 @@ export const SEED_REGIONAL_READINESS: import('../types/index.ts').RegionalReadin
       'Banjir pasang surut sungai Barito dan Martapura yang merendam rumah panggung hingga berhari-hari',
       'Degradasi daerah tangkapan air pegunungan Meratus meningkatkan frekuensi banjir kilat'
     ],
+    keyVulnerabilitiesEn: [
+          "Peat scrub fires near Syamsudin Noor International Airport repeatedly ground flight operations",
+          "Tidal backflow on the Barito and Martapura rivers submerges stilt houses for days",
+          "Deforestation in the Meratus mountain catchment amplifies flash runoff frequency"
+    ],
     strategicRecommendations: [
       'Siagakan posko pemadam terpadu 24 jam dengan pasokan air hidran di perimeter bandara',
       'Manfaatkan perahu tradisional jukung dan armada LCR untuk dropping bantuan pangan ke pelosok rawa',
       'Revitalisasi fungsi lahan basah dan penanaman vegetasi pencegah erosi di bantaran sungai'
+    ],
+    strategicRecommendationsEn: [
+          "Staff 24/7 dedicated fire suppression outposts with perimeter hydrant water connections at airport bounds",
+          "Deploy traditional shallow-draft jukung canoes and LCR inflatables for swamp community food drops",
+          "Rehabilitate wetland buffers and replant soil-binding riparian vegetation along riverbanks"
     ]
   }
 ];

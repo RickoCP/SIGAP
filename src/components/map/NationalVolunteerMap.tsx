@@ -354,7 +354,9 @@ export const NationalVolunteerMap: React.FC<NationalVolunteerMapProps> = ({
                     const sk = SEED_SKILLS.find(s => s.id === vs.skillId);
                     return (
                       <div key={idx} className="flex items-center justify-between text-xs bg-slate-800/50 p-2 rounded border border-slate-700/60">
-                        <span className="font-medium text-slate-200">{sk?.name || vs.skillId}</span>
+                        <span className="font-medium text-slate-200">
+                          {sk ? (isEn ? (sk.nameEn || sk.name) : sk.name) : vs.skillId}
+                        </span>
                         <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${
                           vs.proficiency === 'expert' ? 'bg-purple-950 text-purple-300 border border-purple-800' : 'bg-blue-950 text-blue-300 border border-blue-800'
                         }`}>

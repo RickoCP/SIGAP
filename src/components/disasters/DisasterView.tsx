@@ -141,9 +141,11 @@ export const DisasterView: React.FC<DisasterViewProps> = ({
                 {getSeverityBadge(d.severity)}
               </div>
 
-              <h4 className="text-sm font-bold text-white line-clamp-1">{d.title}</h4>
+              <h4 className="text-sm font-bold text-white line-clamp-1">
+                {language === 'en' ? (d.titleEn || d.title) : d.title}
+              </h4>
               <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">
-                {d.description}
+                {language === 'en' ? (d.descriptionEn || d.description) : d.description}
               </p>
 
               <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono tabular-nums text-slate-400">
@@ -168,7 +170,9 @@ export const DisasterView: React.FC<DisasterViewProps> = ({
               <span className="p-1.5 rounded-lg bg-slate-800 border border-slate-700">
                 {getDisasterIcon(selectedDisaster.type)}
               </span>
-              <h2 className="text-lg font-bold text-white">{selectedDisaster.title}</h2>
+              <h2 className="text-lg font-bold text-white">
+                {language === 'en' ? (selectedDisaster.titleEn || selectedDisaster.title) : selectedDisaster.title}
+              </h2>
               {getSeverityBadge(selectedDisaster.severity)}
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400 font-mono tabular-nums">
@@ -180,7 +184,13 @@ export const DisasterView: React.FC<DisasterViewProps> = ({
                 {language === 'id' ? 'Koordinat' : 'Coordinates'}: {selectedDisaster.locationLat.toFixed(4)}, {selectedDisaster.locationLng.toFixed(4)}
               </span>
               <span>
-                Status: <strong className="text-blue-400 uppercase">{selectedDisaster.status}</strong>
+                Status: <strong className="text-blue-400 uppercase">
+                  {selectedDisaster.status === 'active' 
+                    ? (language === 'id' ? 'Aktif' : 'Active') 
+                    : selectedDisaster.status === 'contained' 
+                    ? (language === 'id' ? 'Terkendali' : 'Contained') 
+                    : (language === 'id' ? 'Selesai' : 'Resolved')}
+                </strong>
               </span>
             </div>
           </div>
@@ -230,7 +240,7 @@ export const DisasterView: React.FC<DisasterViewProps> = ({
               {language === 'id' ? 'Kronologi & Kondisi Lapangan' : 'Chronology & Field Conditions'}
             </h4>
             <p className="text-xs text-slate-300 leading-relaxed bg-slate-950/60 p-4 rounded-xl border border-slate-800/80">
-              {selectedDisaster.description}
+              {language === 'en' ? (selectedDisaster.descriptionEn || selectedDisaster.description) : selectedDisaster.description}
             </p>
 
             <div className="grid grid-cols-3 gap-3 pt-1">
@@ -266,7 +276,10 @@ export const DisasterView: React.FC<DisasterViewProps> = ({
               {language === 'id' ? 'Kebutuhan Mendesak Teridentifikasi' : 'Identified Priority Needs'}
             </h4>
             <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800/80 space-y-2">
-              {selectedDisaster.keyNeeds.map((need, i) => (
+              {((language === 'en' && selectedDisaster.keyNeedsEn && selectedDisaster.keyNeedsEn.length > 0)
+                ? selectedDisaster.keyNeedsEn
+                : selectedDisaster.keyNeeds
+              ).map((need, i) => (
                 <div key={i} className="flex items-center gap-2 text-xs text-slate-200">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                   <span>{need}</span>
@@ -331,23 +344,29 @@ export const DisasterView: React.FC<DisasterViewProps> = ({
                           >
                             {task.priority.toUpperCase()}
                           </span>
-                          <h4 className="text-sm font-bold text-white">{task.title}</h4>
+                          <h4 className="text-sm font-bold text-white">
+                            {language === 'en' ? (task.titleEn || task.title) : task.title}
+                          </h4>
                         </div>
                         <p className="text-xs text-slate-300 mt-1 line-clamp-2">
-                          {task.description}
+                          {language === 'en' ? (task.descriptionEn || task.description) : task.description}
                         </p>
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-xs text-slate-400 font-mono tabular-nums">
                           <span>
                             {language === 'id' ? 'Keahlian' : 'Skill'}:{' '}
                             <strong className="text-blue-400 font-medium">
-                              {task.requiredSkillName}
+                              {language === 'en' ? (task.requiredSkillNameEn || task.requiredSkillName) : task.requiredSkillName}
                             </strong>
                           </span>
                           <span>
                             {language === 'id' ? 'Lokasi' : 'Location'}: <span className="text-slate-300">{task.address}</span>
                           </span>
                           <span>
-                            Target: <span className="text-slate-300">{task.targetCompletionTime || (language === 'id' ? '2 jam' : '2 hours')}</span>
+                            Target: <span className="text-slate-300">
+                              {task.targetCompletionTime 
+                                ? (language === 'en' ? task.targetCompletionTime.replace('jam', 'hours').replace('menit', 'mins') : task.targetCompletionTime) 
+                                : (language === 'id' ? '2 jam' : '2 hours')}
+                            </span>
                           </span>
                         </div>
                       </div>

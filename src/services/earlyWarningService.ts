@@ -42,12 +42,13 @@ export interface CitizenProximityStatus {
 export function evaluateCitizenProximity(
   userLat: number, 
   userLng: number, 
-  alerts: EarlyWarningAlert[]
+  alerts: EarlyWarningAlert[],
+  lang: 'id' | 'en' = 'id'
 ): CitizenProximityStatus {
   if (alerts.length === 0) {
     return {
       zone: 'green_safe',
-      zoneTitle: 'Zona Aman',
+      zoneTitle: lang === 'en' ? 'Safe & Controlled Zone' : 'Zona Aman Terkendali',
       distanceKm: 999,
       nearestAlert: null,
       evacuationRecommended: false
@@ -68,7 +69,7 @@ export function evaluateCitizenProximity(
   if (!nearestAlert) {
     return {
       zone: 'green_safe',
-      zoneTitle: 'Zona Aman',
+      zoneTitle: lang === 'en' ? 'Safe & Controlled Zone' : 'Zona Aman Terkendali',
       distanceKm: 999,
       nearestAlert: null,
       evacuationRecommended: false
@@ -80,7 +81,7 @@ export function evaluateCitizenProximity(
   if (nearestDist <= dangerRadius * 0.5) {
     return {
       zone: 'red_danger',
-      zoneTitle: 'Zona Bahaya Langsung (AWAS)',
+      zoneTitle: lang === 'en' ? 'Direct Danger Zone (RED ALERT)' : 'Zona Bahaya Langsung (AWAS)',
       distanceKm: nearestDist,
       nearestAlert,
       evacuationRecommended: true
@@ -88,7 +89,7 @@ export function evaluateCitizenProximity(
   } else if (nearestDist <= dangerRadius) {
     return {
       zone: 'orange_warning',
-      zoneTitle: 'Zona Siaga Evakuasi (SIAGA)',
+      zoneTitle: lang === 'en' ? 'Evacuation Standby Zone (WARNING)' : 'Zona Siaga Evakuasi (SIAGA)',
       distanceKm: nearestDist,
       nearestAlert,
       evacuationRecommended: true
@@ -96,7 +97,7 @@ export function evaluateCitizenProximity(
   } else if (nearestDist <= dangerRadius * 1.8) {
     return {
       zone: 'yellow_advisory',
-      zoneTitle: 'Zona Pantau & Waspada (WASPADA)',
+      zoneTitle: lang === 'en' ? 'Monitoring & Advisory Zone (ADVISORY)' : 'Zona Pantau & Waspada (WASPADA)',
       distanceKm: nearestDist,
       nearestAlert,
       evacuationRecommended: false
@@ -105,7 +106,7 @@ export function evaluateCitizenProximity(
 
   return {
     zone: 'green_safe',
-    zoneTitle: 'Zona Aman Terkendali',
+    zoneTitle: lang === 'en' ? 'Safe & Controlled Zone' : 'Zona Aman Terkendali',
     distanceKm: nearestDist,
     nearestAlert,
     evacuationRecommended: false

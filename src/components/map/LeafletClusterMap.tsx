@@ -211,8 +211,8 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
             </span>
             <span class="text-xs text-slate-400 font-mono">${d.province}</span>
           </div>
-          <h4 class="font-bold text-sm text-white mb-1">${d.title}</h4>
-          <p class="text-xs text-slate-300 line-clamp-2 mb-2">${d.description}</p>
+          <h4 class="font-bold text-sm text-white mb-1">${isEn ? (d.titleEn || d.title) : d.title}</h4>
+          <p class="text-xs text-slate-300 line-clamp-2 mb-2">${isEn ? (d.descriptionEn || d.description) : d.description}</p>
           <div class="grid grid-cols-2 gap-2 text-xs bg-slate-800/60 p-2 rounded mb-2 border border-slate-700/60">
             <div>
               <div class="text-[10px] text-slate-400">${isEn ? 'Affected' : 'Terdampak'}</div>
@@ -399,10 +399,10 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
             </span>
             <span class="text-[11px] text-slate-400 font-mono">${t.volunteersAssigned}/${t.volunteersNeeded} ${isEn ? 'Volunteers' : 'Relawan'}</span>
           </div>
-          <h5 class="font-bold text-sm text-white mb-1">${t.title}</h5>
-          <p class="text-xs text-slate-300 line-clamp-2 mb-2">${t.description}</p>
+          <h5 class="font-bold text-sm text-white mb-1">${isEn ? (t.titleEn || t.title) : t.title}</h5>
+          <p class="text-xs text-slate-300 line-clamp-2 mb-2">${isEn ? (t.descriptionEn || t.description) : t.description}</p>
           <div class="text-[11px] bg-slate-800/80 p-1.5 rounded mb-2 text-slate-300 border border-slate-700/60">
-            ${isEn ? 'Skill Required:' : 'Keahlian:'} <span class="font-semibold text-blue-400">${t.requiredSkillName}</span>
+            ${isEn ? 'Skill Required:' : 'Keahlian:'} <span class="font-semibold text-blue-400">${isEn ? (t.requiredSkillNameEn || t.requiredSkillName) : t.requiredSkillName}</span>
           </div>
           ${onOpenAIMatching ? `
             <button id="btn-match-task-${t.id}" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-1.5 px-3 rounded text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm shadow-blue-500/20">

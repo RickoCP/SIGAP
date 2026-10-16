@@ -118,12 +118,12 @@ export const AIMatchingModal: React.FC<AIMatchingModalProps> = ({
         <div className="bg-slate-950/60 px-5 py-3 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div>
             <span className="text-slate-400">{isEn ? 'Target Mission:' : 'Tugas Sasaran:'}</span>{' '}
-            <span className="font-semibold text-white">{task.title}</span>
+            <span className="font-semibold text-white">{isEn ? (task.titleEn || task.title) : task.title}</span>
           </div>
           <div className="flex items-center gap-4 text-slate-300 font-mono tabular-nums">
             <span>
               {isEn ? 'Required Skill: ' : 'Kebutuhan: '}
-              <strong className="text-blue-400">{task.requiredSkillName}</strong>
+              <strong className="text-blue-400">{isEn ? (task.requiredSkillNameEn || task.requiredSkillName) : task.requiredSkillName}</strong>
             </span>
             <span>
               {isEn ? 'Quota: ' : 'Kebutuhan Kuota: '}

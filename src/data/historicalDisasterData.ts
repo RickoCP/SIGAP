@@ -4,6 +4,7 @@ import { RegionalHistoricalData, MonthlyHistoricalTrend, YearlyHistoricalTrend, 
 export const REGIONAL_HISTORICAL_DATA: Record<string, RegionalHistoricalData> = {
   'reg-riau': {
     historicalAnalysisNotes: 'Riau memiliki pola bimodal dengan dua puncak musim kemarau (Februari-Maret dan Juni-Oktober). Ancaman utama adalah kebakaran lahan gambut dalam (kedalaman >2m) yang dipicu kekeringan dan hembusan angin tenggara.',
+    historicalAnalysisNotesEn: 'Riau exhibits a bimodal climate pattern with two peak dry seasons (February-March and June-October). The primary threat is deep peatland smoldering fires (>2m depth) triggered by severe droughts and southeasterly winds.',
     monthlyTrends: [
       { month: 'Jan', monthFull: 'Januari', fireHotspots: 14, fireRiskScore: 25, rainfallMm: 240, floodIncidents: 6, floodRiskScore: 65, dominantThreat: 'flood' },
       { month: 'Feb', monthFull: 'Februari', fireHotspots: 48, fireRiskScore: 55, rainfallMm: 110, floodIncidents: 2, floodRiskScore: 30, dominantThreat: 'fire' },
@@ -29,8 +30,11 @@ export const REGIONAL_HISTORICAL_DATA: Record<string, RegionalHistoricalData> = 
       {
         threat: 'fire',
         title: 'Jendela Mitigasi Pra-Karhutla Riau',
+        titleEn: 'Riau Pre-Wildfire Peatland Mitigation Window',
         peakRiskPeriod: 'Juli - Oktober (Puncak Hotspot)',
+        peakRiskPeriodEn: 'July - October (Peak Hotspot Surge)',
         criticalMitigationWindow: 'Mei - Juni (Wajib Aksi Dini)',
+        criticalMitigationWindowEn: 'May - June (Mandatory Early Action)',
         urgency: 'critical',
         status: 'active_window',
         recommendedActions: [
@@ -38,25 +42,40 @@ export const REGIONAL_HISTORICAL_DATA: Record<string, RegionalHistoricalData> = 
           'Aktivasi posko terpadu Babinsa, Manggala Agni & Masyarakat Peduli Api (MPA)',
           'Mobilisasi drone thermal untuk patroli malam hari di perbatasan kebun rakyat',
           'Stok awal masker respirator N95 di 35 Puskesmas lingkar gambut'
+        ],
+        recommendedActionsEn: [
+          'Audit and re-wet canal blocks across 12 high-risk vulnerable peatland subdistricts',
+          'Activate integrated coordination command posts uniting Manggala Agni and Community Fire Care groups',
+          'Mobilize thermal infrared night drones along smallholder plantation boundaries',
+          'Pre-stock N95 respirator masks across 35 community health clinics surrounding peat zones'
         ]
       },
       {
         threat: 'flood',
         title: 'Jendela Kesiapsiagaan Banjir DAS Kampar & Siak',
+        titleEn: 'Kampar & Siak River Basin Flood Preparedness Window',
         peakRiskPeriod: 'November - Januari (Curah Hujan Ekstrem)',
+        peakRiskPeriodEn: 'November - January (Extreme Precipitation)',
         criticalMitigationWindow: 'September - Oktober (Persiapan Posko & Pompa)',
+        criticalMitigationWindowEn: 'September - October (Command Post & Pump Staging)',
         urgency: 'high',
         status: 'upcoming',
         recommendedActions: [
           'Pembersihan gulma eceng gondok dan sedimentasi di muara sungai',
           'Inspeksi kelayakan mesin perahu LCR dan inventarisasi stok jaket pelampung',
           'Pemetaan ulang titik kumpul evakuasi di dataran tinggi kelurahan'
+        ],
+        recommendedActionsEn: [
+          'Clear invasive water hyacinth weed and sediment blocks in estuarine river mouths',
+          'Inspect inflatable rescue boat engines and tally certified life vest stocks',
+          'Remap elevated community evacuation assembly grounds above known flood lines'
         ]
       }
     ]
   },
   'reg-kalteng': {
     historicalAnalysisNotes: 'Kalteng memiliki bentang gambut Sebangau yang sangat rentan kebakaran bawah tanah (smoldering) saat El Niño. Asap pekat dapat bertahan berminggu-minggu jika pemadaman ground fire terlambat.',
+    historicalAnalysisNotesEn: 'Central Kalimantan contains the expansive Sebangau peat dome, severely prone to deep subterranean smoldering fires during El Niño. Toxic haze persists for weeks if ground suppression is delayed.',
     monthlyTrends: [
       { month: 'Jan', monthFull: 'Januari', fireHotspots: 8, fireRiskScore: 15, rainfallMm: 290, floodIncidents: 7, floodRiskScore: 72, dominantThreat: 'flood' },
       { month: 'Feb', monthFull: 'Februari', fireHotspots: 14, fireRiskScore: 22, rainfallMm: 260, floodIncidents: 6, floodRiskScore: 68, dominantThreat: 'flood' },
@@ -81,35 +100,49 @@ export const REGIONAL_HISTORICAL_DATA: Record<string, RegionalHistoricalData> = 
     mitigationWindows: [
       {
         threat: 'fire',
-        title: 'Jendela Mitigasi Pra-Karhutla Gambut Kalteng',
-        peakRiskPeriod: 'Juli - Oktober (Hotspot Ekstrem & Kabut Asap)',
-        criticalMitigationWindow: 'Mei - Juni (Pembasahan & Injeksi Gambut)',
+        title: 'Jendela Kesiapsiagaan Gambut Sebangau',
+        titleEn: 'Sebangau Peatland Ecosystem Preparedness Window',
+        peakRiskPeriod: 'Juli - Oktober (Kemarau Kritis)',
+        peakRiskPeriodEn: 'July - October (Critical Drought)',
+        criticalMitigationWindow: 'April - Juni (Operasi Pembasahan & Sumur Bor)',
+        criticalMitigationWindowEn: 'April - June (Re-wetting & Tube Well Operations)',
         urgency: 'critical',
         status: 'active_window',
         recommendedActions: [
-          'Pengisian tandon air darurat berkapasitas 5.000 liter di sepanjang jalur Sebangau',
-          'Uji coba operasional pipa nozel injeksi gambut bertekanan tinggi',
-          'Penyiapan helikopter patroli pemantauan titik asap dini',
-          'Edukasi intensif petani ladang agar tidak membakar sisa tebasan'
+          'Pengujian debit 450 sumur bor gambut dan penggantian selang kanvas',
+          'Penutupan pintu air kanal primer untuk mempertahankan tinggi muka air gambut >40cm',
+          'Aktivasi regu Masyarakat Relawan Kebakaran (MRK) di 4 kabupaten prioritas'
+        ],
+        recommendedActionsEn: [
+          'Flow-test 450 deep peat tube wells and replace compromised canvas hoses',
+          'Lock primary canal sluice gates to sustain peat water tables above the critical 40cm threshold',
+          'Mobilize community fire volunteers across 4 priority high-density peatland regencies'
         ]
       },
       {
         threat: 'flood',
-        title: 'Jendela Antisipasi Banjir Luapan DAS Kahayan & Barito',
-        peakRiskPeriod: 'November - Februari (Banjir Pemukiman Tepian)',
-        criticalMitigationWindow: 'September - Oktober (Kesiapsiagaan Posko Perahu)',
+        title: 'Antisipasi Luapan DAS Barito & Kahayan',
+        titleEn: 'Barito & Kahayan River Basin Flood Contingency',
+        peakRiskPeriod: 'November - Februari (Limpasan Hujan Hulu)',
+        peakRiskPeriodEn: 'November - February (Upstream Runoff)',
+        criticalMitigationWindow: 'September - Oktober (Distribusi Tandon & Logistik)',
+        criticalMitigationWindowEn: 'September - October (Water Tanks & Logistics Prepositioning)',
         urgency: 'high',
         status: 'upcoming',
         recommendedActions: [
-          'Perkuatan dermaga apung dan jukung evakuasi darurat desa',
           'Penyediaan tandon air bersih siap minum di balai kelurahan',
           'Posko penanganan penyakit kulit dan diare'
+        ],
+        recommendedActionsEn: [
+          'Preposition portable drinking water storage units at community neighborhood centers',
+          'Staff medical outposts for early treatment of waterborne gastrointestinal and skin ailments'
         ]
       }
     ]
   },
   'reg-dki': {
     historicalAnalysisNotes: 'DKI Jakarta didominasi ancaman banjir tiga dimensi: banjir kiriman hulu Puncak Bogor (Katulampa), banjir lokal hujan ekstrem, dan banjir rob pasang air laut di pesisir utara.',
+    historicalAnalysisNotesEn: 'DKI Jakarta faces a three-dimensional flood hazard: upstream runoff from Puncak/Bogor (Katulampa Dam), localized urban flash flooding, and tidal surge flooding (rob) along northern coastal seawalls.',
     monthlyTrends: [
       { month: 'Jan', monthFull: 'Januari', fireHotspots: 1, fireRiskScore: 10, rainfallMm: 390, floodIncidents: 16, floodRiskScore: 95, dominantThreat: 'flood' },
       { month: 'Feb', monthFull: 'Februari', fireHotspots: 2, fireRiskScore: 12, rainfallMm: 380, floodIncidents: 15, floodRiskScore: 92, dominantThreat: 'flood' },
@@ -135,8 +168,11 @@ export const REGIONAL_HISTORICAL_DATA: Record<string, RegionalHistoricalData> = 
       {
         threat: 'flood',
         title: 'Jendela Mitigasi Pra-Banjir Musim Hujan Jakarta',
+        titleEn: 'Jakarta Monsoon Pre-Flood Mitigation Window',
         peakRiskPeriod: 'Desember - Februari (Puncak Banjir Katulampa & Rob)',
+        peakRiskPeriodEn: 'December - February (Peak Upstream Runoff & Coastal Surges)',
         criticalMitigationWindow: 'September - November (Wajib Pengerukan & Cek Pompa)',
+        criticalMitigationWindowEn: 'September - November (Dredging & Sump Pump Readiness)',
         urgency: 'critical',
         status: 'active_window',
         recommendedActions: [
@@ -144,24 +180,38 @@ export const REGIONAL_HISTORICAL_DATA: Record<string, RegionalHistoricalData> = 
           'Uji beban 520 unit pompa stasioner waduk dan genset cadangan solar',
           'Simulasi SMS Blast peringatan dini BMKG 9 jam sebelum air tiba di Jakarta',
           'Penyiapan armada perahu karet LCR Tagana di Kampung Melayu, Bidara Cina, dan Rawa Buaya'
+        ],
+        recommendedActionsEn: [
+          'Dredge sediment sludge in Ciliwung, Pesanggrahan, and Krukut channels',
+          'Full-load test 520 reservoir stationary pumps and diesel backup generator units',
+          'Run automated early warning broadcast drills 9 hours prior to upstream crest arrival',
+          'Preposition certified inflatable rubber boats in Kampung Melayu, Bidara Cina, and Rawa Buaya'
         ]
       },
       {
         threat: 'fire',
         title: 'Antisipasi Kebakaran Permukiman Padat',
+        titleEn: 'Dense Settlement Urban Fire Prevention Window',
         peakRiskPeriod: 'Juli - September (Kemarau & Korsleting Listrik)',
+        peakRiskPeriodEn: 'July - September (Dry Weather & Electrical Short Circuits)',
         criticalMitigationWindow: 'Mei - Juni (Audit Instalasi & APAR)',
+        criticalMitigationWindowEn: 'May - June (Wiring Audit & Fire Extinguisher Inspections)',
         urgency: 'moderate',
         status: 'passed',
         recommendedActions: [
           'Audit instalasi listrik kabel semrawut di Tambora, Tanah Abang, dan Johar Baru',
           'Penyediaan hidran mandiri dan motor damkar roda tiga lorong sempit'
+        ],
+        recommendedActionsEn: [
+          'Audit congested household wiring in Tambora, Tanah Abang, and Johar Baru alleys',
+          'Install grassroots community fire hydrants and narrow-alley three-wheeler pump bikes'
         ]
       }
     ]
   },
   'reg-jateng': {
     historicalAnalysisNotes: 'Jawa Tengah memiliki kerentanan ganda: tanggul jebol di kawasan Pantura timur (Demak, Kudus, Grobogan) dan banjir rob pesisir Semarang, serta banjir DAS Bengawan Solo hulu.',
+    historicalAnalysisNotesEn: 'Central Java experiences dual vulnerability: dike breaches in eastern northern coastal plains (Demak, Kudus, Grobogan), tidal sea floods in Semarang, and upper Bengawan Solo overflow.',
     monthlyTrends: [
       { month: 'Jan', monthFull: 'Januari', fireHotspots: 2, fireRiskScore: 10, rainfallMm: 410, floodIncidents: 19, floodRiskScore: 98, dominantThreat: 'flood' },
       { month: 'Feb', monthFull: 'Februari', fireHotspots: 1, fireRiskScore: 8, rainfallMm: 395, floodIncidents: 18, floodRiskScore: 96, dominantThreat: 'flood' },
@@ -187,8 +237,11 @@ export const REGIONAL_HISTORICAL_DATA: Record<string, RegionalHistoricalData> = 
       {
         threat: 'flood',
         title: 'Jendela Mitigasi Penguatan Tanggul Kritis Pantura',
+        titleEn: 'Northern Coastal Highway (Pantura) Critical Dike Fortification Window',
         peakRiskPeriod: 'Desember - Maret (Limpasan Sungai Wulan & Lusi)',
+        peakRiskPeriodEn: 'December - March (Wulan & Lusi River Overflow)',
         criticalMitigationWindow: 'September - November (Wajib Pasang Bronjong & Trucuk)',
+        criticalMitigationWindowEn: 'September - November (Gabion Wire & Bamboo Pile Installation)',
         urgency: 'critical',
         status: 'active_window',
         recommendedActions: [
@@ -196,12 +249,19 @@ export const REGIONAL_HISTORICAL_DATA: Record<string, RegionalHistoricalData> = 
           'Pembersihan sedimentasi dan pengerukan alur muara Juwana dan Sayung',
           'Penyiapan logistik dapur umum massal di sepanjang koridor lingkar Pantura Kudus-Demak',
           'Integrasi radio komunitas darurat dan sirine banjir lokal'
+        ],
+        recommendedActionsEn: [
+          'Reinforce critical Wulan River dikes in Demak with geotextile jumbo bags and bamboo piles',
+          'Dredge heavy sediment in Juwana and Sayung estuarine channels',
+          'Preposition mass field kitchen supplies along the Kudus-Demak Pantura ring road',
+          'Integrate amateur radio links and localized siren warning relays'
         ]
       }
     ]
   },
   'reg-kalbar': {
     historicalAnalysisNotes: 'Kalbar rawan kebakaran semak belukar gambut dan perkebunan saat kemarau kering, serta banjir genangan pasang surut di muara DAS Kapuas yang merendam ribuan rumah panggung.',
+    historicalAnalysisNotesEn: 'West Kalimantan is vulnerable to scrub and peatland wildfires during dry spells, accompanied by tidal riverine backflow flooding along the lower Kapuas basin that submerges stilt houses.',
     monthlyTrends: [
       { month: 'Jan', monthFull: 'Januari', fireHotspots: 10, fireRiskScore: 18, rainfallMm: 270, floodIncidents: 6, floodRiskScore: 70, dominantThreat: 'flood' },
       { month: 'Feb', monthFull: 'Februari', fireHotspots: 28, fireRiskScore: 40, rainfallMm: 160, floodIncidents: 3, floodRiskScore: 40, dominantThreat: 'low' },
@@ -227,14 +287,22 @@ export const REGIONAL_HISTORICAL_DATA: Record<string, RegionalHistoricalData> = 
       {
         threat: 'fire',
         title: 'Jendela Mitigasi Pra-Karhutla Ketapang & Kubu Raya',
+        titleEn: 'Ketapang & Kubu Raya Pre-Wildfire Peatland Mitigation Window',
         peakRiskPeriod: 'Juli - September (Puncak Hotspot Lahan Gambut)',
+        peakRiskPeriodEn: 'July - September (Peak Peatland Fire Outbreaks)',
         criticalMitigationWindow: 'Mei - Juni (Patroli Bersama & Pembersihan Parit)',
+        criticalMitigationWindowEn: 'May - June (Joint Patrols & Canal Debris Clearance)',
         urgency: 'critical',
         status: 'active_window',
         recommendedActions: [
           'Pengadaan pompa punggung alkon portabel untuk relawan motor trail',
           'Pembersihan saluran parit gambut di batas konsesi perkebunan',
           'Sosialisasi maklumat larangan membuka ladang dengan api'
+        ],
+        recommendedActionsEn: [
+          'Procure portable backpack water spray pumps for trail-bike volunteer responders',
+          'Clear organic brush buildup from perimeter ditches along plantation concessions',
+          'Publicize zero-burn land clearance mandates with local elders'
         ]
       }
     ]
@@ -308,47 +376,72 @@ export function getHistoricalDataForRegion(regionId: string, regionName: string,
     {
       threat: 'fire',
       title: `Jendela Mitigasi Karhutla ${regionName}`,
+      titleEn: `Pre-Wildfire Peatland Mitigation Window for ${regionName}`,
       peakRiskPeriod: 'Juli - Oktober (Kemarau Puncak)',
+      peakRiskPeriodEn: 'July - October (Peak Drought)',
       criticalMitigationWindow: 'Mei - Juni (Wajib Aksi Dini)',
+      criticalMitigationWindowEn: 'May - June (Mandatory Early Action)',
       urgency: 'critical',
       status: 'active_window',
       recommendedActions: [
         'Aktivasi posko koordinasi Manggala Agni dan Masyarakat Peduli Api',
         'Inspeksi debit air tandon dan sekat kanal terdekat',
         'Drop perlengkapan masker N95 dan kacamata google pelindung asap'
+      ],
+      recommendedActionsEn: [
+        'Activate joint Manggala Agni and Community Fire Care field commands',
+        'Inspect canal gate water retention levels and emergency retention ponds',
+        'Preposition N95 respirator masks and smoke-sealed safety goggles'
       ]
     },
     {
       threat: 'flood',
       title: `Jendela Mitigasi Banjir Luapan ${regionName}`,
+      titleEn: `Riverine Flood Mitigation Window for ${regionName}`,
       peakRiskPeriod: 'November - Februari (Musim Hujan Ekstrem)',
+      peakRiskPeriodEn: 'November - February (Heavy Monsoon Inundation)',
       criticalMitigationWindow: 'September - Oktober (Pembersihan Drainase & Pompa)',
+      criticalMitigationWindowEn: 'September - October (Drainage Clearing & Pump Check)',
       urgency: 'high',
       status: 'upcoming',
       recommendedActions: [
         'Pengerukan saluran drainase utama dan sungai permukiman',
         'Uji kesiapan armada perahu karet dan motor tempel',
         'Penetapan jalur evakuasi aman warga'
+      ],
+      recommendedActionsEn: [
+        'Dredge primary stormwater culverts and community river channels',
+        'Test engine performance and hull integrity of inflatable rescue boats',
+        'Mark elevated community evacuation corridors and safe ground assembly zones'
       ]
     }
   ] : [
     {
       threat: 'flood',
       title: `Jendela Mitigasi Banjir & Tanggul Kritis ${regionName}`,
+      titleEn: `Flood & Critical Levee Fortification Window for ${regionName}`,
       peakRiskPeriod: 'Desember - Februari (Puncak Curah Hujan)',
+      peakRiskPeriodEn: 'December - February (Peak Monsoon Precipitation)',
       criticalMitigationWindow: 'September - November (Penguatan Tanggul & Sungai)',
+      criticalMitigationWindowEn: 'September - November (Embankment Fortification & Dredging)',
       urgency: 'critical',
       status: 'active_window',
       recommendedActions: [
         'Inspeksi tanggul sungai kritis rawan jebol dan pemasangan kawat bronjong',
         'Penyediaan mobil pompa sedot air mobile dan genset cadangan',
         'Sosialisasi peringatan dini sensor ketinggian air kepada warga bantaran'
+      ],
+      recommendedActionsEn: [
+        'Inspect fragile river levees and secure vulnerable banks with wire gabions',
+        'Stage mobile trailer drainage suction pumps and auxiliary diesel generators',
+        'Distribute early warning alert siren instructions to riparian communities'
       ]
     }
   ];
 
   return {
     historicalAnalysisNotes: `Profil iklim ${regionName} menunjukkan fluktuasi musiman yang dipengaruhi pola monsun Asia-Australia dengan variasi risiko sesuai musim kemarau dan hujan tahunan.`,
+    historicalAnalysisNotesEn: `Climate profile for ${regionName} shows cyclical seasonal variations influenced by the Asian-Australian monsoon system, driving alternating drought fire and wet flood periods.`,
     monthlyTrends,
     yearlyTrends,
     mitigationWindows

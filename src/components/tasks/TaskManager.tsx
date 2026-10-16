@@ -112,7 +112,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
             <option value="all">{isEn ? 'All Operations' : 'Semua Bencana'}</option>
             {disasters.map(d => (
               <option key={d.id} value={d.id}>
-                {d.title.split('-')[0].trim()}
+                {isEn ? (d.titleEn || d.title).split('-')[0].trim() : d.title.split('-')[0].trim()}
               </option>
             ))}
           </select>
@@ -169,13 +169,17 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
                       </span>
 
                       <span className="text-xs text-slate-400 font-mono">
-                        {disaster?.title.split('-')[0].trim() || (isEn ? 'Emergency Operation' : 'Operasi Darurat')}
+                        {isEn 
+                          ? ((disaster?.titleEn || disaster?.title || '').split('-')[0].trim() || 'Emergency Operation')
+                          : (disaster?.title.split('-')[0].trim() || 'Operasi Darurat')}
                       </span>
                     </div>
 
-                    <h3 className="text-sm font-bold text-white">{task.title}</h3>
+                    <h3 className="text-sm font-bold text-white">
+                      {isEn ? (task.titleEn || task.title) : task.title}
+                    </h3>
                     <p className="text-xs text-slate-300 mt-1 max-w-3xl leading-relaxed">
-                      {task.description}
+                      {isEn ? (task.descriptionEn || task.description) : task.description}
                     </p>
 
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-slate-400 font-mono tabular-nums">
@@ -185,11 +189,17 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
                       </span>
                       <span>
                         {isEn ? 'Required Skill: ' : 'Keahlian: '}
-                        <strong className="text-blue-400">{task.requiredSkillName}</strong>
+                        <strong className="text-blue-400">
+                          {isEn ? (task.requiredSkillNameEn || task.requiredSkillName) : task.requiredSkillName}
+                        </strong>
                       </span>
                       <span>
                         Target:{' '}
-                        <span className="text-slate-300">{task.targetCompletionTime || (isEn ? '2 hours' : '2 jam')}</span>
+                        <span className="text-slate-300">
+                          {isEn 
+                            ? (task.targetCompletionTime?.replace('jam', 'hours').replace('menit', 'mins') || '2 hours')
+                            : (task.targetCompletionTime || '2 jam')}
+                        </span>
                       </span>
                     </div>
                   </div>

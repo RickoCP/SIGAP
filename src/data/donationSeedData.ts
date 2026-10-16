@@ -4,47 +4,62 @@ export const DONATION_PACKAGES: DonationPackage[] = [
   {
     id: 'pkg-sembako',
     title: 'Paket Sembako Keluarga Berkah',
+    titleEn: 'Blessed Family Staple Food Package',
     description: 'Beras premium 5kg, minyak goreng 2L, sarden kaleng, kornet, teh, gula pasir, dan biskuit energi untuk konsumsi 1 keluarga selama 5 hari masa tanggap darurat.',
+    descriptionEn: 'Premium rice 5kg, cooking oil 2L, canned sardines, corned beef, tea, cane sugar, and high-energy biscuits to feed a family of 5 for 5 emergency response days.',
     priceIdr: 150000,
     icon: 'Utensils',
     category: 'food',
-    itemsIncluded: ['Beras Premium 5kg', 'Minyak Goreng 2L', 'Sarden Kaleng 3x', 'Gula Pasir & Teh', 'Biskuit Protein Tinggi']
+    itemsIncluded: ['Beras Premium 5kg', 'Minyak Goreng 2L', 'Sarden Kaleng 3x', 'Gula Pasir & Teh', 'Biskuit Protein Tinggi'],
+    itemsIncludedEn: ['Premium Rice 5kg', 'Cooking Oil 2L', 'Canned Sardines 3x', 'Cane Sugar & Tea', 'High Protein Biscuits']
   },
   {
     id: 'pkg-medis',
     title: 'Paket P3K & Medis Higiene Darurat',
+    titleEn: 'Emergency First Aid & Medical Hygiene Kit',
     description: 'Obat luka, kassa steril, cairan antiseptik, paracetamol, oralit anti dehidrasi, masker medis, salep antijamur/gatal, dan sabun antiseptik.',
+    descriptionEn: 'Wound care supplies, sterile gauze, antiseptic wash, paracetamol, rehydration salts, medical masks, antifungal/itch ointment, and antibacterial soap.',
     priceIdr: 125000,
     icon: 'HeartPulse',
     category: 'medical',
-    itemsIncluded: ['Betadine & Kassa Steril', 'Paracetamol & Oralit', 'Salep Gatal & Antijamur', 'Masker Medis 20 Pcs', 'Sabun Antiseptik']
+    itemsIncluded: ['Betadine & Kassa Steril', 'Paracetamol & Oralit', 'Salep Gatal & Antijamur', 'Masker Medis 20 Pcs', 'Sabun Antiseptik'],
+    itemsIncludedEn: ['Povidone Iodine & Sterile Gauze', 'Paracetamol & ORS Electrolytes', 'Itch & Antifungal Ointment', 'Medical Masks 20 Pcs', 'Antiseptic Soap']
   },
   {
     id: 'pkg-bayi',
     title: 'Paket Nutrisi & Perlengkapan Bayi/Balita',
+    titleEn: 'Infant & Toddler Nutrition / Hygiene Kit',
     description: 'Susu formula balita 800g, bubur bayi fortifikasi gizi, popok (diapers) 1 pack, minyak telon, pakaian hangat bayi, dan selimut lembut.',
+    descriptionEn: 'Fortified infant formula 800g, nutritious baby porridge, disposable diapers 1 pack, eucalyptus soothing oil, warm baby clothes, and soft fleece blanket.',
     priceIdr: 175000,
     icon: 'Baby',
     category: 'baby',
-    itemsIncluded: ['Susu Balita 800g', 'Bubur Bayi 4 Kotak', 'Diapers M/L 1 Pack', 'Minyak Telon & Bedak', 'Selimut Hangat Bayi']
+    itemsIncluded: ['Susu Balita 800g', 'Bubur Bayi 4 Kotak', 'Diapers M/L 1 Pack', 'Minyak Telon & Bedak', 'Selimut Hangat Bayi'],
+    itemsIncludedEn: ['Toddler Milk Formula 800g', 'Baby Porridge 4 Boxes', 'Diapers M/L 1 Pack', 'Baby Soothing Oil & Powder', 'Warm Baby Blanket']
   },
   {
     id: 'pkg-shelter',
     title: 'Paket Tenda & Matras Hangat Pengungsi',
+    titleEn: 'Refugee Emergency Tent & Warm Sleeping Mat',
     description: 'Terpal anti air tebal 4x6m, matras tidur busa pengungsian, selimut wol tebal, dan senter LED darurat solar cell untuk penerangan malam.',
+    descriptionEn: 'Heavy-duty 4x6m waterproof tarpaulin, evacuation foam sleeping mat, thick fleece blanket, and solar-rechargeable emergency LED flashlight.',
     priceIdr: 250000,
     icon: 'Tent',
     category: 'shelter',
-    itemsIncluded: ['Terpal Plastik Tebal 4x6m', 'Matras Busa Pengungsi', 'Selimut Wol Tebal', 'Senter LED Darurat Solar']
+    itemsIncluded: ['Terpal Plastik Tebal 4x6m', 'Matras Busa Pengungsi', 'Selimut Wol Tebal', 'Senter LED Darurat Solar'],
+    itemsIncludedEn: ['Heavy Duty Tarpaulin 4x6m', 'Evacuation Sleeping Foam Mat', 'Thick Wool Blanket', 'Solar Emergency Flashlight']
   },
   {
     id: 'pkg-air',
     title: 'Pasokan Tangki Air Bersih 5.000 Liter',
+    titleEn: '5,000 Liter Clean Drinking Water Tanker',
     description: 'Penyaluran 1 armada truk tangki air bersih 5.000 liter dari PDAM/BNPB beserta 10 jerigen lipat sanitasi darurat untuk warga di kamp pengungsian.',
+    descriptionEn: 'Dispatch of 1 dedicated 5,000-liter drinking water tanker truck from municipal utility / BNPB with 10 collapsible Jerry cans for evacuation shelters.',
     priceIdr: 450000,
     icon: 'Droplets',
     category: 'water',
-    itemsIncluded: ['1 Truk Tangki Air 5.000L', '10 Jerigen Sanitasi 20L', 'Tablet Kaporit Sterilisasi Air']
+    itemsIncluded: ['1 Truk Tangki Air 5.000L', '10 Jerigen Sanitasi 20L', 'Tablet Kaporit Sterilisasi Air'],
+    itemsIncludedEn: ['1 Water Tanker 5,000L', '10 Collapsible 20L Jerry Cans', 'Water Purification Chlorine Tablets']
   }
 ];
 
@@ -62,6 +77,7 @@ export const INITIAL_SEED_DONATIONS: DisasterDonation[] = [
     paymentMethod: 'qris',
     status: 'verified',
     prayerMessage: 'Semoga banjir lekas surut dan saudara-saudara kami di Jatinegara dan Bukit Duri diberikan ketabahan dan kesehatan.',
+    prayerMessageEn: 'May floodwaters recede quickly and our brothers and sisters in Jatinegara and Bukit Duri be blessed with perseverance and health.',
     referenceNumber: 'DON-20261012-0041',
     createdAt: '2026-10-12T07:30:00Z'
   },
@@ -77,9 +93,11 @@ export const INITIAL_SEED_DONATIONS: DisasterDonation[] = [
     type: 'package',
     packageId: 'pkg-sembako',
     packageTitle: 'Paket Sembako Keluarga Berkah (5 Paket)',
+    packageTitleEn: 'Blessed Family Staple Food Package (5 Kits)',
     paymentMethod: 'va_bca',
     status: 'verified',
     prayerMessage: 'Bismillah, semoga sedikit bantuan sembako ini dapat meringankan beban makan balita dan orang tua di posko pengungsian.',
+    prayerMessageEn: 'In God\'s name, hope this modest staple food aid eases the daily meals for toddlers and elders in the emergency shelter.',
     referenceNumber: 'DON-20261012-0189',
     createdAt: '2026-10-12T09:15:00Z'
   },
@@ -96,6 +114,7 @@ export const INITIAL_SEED_DONATIONS: DisasterDonation[] = [
     paymentMethod: 'va_mandiri',
     status: 'verified',
     prayerMessage: 'Kuatkan hati saudara kami di Pandeglang & Banten. Tim medis relawan SIGAP luar biasa dedikasinya.',
+    prayerMessageEn: 'Stay strong brothers and sisters in Pandeglang & Banten. SIGAP volunteer medical team\'s dedication is outstanding.',
     referenceNumber: 'DON-20261012-0312',
     createdAt: '2026-10-12T11:45:00Z'
   },
@@ -111,9 +130,11 @@ export const INITIAL_SEED_DONATIONS: DisasterDonation[] = [
     type: 'package',
     packageId: 'pkg-shelter',
     packageTitle: 'Paket Tenda & Matras Hangat Pengungsi (4 Paket)',
+    packageTitleEn: 'Refugee Emergency Tent & Warm Sleeping Mat (4 Kits)',
     paymentMethod: 'gopay',
     status: 'verified',
     prayerMessage: 'Semoga tenda dan matras cepat sampai untuk warga yang rumahnya retak terdampak gempa.',
+    prayerMessageEn: 'Hoping the tents and mats arrive swiftly for families whose houses suffered earthquake damage.',
     referenceNumber: 'DON-20261012-0544',
     createdAt: '2026-10-12T13:20:00Z'
   },
@@ -130,6 +151,7 @@ export const INITIAL_SEED_DONATIONS: DisasterDonation[] = [
     paymentMethod: 'va_bni',
     status: 'verified',
     prayerMessage: 'Dukungan penuh untuk para satgas Manggala Agni dan relawan darat pemadam karhutla di Riau.',
+    prayerMessageEn: 'Full support for Manggala Agni ground task forces and volunteer peatland wildfire firefighters in Riau.',
     referenceNumber: 'DON-20261012-0899',
     createdAt: '2026-10-12T15:10:00Z'
   },
@@ -146,6 +168,7 @@ export const INITIAL_SEED_DONATIONS: DisasterDonation[] = [
     paymentMethod: 'dana',
     status: 'verified',
     prayerMessage: 'Semoga warga Tambora diberikan ketabahan dan rumah yang terbakar segera dapat direnovasi.',
+    prayerMessageEn: 'May the residents of Tambora be granted patience and damaged homes rebuilt swiftly.',
     referenceNumber: 'DON-20261013-0102',
     createdAt: '2026-10-13T08:05:00Z'
   }

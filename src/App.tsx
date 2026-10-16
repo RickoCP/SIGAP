@@ -689,7 +689,7 @@ export default function App() {
                             {t.activeCrisisFocus}
                           </span>
                           <h4 className="text-sm font-bold text-white line-clamp-1">
-                            {selectedDisaster.title}
+                            {language === 'en' ? (selectedDisaster.titleEn || selectedDisaster.title) : selectedDisaster.title}
                           </h4>
                         </div>
                         <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-red-950 text-red-300 border border-red-800/80 font-mono uppercase">
@@ -698,7 +698,7 @@ export default function App() {
                       </div>
 
                       <p className="text-xs text-slate-300 line-clamp-3 leading-relaxed">
-                        {selectedDisaster.description}
+                        {language === 'en' ? (selectedDisaster.descriptionEn || selectedDisaster.description) : selectedDisaster.description}
                       </p>
 
                       <div className="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-xs font-mono tabular-nums">
@@ -735,7 +735,7 @@ export default function App() {
                                 className="p-2 rounded-lg bg-slate-950/80 border border-slate-800/80 hover:border-blue-500/60 transition-colors cursor-pointer flex items-center justify-between text-xs"
                               >
                                 <span className="font-medium text-white truncate max-w-[170px]">
-                                  {taskItem.title}
+                                  {language === 'en' ? (taskItem.titleEn || taskItem.title) : taskItem.title}
                                 </span>
                                 <span className="text-[10px] text-blue-400 font-mono shrink-0">
                                   {t.btnMatchAI}
@@ -844,7 +844,9 @@ export default function App() {
                           {d.severity.toUpperCase()}
                         </span>
                       </div>
-                      <h4 className="text-xs font-bold text-white line-clamp-1">{d.title}</h4>
+                      <h4 className="text-xs font-bold text-white line-clamp-1">
+                        {language === 'en' ? (d.titleEn || d.title) : d.title}
+                      </h4>
                       <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">{d.address}</p>
                       <div className="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono tabular-nums text-slate-400">
                         <span>{d.affectedPeople.toLocaleString(language === 'id' ? 'id-ID' : 'en-US')} {language === 'id' ? 'jiwa' : 'people'}</span>

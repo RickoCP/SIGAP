@@ -1000,7 +1000,10 @@ ${aiReport.resourceAllocationPriorities.map(r => `• ${r}`).join('\n')}`;
                   {isEn ? 'Critical Vulnerabilities & Weak Points:' : 'Titik Rentan & Kelemahan Kritis:'}
                 </h4>
                 <ul className="space-y-2 text-xs text-slate-300">
-                  {selectedRegion.keyVulnerabilities.map((vuln, i) => (
+                  {((isEn && selectedRegion.keyVulnerabilitiesEn && selectedRegion.keyVulnerabilitiesEn.length > 0)
+                    ? selectedRegion.keyVulnerabilitiesEn
+                    : selectedRegion.keyVulnerabilities
+                  ).map((vuln, i) => (
                     <li key={i} className="flex items-start gap-2">
                       <span className="text-red-400 font-bold">•</span>
                       <span>{vuln}</span>
@@ -1015,7 +1018,10 @@ ${aiReport.resourceAllocationPriorities.map(r => `• ${r}`).join('\n')}`;
                   {isEn ? 'Strategic Mitigation Recommendations 2026:' : 'Rekomendasi Strategis Mitigasi 2026:'}
                 </h4>
                 <ul className="space-y-2 text-xs text-slate-300">
-                  {selectedRegion.strategicRecommendations.map((rec, i) => (
+                  {((isEn && selectedRegion.strategicRecommendationsEn && selectedRegion.strategicRecommendationsEn.length > 0)
+                    ? selectedRegion.strategicRecommendationsEn
+                    : selectedRegion.strategicRecommendations
+                  ).map((rec, i) => (
                     <li key={i} className="flex items-start gap-2">
                       <span className="text-blue-400 font-bold">✓</span>
                       <span>{rec}</span>

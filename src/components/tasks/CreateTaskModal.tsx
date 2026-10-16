@@ -115,7 +115,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
             >
               {disasters.map(d => (
                 <option key={d.id} value={d.id}>
-                  {d.title} ({d.severity.toUpperCase()})
+                  {isEn ? (d.titleEn || d.title) : d.title} ({d.severity.toUpperCase()})
                 </option>
               ))}
             </select>
@@ -160,7 +160,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
               >
                 {SEED_SKILLS.map(s => (
                   <option key={s.id} value={s.id}>
-                    [{s.category.toUpperCase()}] {s.name}
+                    [{s.category.toUpperCase()}] {isEn ? (s.nameEn || s.name) : s.name}
                   </option>
                 ))}
               </select>

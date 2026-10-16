@@ -67,7 +67,7 @@ export const BroadcastModal: React.FC<BroadcastModalProps> = ({
     const alertItem: BroadcastAlert = {
       id: `bc-${Date.now()}`,
       disasterId: disaster.id,
-      title: isEn ? `Emergency Broadcast: ${disaster.title}` : `Siaran Darurat: ${disaster.title}`,
+      title: isEn ? `Emergency Broadcast: ${disaster.titleEn || disaster.title}` : `Siaran Darurat: ${disaster.title}`,
       message,
       channel,
       recipientCount: volunteerCountInRadius || 14,
@@ -123,7 +123,9 @@ export const BroadcastModal: React.FC<BroadcastModalProps> = ({
               <span className="text-slate-400 text-[11px] block">
                 {isEn ? 'Target Incident Scene:' : 'Target Lokasi Bencana:'}
               </span>
-              <span className="font-semibold text-white text-xs">{disaster.title}</span>
+              <span className="font-semibold text-white text-xs">
+                {isEn ? (disaster.titleEn || disaster.title) : disaster.title}
+              </span>
             </div>
             <div className="text-right font-mono tabular-nums text-blue-400">
               <Users className="w-3.5 h-3.5 inline mr-1" />

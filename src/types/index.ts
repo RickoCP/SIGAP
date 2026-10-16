@@ -11,8 +11,10 @@ export type SkillCategory =
 export interface Skill {
   id: string;
   name: string;
+  nameEn?: string;
   category: SkillCategory;
   description: string;
+  descriptionEn?: string;
 }
 
 export type VolunteerStatus = 'available' | 'busy' | 'offline';
@@ -28,8 +30,10 @@ export type VolunteerCategory = 'sar_official' | 'public_community';
 export interface GamificationBadge {
   id: string;
   name: string;
+  nameEn?: string;
   icon: string;
   description: string;
+  descriptionEn?: string;
   category: 'mission' | 'skill' | 'sar' | 'community' | 'hero';
   unlockedAt?: string;
 }
@@ -37,9 +41,11 @@ export interface GamificationBadge {
 export interface RewardItem {
   id: string;
   title: string;
+  titleEn?: string;
   category: 'gear' | 'certificate' | 'voucher' | 'training';
   pointsCost: number;
   description: string;
+  descriptionEn?: string;
   icon: string;
   sponsor: string;
   stock: number;
@@ -49,6 +55,7 @@ export interface VolunteerGamification {
   points: number;
   level: number;
   levelTitle: string;
+  levelTitleEn?: string;
   nextLevelPoints: number;
   completedMissionsCount: number;
   hoursContributed: number;
@@ -94,7 +101,9 @@ export type DisasterStatus = 'reported' | 'active' | 'responding' | 'resolved';
 export interface Disaster {
   id: string;
   title: string;
+  titleEn?: string;
   description: string;
+  descriptionEn?: string;
   type: DisasterType;
   severity: DisasterSeverity;
   locationLat: number;
@@ -109,6 +118,7 @@ export interface Disaster {
   affectedHouseholds: number;
   evacuationCenterCount: number;
   keyNeeds: string[];
+  keyNeedsEn?: string[];
   activeHotspots?: number;
   waterLevelCm?: number;
   fireIntensity?: 'low' | 'medium' | 'high' | 'extreme';
@@ -125,9 +135,12 @@ export interface Task {
   id: string;
   disasterId: string;
   title: string;
+  titleEn?: string;
   description: string;
+  descriptionEn?: string;
   requiredSkillCategory: SkillCategory;
   requiredSkillName: string;
+  requiredSkillNameEn?: string;
   priority: TaskPriority;
   locationLat: number;
   locationLng: number;
@@ -175,6 +188,7 @@ export interface AIRecommendation {
 export interface BMKGAlert {
   id: string;
   title: string;
+  titleEn?: string;
   eventType: string;
   magnitude?: string;
   depth?: string;
@@ -183,6 +197,10 @@ export interface BMKGAlert {
   level: 'warning' | 'alert' | 'advisory';
   coordinates: [number, number];
   potentialTsunami?: boolean;
+  description?: string;
+  descriptionEn?: string;
+  instruction?: string;
+  instructionEn?: string;
 }
 
 export interface BroadcastAlert {
@@ -248,9 +266,13 @@ export interface YearlyHistoricalTrend {
 export interface SeasonalMitigationWindow {
   threat: 'fire' | 'flood';
   title: string;
+  titleEn?: string;
   peakRiskPeriod: string;
+  peakRiskPeriodEn?: string;
   criticalMitigationWindow: string;
+  criticalMitigationWindowEn?: string;
   recommendedActions: string[];
+  recommendedActionsEn?: string[];
   urgency: 'critical' | 'high' | 'moderate';
   status: 'active_window' | 'upcoming' | 'passed';
 }
@@ -260,6 +282,7 @@ export interface RegionalHistoricalData {
   yearlyTrends: YearlyHistoricalTrend[];
   mitigationWindows: SeasonalMitigationWindow[];
   historicalAnalysisNotes: string;
+  historicalAnalysisNotesEn?: string;
 }
 
 export interface RegionalReadiness {
@@ -333,7 +356,9 @@ export interface RegionalReadiness {
   volunteerRatioPer10kPopulation: number;
   lastAuditDate: string;
   keyVulnerabilities: string[];
+  keyVulnerabilitiesEn?: string[];
   strategicRecommendations: string[];
+  strategicRecommendationsEn?: string[];
   historicalData?: RegionalHistoricalData;
 }
 
@@ -441,11 +466,14 @@ export interface FieldTaskNotification {
 export interface DonationPackage {
   id: string;
   title: string;
+  titleEn?: string;
   description: string;
+  descriptionEn?: string;
   priceIdr: number;
   icon: string;
   category: 'food' | 'medical' | 'baby' | 'shelter' | 'water';
   itemsIncluded: string[];
+  itemsIncludedEn?: string[];
 }
 
 export type PaymentMethod = 
@@ -462,6 +490,7 @@ export interface DisasterDonation {
   id: string;
   disasterId: string;
   disasterTitle: string;
+  disasterTitleEn?: string;
   donorName: string;
   isAnonymous: boolean;
   email: string;
@@ -470,9 +499,11 @@ export interface DisasterDonation {
   type: 'cash' | 'package';
   packageId?: string;
   packageTitle?: string;
+  packageTitleEn?: string;
   paymentMethod: PaymentMethod;
   status: 'verified' | 'pending' | 'allocated';
   prayerMessage?: string;
+  prayerMessageEn?: string;
   referenceNumber: string;
   createdAt: string;
 }
@@ -481,6 +512,7 @@ export interface EarlyWarningAlert {
   id: string;
   disasterId?: string;
   title: string;
+  titleEn?: string;
   hazardType: DisasterType;
   alertLevel: 'awas' | 'siaga' | 'waspada' | 'normal';
   dangerRadiusKm: number;
@@ -490,6 +522,7 @@ export interface EarlyWarningAlert {
   locationLng: number;
   soundAlarm: boolean;
   evacuationAdvice: string;
+  evacuationAdviceEn?: string;
   emergencyShelter: {
     name: string;
     address: string;
@@ -499,6 +532,7 @@ export interface EarlyWarningAlert {
     lng: number;
   };
   keyActionSteps: string[];
+  keyActionStepsEn?: string[];
   issuedAt: string;
   sourceAuthority: string;
 }
@@ -515,6 +549,7 @@ export interface CitizenSafetyReport {
   latitude?: number;
   longitude?: number;
   urgentNeeds?: string;
+  urgentNeedsEn?: string;
   reportedAt: string;
 }
 

@@ -5,6 +5,7 @@ export const INITIAL_EARLY_WARNINGS: EarlyWarningAlert[] = [
     id: 'ew-ciliwung-01',
     disasterId: 'disaster-1',
     title: 'AWAS: Peringatan Dini Banjir Bandang & Luapan Ekstrem Kali Ciliwung',
+    titleEn: 'RED ALERT: Extreme Flash Flood & River Overflow Warning for Ciliwung River',
     hazardType: 'flood',
     alertLevel: 'awas',
     dangerRadiusKm: 8.5,
@@ -14,6 +15,7 @@ export const INITIAL_EARLY_WARNINGS: EarlyWarningAlert[] = [
     locationLng: 106.8621,
     soundAlarm: true,
     evacuationAdvice: 'STATUS AWAS TERTINGGI! TMA Bendung Katulampa mencapai 240 cm (Siaga 1). Aliran air tiba di Jakarta dalam waktu singkat. Segera evakuasi mandiri ke lantai 3 Rusunawa Jatinegara Barat atau Gedung Olahraga Otista! Matikan saklar MCB listrik rumah.',
+    evacuationAdviceEn: 'MAXIMUM RED ALERT! Katulampa Dam water level reached 240 cm (Level 1 Emergency). Flood surge arriving shortly. Immediately evacuate to 3rd floor of Jatinegara Barat Public Housing or Otista Sports Center! Turn off home circuit breakers (MCB).',
     emergencyShelter: {
       name: 'TES Rusunawa Jatinegara Barat & GOR Otista',
       address: 'Jl. Otista Raya No. 121, Jatinegara, Jakarta Timur',
@@ -29,6 +31,13 @@ export const INITIAL_EARLY_WARNINGS: EarlyWarningAlert[] = [
       'Bawa Tas Siaga Bencana: obat-obatan darurat, senter, air minum, dan pakaian ganti',
       'Jangan berjalan melintasi arus air deras yang melebihi ketinggian lutut (30 cm)'
     ],
+    keyActionStepsEn: [
+      'Switch off main home electricity circuit breakers (MCB) and secure LPG gas cylinders',
+      'Secure vital civil documents (Diplomas, Deeds, National IDs) in waterproof pouches',
+      'Prioritize evacuation of vulnerable groups: infants, children, seniors, and expectant mothers',
+      'Carry Emergency Go-Bag: critical medicines, flashlight, bottled water, and change of clothes',
+      'Never walk through fast-moving flood torrents deeper than knee-level (30 cm)'
+    ],
     issuedAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
     sourceAuthority: 'Pusdalops BPBD DKI Jakarta & Balai Besar Wilayah Sungai Ciliwung Cisadane'
   },
@@ -36,6 +45,7 @@ export const INITIAL_EARLY_WARNINGS: EarlyWarningAlert[] = [
     id: 'ew-sunda-02',
     disasterId: 'disaster-2',
     title: 'SIAGA: Potensi Gempa Susulan Dangkal & Bahaya Bangunan Rusak di Pesisir Banten',
+    titleEn: 'ALERT: Potential Shallow Aftershocks & Compromised Structures along Banten Coast',
     hazardType: 'earthquake',
     alertLevel: 'siaga',
     dangerRadiusKm: 25.0,
@@ -45,6 +55,7 @@ export const INITIAL_EARLY_WARNINGS: EarlyWarningAlert[] = [
     locationLng: 105.8234,
     soundAlarm: true,
     evacuationAdvice: 'Tercatat 14 aktivitas gempa susulan tektonik dangkal. Warga dihimbau tidak memasuki gedung atau rumah yang mengalami retak struktural. Jauhi lereng tebing rawan longsor dan tetap menjauhi bibir pantai radius 500 meter.',
+    evacuationAdviceEn: '14 shallow tectonic aftershocks recorded. Residents are strictly urged not to enter buildings with visible wall or pillar fractures. Stay clear of landslide-prone steep slopes and keep a 500m buffer from coastlines.',
     emergencyShelter: {
       name: 'Posko Lapangan & Masjid Agung Al-Falah Labuan',
       address: 'Jl. Jenderal Sudirman No. 45, Labuan, Pandeglang, Banten',
@@ -60,6 +71,13 @@ export const INITIAL_EARLY_WARNINGS: EarlyWarningAlert[] = [
       'Jangan gunakan lift atau jembatan penyeberangan yang belum diperiksa',
       'Matikan kompor dan sumber api segera untuk mencegah bahaya kebakaran susulan'
     ],
+    keyActionStepsEn: [
+      'If shaking occurs: Drop, Cover, and Hold On beneath sturdy furniture',
+      'Stay away from glass windows, unanchored cupboards, and unreinforced brick walls',
+      'Evacuate to open grounds once the primary tremors stop',
+      'Do not use elevators or unchecked pedestrian bridges',
+      'Extinguish cooking stoves and fire sources immediately to prevent secondary fires'
+    ],
     issuedAt: new Date(Date.now() - 55 * 60 * 1000).toISOString(),
     sourceAuthority: 'Pusat Gempa Bumi & Tsunami BMKG'
   },
@@ -67,6 +85,7 @@ export const INITIAL_EARLY_WARNINGS: EarlyWarningAlert[] = [
     id: 'ew-karhutla-03',
     disasterId: 'disaster-4',
     title: 'WASPADA: Kabut Asap Pekat Karhutla & Kualitas Udara Sangat Berbahaya (ISPU > 280)',
+    titleEn: 'ADVISORY: Heavy Peatland Wildfire Haze & Hazardous Air Quality (AQI > 280)',
     hazardType: 'fire',
     alertLevel: 'waspada',
     dangerRadiusKm: 35.0,
@@ -76,6 +95,7 @@ export const INITIAL_EARLY_WARNINGS: EarlyWarningAlert[] = [
     locationLng: 102.0469,
     soundAlarm: false,
     evacuationAdvice: 'Indeks Standar Pencemar Udara (ISPU) berada pada kategori SANGAT TIDAK SEHAT hingga BERBAHAYA. Warga wajib menggunakan masker standar partikulat N95/KF94 saat bepergian. Kelompok penderita asma dan lansia disarankan mengungsi ke Posko Layanan Oksigen.',
+    evacuationAdviceEn: 'Air Pollutant Standard Index (ISPU) in VERY UNHEALTHY to HAZARDOUS category. All citizens must wear N95/KF94 particulate respirators outdoors. Asthmatic patients, infants, and seniors are advised to relocate to Oxygen Relief Centers.',
     emergencyShelter: {
       name: 'Posko Layanan Oksigen Gratis & Gedung Pemuda Riau',
       address: 'Jl. Gajah Mada No. 18, Simpang Empat, Pekanbaru',
@@ -90,6 +110,13 @@ export const INITIAL_EARLY_WARNINGS: EarlyWarningAlert[] = [
       'Nyalakan air purifier atau filter air mandiri di dalam ruangan tertutup',
       'Konsumsi air putih minimal 2.5 liter per hari untuk mencegah iritasi saluran napas',
       'Dilarang keras membakar sampah atau membuka lahan dengan api'
+    ],
+    keyActionStepsEn: [
+      'Wear tight-fitting N95 or KF94 respirator masks covering nose and chin securely',
+      'Seal door gaps and ventilation vents with damp cloth barriers to filter fine smoke',
+      'Operate indoor air purifiers or HEPA fans inside sealed rooms',
+      'Drink at least 2.5 liters of clean water daily to reduce airway inflammation',
+      'Strictly prohibit trash burning or slash-and-burn land clearing'
     ],
     issuedAt: new Date(Date.now() - 110 * 60 * 1000).toISOString(),
     sourceAuthority: 'Dinas Lingkungan Hidup & Kehutanan Provinsi Riau'
@@ -109,6 +136,7 @@ export const INITIAL_CITIZEN_REPORTS: CitizenSafetyReport[] = [
     latitude: -6.2268,
     longitude: 106.8665,
     urgentNeeds: 'Air mineral dan selimut anak sudah terpenuhi.',
+    urgentNeedsEn: 'Mineral water and children blankets fulfilled.',
     reportedAt: new Date(Date.now() - 35 * 60 * 1000).toISOString()
   },
   {
@@ -123,6 +151,7 @@ export const INITIAL_CITIZEN_REPORTS: CitizenSafetyReport[] = [
     latitude: -6.2245,
     longitude: 106.8615,
     urgentNeeds: 'Perahu evakuasi untuk 1 lansia stroke usia 76 tahun, stok obat hipertensi habis.',
+    urgentNeedsEn: 'Evacuation boat urgently needed for 76yo stroke patient, hypertension prescription depleted.',
     reportedAt: new Date(Date.now() - 18 * 60 * 1000).toISOString()
   },
   {
@@ -137,6 +166,7 @@ export const INITIAL_CITIZEN_REPORTS: CitizenSafetyReport[] = [
     latitude: -6.3995,
     longitude: 105.8290,
     urgentNeeds: 'Sudah di posko terbuka, butuh terpal tambahan karena gerimis.',
+    urgentNeedsEn: 'Already at open-air sports field assembly point, need emergency tarps due to drizzle.',
     reportedAt: new Date(Date.now() - 40 * 60 * 1000).toISOString()
   }
 ];

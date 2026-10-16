@@ -472,8 +472,12 @@ export const RegisterVolunteerModal: React.FC<RegisterVolunteerModalProps> = ({
                         className="rounded border-slate-700 text-blue-600 focus:ring-0 w-4 h-4"
                       />
                       <div>
-                        <span className="text-white font-medium block">{skill.name}</span>
-                        <span className="text-slate-500 text-[10px]">{skill.category.toUpperCase()} · {skill.description}</span>
+                        <span className="text-white font-medium block">
+                          {isEn ? (skill.nameEn || skill.name) : skill.name}
+                        </span>
+                        <span className="text-slate-500 text-[10px]">
+                          {skill.category.toUpperCase()} · {isEn ? (skill.descriptionEn || skill.description) : skill.description}
+                        </span>
                       </div>
                     </label>
 

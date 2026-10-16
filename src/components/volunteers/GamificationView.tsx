@@ -40,10 +40,14 @@ export const GamificationView: React.FC<GamificationViewProps> = ({
 
   const currentVolunteer = volunteers.find(v => v.id === selectedVolunteerId) || volunteers[0];
 
+  const isEn = language === 'en';
+
   // Derive points and badge stats if not present
   const volunteerPoints = currentVolunteer?.gamification?.points ?? (currentVolunteer?.completedTasksCount ? currentVolunteer.completedTasksCount * 45 + 120 : 180);
-  const levelInfo = calculateVolunteerLevel(volunteerPoints);
-  const levelTitle = currentVolunteer?.gamification?.levelTitle || levelInfo.levelTitle;
+  const levelInfo = calculateVolunteerLevel(volunteerPoints, language);
+  const levelTitle = isEn
+    ? (currentVolunteer?.gamification?.levelTitleEn || levelInfo.levelTitleEn || levelInfo.levelTitle)
+    : (currentVolunteer?.gamification?.levelTitle || levelInfo.levelTitle);
   const level = currentVolunteer?.gamification?.level || levelInfo.level;
   const nextLevelPoints = currentVolunteer?.gamification?.nextLevelPoints || levelInfo.nextLevelPoints;
   const hoursContributed = currentVolunteer?.gamification?.hoursContributed || (currentVolunteer?.completedTasksCount ? currentVolunteer.completedTasksCount * 6 : 18);
@@ -54,12 +58,12 @@ export const GamificationView: React.FC<GamificationViewProps> = ({
   const leaderboard = [...volunteers]
     .map(v => {
       const pts = v.gamification?.points ?? (v.completedTasksCount * 45 + 120);
-      const lvl = calculateVolunteerLevel(pts);
+      const lvl = calculateVolunteerLevel(pts, language);
       return {
         ...v,
         computedPoints: pts,
         computedLevel: lvl.level,
-        computedTitle: lvl.levelTitle,
+        computedTitle: isEn ? (v.gamification?.levelTitleEn || lvl.levelTitleEn || lvl.levelTitle) : (v.gamification?.levelTitle || lvl.levelTitle),
       };
     })
     .sort((a, b) => b.computedPoints - a.computedPoints);
@@ -265,8 +269,12 @@ export const GamificationView: React.FC<GamificationViewProps> = ({
                       <div className="flex items-center gap-2">
                         <span className="text-lg">{badge.icon}</span>
                         <div className="overflow-hidden">
-                          <div className="font-bold text-[11px] truncate text-white">{badge.name}</div>
-                          <div className="text-[9px] text-slate-400 line-clamp-1">{badge.description}</div>
+                          <div className="font-bold text-[11px] truncate text-white">
+                            {isEn ? (badge.nameEn || badge.name) : badge.name}
+                          </div>
+                          <div className="text-[9px] text-slate-400 line-clamp-1">
+                            {isEn ? (badge.descriptionEn || badge.description) : badge.description}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -340,9 +348,11 @@ export const GamificationView: React.FC<GamificationViewProps> = ({
                           </span>
                         </div>
                         <div>
-                          <h4 className="font-bold text-xs text-white">{reward.title}</h4>
+                          <h4 className="font-bold text-xs text-white">
+                            {isEn ? (reward.titleEn || reward.title) : reward.title}
+                          </h4>
                           <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                            {reward.description}
+                            {isEn ? (reward.descriptionEn || reward.description) : reward.description}
                           </p>
                         </div>
                       </div>

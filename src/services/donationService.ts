@@ -50,6 +50,7 @@ class DonationService {
                 id: docSnap.id,
                 disasterId: data.disasterId || '',
                 disasterTitle: data.disasterTitle || 'Bencana Alam',
+                disasterTitleEn: data.disasterTitleEn,
                 donorName: data.donorName || 'Hamba Allah',
                 isAnonymous: Boolean(data.isAnonymous),
                 email: data.email || '',
@@ -58,9 +59,11 @@ class DonationService {
                 type: data.type === 'package' ? 'package' : 'cash',
                 packageId: data.packageId,
                 packageTitle: data.packageTitle,
+                packageTitleEn: data.packageTitleEn,
                 paymentMethod: (data.paymentMethod as PaymentMethod) || 'qris',
                 status: data.status || 'verified',
                 prayerMessage: data.prayerMessage || '',
+                prayerMessageEn: data.prayerMessageEn,
                 referenceNumber: data.referenceNumber || `DON-${Date.now()}`,
                 createdAt: data.createdAt || new Date().toISOString()
               });
@@ -114,6 +117,7 @@ class DonationService {
   public async submitDonation(payload: {
     disasterId: string;
     disasterTitle: string;
+    disasterTitleEn?: string;
     donorName: string;
     isAnonymous: boolean;
     email: string;
@@ -122,8 +126,10 @@ class DonationService {
     type: 'cash' | 'package';
     packageId?: string;
     packageTitle?: string;
+    packageTitleEn?: string;
     paymentMethod: PaymentMethod;
     prayerMessage?: string;
+    prayerMessageEn?: string;
   }): Promise<DisasterDonation> {
     const timestamp = new Date();
     const dateCode = timestamp.toISOString().slice(0, 10).replace(/-/g, '');
@@ -135,6 +141,7 @@ class DonationService {
       id: donationId,
       disasterId: payload.disasterId,
       disasterTitle: payload.disasterTitle,
+      disasterTitleEn: payload.disasterTitleEn,
       donorName: payload.isAnonymous ? 'Hamba Allah' : (payload.donorName.trim() || 'Hamba Allah'),
       isAnonymous: payload.isAnonymous,
       email: payload.email,
@@ -143,9 +150,11 @@ class DonationService {
       type: payload.type,
       packageId: payload.packageId,
       packageTitle: payload.packageTitle,
+      packageTitleEn: payload.packageTitleEn,
       paymentMethod: payload.paymentMethod,
       status: 'verified',
       prayerMessage: payload.prayerMessage || '',
+      prayerMessageEn: payload.prayerMessageEn,
       referenceNumber,
       createdAt: timestamp.toISOString()
     };
@@ -162,6 +171,7 @@ class DonationService {
         id: donationId,
         disasterId: newDonation.disasterId,
         disasterTitle: newDonation.disasterTitle,
+        disasterTitleEn: newDonation.disasterTitleEn || null,
         donorName: newDonation.donorName,
         isAnonymous: newDonation.isAnonymous,
         email: newDonation.email,
@@ -170,9 +180,11 @@ class DonationService {
         type: newDonation.type,
         packageId: newDonation.packageId || null,
         packageTitle: newDonation.packageTitle || null,
+        packageTitleEn: newDonation.packageTitleEn || null,
         paymentMethod: newDonation.paymentMethod,
         status: newDonation.status,
         prayerMessage: newDonation.prayerMessage || '',
+        prayerMessageEn: newDonation.prayerMessageEn || null,
         referenceNumber: newDonation.referenceNumber,
         createdAt: newDonation.createdAt
       });

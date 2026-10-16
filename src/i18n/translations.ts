@@ -670,9 +670,11 @@ export function getLocalizedDisaster(disaster: Disaster, language: Language): Di
   };
 
   const localized = enTranslations[disaster.id];
-  if (!localized) return disaster;
   return {
     ...disaster,
-    ...localized,
+    title: localized?.title || disaster.titleEn || disaster.title,
+    description: localized?.description || disaster.descriptionEn || disaster.description,
+    address: localized?.address || disaster.addressEn || disaster.address,
+    keyNeeds: localized?.keyNeeds || (disaster.keyNeedsEn && disaster.keyNeedsEn.length > 0 ? disaster.keyNeedsEn : disaster.keyNeeds),
   };
 }
