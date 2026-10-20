@@ -31,6 +31,15 @@ export const InaRiskExposureLayer: React.FC<InaRiskExposureLayerProps> = ({
   const polygonLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const markerLayerGroupRef = useRef<L.LayerGroup | null>(null);
 
+  const onSelectZoneRef = useRef(onSelectZone);
+  onSelectZoneRef.current = onSelectZone;
+
+  const onZoneCountChangeRef = useRef(onZoneCountChange);
+  onZoneCountChangeRef.current = onZoneCountChange;
+
+  const onDeployResourcesToZoneRef = useRef(onDeployResourcesToZone);
+  onDeployResourcesToZoneRef.current = onDeployResourcesToZone;
+
   // Initialize Layer Groups once
   useEffect(() => {
     if (!map) return;
@@ -64,14 +73,14 @@ export const InaRiskExposureLayer: React.FC<InaRiskExposureLayerProps> = ({
     markerGroup.clearLayers();
 
     if (!enabled) {
-      if (onZoneCountChange) onZoneCountChange(0, 0);
+      if (onZoneCountChangeRef.current) onZoneCountChangeRef.current(0, 0);
       return;
     }
 
     const zones = getInaRiskZones(minVulnerability);
     const highestDensity = Math.max(...zones.map(z => z.vulnerableDensityPerKm2), 0);
-    if (onZoneCountChange) {
-      onZoneCountChange(zones.length, highestDensity);
+    if (onZoneCountChangeRef.current) {
+      onZoneCountChangeRef.current(zones.length, highestDensity);
     }
 
     zones.forEach((zone) => {
@@ -81,6 +90,7 @@ export const InaRiskExposureLayer: React.FC<InaRiskExposureLayerProps> = ({
       // 1. Render Density Geographic Overlay (Polygon if defined, otherwise circular buffer)
       if (zone.boundaryPolygon && zone.boundaryPolygon.length > 2) {
         const poly = L.polygon(zone.boundaryPolygon, {
+          interactive: false,
           color: colors.stroke,
           fillColor: colors.fill,
           fillOpacity: isExtreme ? 0.28 : 0.18,
@@ -90,6 +100,7 @@ export const InaRiskExposureLayer: React.FC<InaRiskExposureLayerProps> = ({
         polygonGroup.addLayer(poly);
       } else {
         const circle = L.circle([zone.centerLat, zone.centerLng], {
+          interactive: false,
           radius: zone.radiusKm * 1000,
           color: colors.stroke,
           fillColor: colors.fill,
@@ -103,6 +114,7 @@ export const InaRiskExposureLayer: React.FC<InaRiskExposureLayerProps> = ({
       // 2. Pulse radar circle for ultra-high density zones
       if (isExtreme && zone.vulnerableDensityPerKm2 > 1000) {
         const innerGlow = L.circle([zone.centerLat, zone.centerLng], {
+          interactive: false,
           radius: (zone.radiusKm * 1000) * 0.45,
           color: colors.fill,
           fillColor: colors.fill,
@@ -282,29 +294,46 @@ export const InaRiskExposureLayer: React.FC<InaRiskExposureLayerProps> = ({
       `;
 
       marker.bindPopup(popupHtml, {
-        maxWidth: 330,
+        maxWidth: 340,
         autoPan: true,
+        autoClose: false,
+        closeOnClick: false,
         autoPanPaddingTopLeft: L.point(20, 90),
         autoPanPaddingBottomRight: L.point(20, 90)
       });
 
-      marker.on('click', () => {
-        if (onSelectZone) onSelectZone(zone);
+      marker.on('click', (e: any) => {
+        if (e && e.originalEvent) {
+          L.DomEvent.stopPropagation(e.originalEvent);
+        }
+        marker.openPopup();
+        if (onSelectZoneRef.current) {
+          onSelectZoneRef.current(zone);
+        }
       });
 
       marker.on('popupopen', () => {
+        const popup = marker.getPopup();
+        const popupEl = popup?.getElement();
+        if (popupEl) {
+          L.DomEvent.disableClickPropagation(popupEl);
+          L.DomEvent.disableScrollPropagation(popupEl);
+        }
+
         const deployBtn = document.getElementById(`btn-deploy-${zone.id}`);
         if (deployBtn) {
-          deployBtn.onclick = () => {
-            if (onDeployResourcesToZone) {
-              onDeployResourcesToZone(zone);
+          deployBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (onDeployResourcesToZoneRef.current) {
+              onDeployResourcesToZoneRef.current(zone);
             }
           };
         }
 
         const focusBtn = document.getElementById(`btn-focus-${zone.id}`);
         if (focusBtn && map) {
-          focusBtn.onclick = () => {
+          focusBtn.onclick = (e) => {
+            e.stopPropagation();
             map.flyTo([zone.centerLat, zone.centerLng], 13, { duration: 1.2 });
           };
         }
@@ -312,7 +341,7 @@ export const InaRiskExposureLayer: React.FC<InaRiskExposureLayerProps> = ({
 
       markerGroup.addLayer(marker);
     });
-  }, [map, enabled, minVulnerability, isEn, onSelectZone, onZoneCountChange, onDeployResourcesToZone]);
+  }, [map, enabled, minVulnerability, isEn]);
 
   return null;
 };

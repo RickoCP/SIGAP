@@ -32,6 +32,7 @@ import {
 } from '../../services/earlyWarningService.ts';
 import { fieldAudio, triggerFieldVibration } from '../../lib/fieldAlertAudio.ts';
 import { CitizenSafetyCheckinModal } from './CitizenSafetyCheckinModal.tsx';
+import { PublicEarlyWarningMap } from './PublicEarlyWarningMap.tsx';
 import { useLanguage } from '../../context/LanguageContext.tsx';
 
 interface PublicEarlyWarningViewProps {
@@ -144,7 +145,7 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <div className="space-y-8">
       
       {/* SECTION 1: Master Early Warning Siren & National Emergency Bar */}
       <div className={`relative overflow-hidden rounded-3xl p-6 sm:p-8 shadow-2xl border transition-all duration-300 ${
@@ -358,12 +359,38 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
 
           <button
             onClick={() => openCheckinWithStatus('emergency_trapped')}
-            className="py-3 px-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition flex items-center justify-center gap-2 shadow-xl shadow-red-950/60 animate-pulse"
+            className="py-3 px-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition flex items-center justify-center gap-2 shadow-xl shadow-red-950/60 animate-pulse cursor-pointer"
           >
             <Siren className="w-4 h-4" />
             <span>{isEn ? '🔴 Urgent SOS: Trapped (Dispatch SAR)' : '🔴 SOS Darurat Terjebak (Kirim SAR)'}</span>
           </button>
         </div>
+      </div>
+
+      {/* SECTION 2B: Interactive Citizen EWS Geospatial Map */}
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div>
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <Compass className="w-5 h-5 text-cyan-400" />
+              <span>{isEn ? 'Live Emergency Geospatial Map & Evacuation Corridors' : 'Peta Geografis Zona Bahaya & Koridor Evakuasi'}</span>
+            </h2>
+            <p className="text-xs text-slate-400">
+              {isEn
+                ? 'Interactive cartographic visualization of multi-hazard buffers, your detected coordinates, and verified emergency shelters'
+                : 'Visualisasi interaktif radius bahaya bencana, posisi perangkat Anda, dan titik kumpul posko pengungsian aman'}
+            </p>
+          </div>
+        </div>
+
+        <PublicEarlyWarningMap
+          alerts={alerts}
+          userCoords={userCoords}
+          userLocationName={userLocationName}
+          onSelectShelter={(name, lat, lng) => {
+            setUserLocationName(isEn ? `En-Route to: ${name}` : `Menuju: ${name}`);
+          }}
+        />
       </div>
 
       {/* SECTION 3: Active Early Warning Broadcasts Cards */}

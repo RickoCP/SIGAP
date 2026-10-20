@@ -15,6 +15,7 @@ import {
   Sparkles,
   Network,
   Maximize2,
+  Minimize2,
   ShieldAlert,
   CloudRain,
   Droplets
@@ -113,6 +114,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
   } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef<{ x: number; y: number; centerLat: number; centerLng: number }>({
     x: 0,
@@ -120,6 +122,36 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
     centerLat: 0,
     centerLng: 0,
   });
+
+  // Fullscreen change listener & Escape key handler
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFsChange);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isFullscreen]);
+
+  const toggleFullscreen = () => {
+    const next = !isFullscreen;
+    setIsFullscreen(next);
+    if (!next && document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    } else if (next && containerRef.current && containerRef.current.requestFullscreen) {
+      containerRef.current.requestFullscreen().catch(() => {});
+    }
+  };
 
   // Center on selected disaster if changed
   useEffect(() => {
@@ -170,7 +202,11 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
   // Drag handlers
   const handleMouseDown = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest('.map-control-btn') || (e.target as HTMLElement).closest('.map-popup')) {
+    if (
+      (e.target as HTMLElement).closest('.map-control-btn') || 
+      (e.target as HTMLElement).closest('.map-popup') ||
+      (e.target as HTMLElement).closest('.interactive-marker')
+    ) {
       return;
     }
     isDraggingRef.current = true;
@@ -201,6 +237,8 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
   const handleMapClick = (e: React.MouseEvent) => {
     if (!containerRef.current) return;
     if ((e.target as HTMLElement).closest('.interactive-marker')) return;
+    if ((e.target as HTMLElement).closest('.map-popup')) return;
+    if ((e.target as HTMLElement).closest('.map-control-btn')) return;
 
     const rect = containerRef.current.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
@@ -348,7 +386,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onClick={handleMapClick}
-      className="relative isolate w-full h-full min-h-[540px] bg-slate-950 overflow-hidden select-none cursor-grab active:cursor-grabbing border border-slate-800 rounded-xl"
+      className={`relative isolate w-full ${isFullscreen ? 'sigap-fullscreen-fallback fixed inset-0 z-[9999] rounded-none !h-screen !w-screen !p-0 !m-0' : 'h-full min-h-[540px] rounded-xl'} bg-slate-950 overflow-hidden select-none cursor-grab active:cursor-grabbing border border-slate-800`}
     >
       {/* Tactical Cartographic Canvas / Grid Background */}
       <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-40">
@@ -607,6 +645,9 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                   setSelectedGpmCell(null);
                   setSelectedInaRiskZone(isSelected ? null : zone);
                 }}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                }}
                 style={{
                   transform: `translate(${x}px, ${y}px) translate(-50%, -50%)`,
                 }}
@@ -649,6 +690,9 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                   e.stopPropagation();
                   setSelectedInaRiskZone(null);
                   setSelectedGpmCell(isSelected ? null : cell);
+                }}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
                 }}
                 style={{
                   transform: `translate(${x}px, ${y}px) translate(-50%, -50%)`,
@@ -1143,7 +1187,11 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
       {/* Selected InaRISK Exposure Zone Details Card */}
       {selectedInaRiskZone && (
-        <div className="absolute top-16 right-4 z-30 w-80 bg-slate-900/98 backdrop-blur-md border border-rose-700/80 rounded-xl p-3 shadow-2xl animate-in fade-in duration-150 text-slate-100 font-sans pointer-events-auto">
+        <div 
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          className="map-popup absolute top-16 right-4 z-30 w-80 bg-slate-900/98 backdrop-blur-md border border-rose-700/80 rounded-xl p-3 shadow-2xl animate-in fade-in duration-150 text-slate-100 font-sans pointer-events-auto"
+        >
           <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
             <div className="flex items-center gap-1.5">
               <span className="text-base">🛡️</span>
@@ -1156,7 +1204,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
             </div>
             <button
               onClick={() => setSelectedInaRiskZone(null)}
-              className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition"
+              className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -1200,7 +1248,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
               onClick={() => {
                 handleZoom(2, { lat: selectedInaRiskZone.centerLat, lng: selectedInaRiskZone.centerLng });
               }}
-              className="flex-1 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-bold text-center transition"
+              className="flex-1 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-bold text-center transition cursor-pointer"
             >
               {isEn ? 'Center View on Zone' : 'Pusatkan ke Zona Ini'}
             </button>
@@ -1210,7 +1258,11 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
       {/* Selected NASA GPM IMERG Precipitation Cell Details Card */}
       {selectedGpmCell && (
-        <div className="absolute top-16 right-4 z-30 w-84 max-w-[calc(100vw-2rem)] bg-slate-900/98 backdrop-blur-md border border-cyan-500/80 rounded-xl p-3.5 shadow-2xl animate-in fade-in duration-150 text-slate-100 font-sans pointer-events-auto">
+        <div 
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          className="map-popup absolute top-16 right-4 z-30 w-84 max-w-[calc(100vw-2rem)] bg-slate-900/98 backdrop-blur-md border border-cyan-500/80 rounded-xl p-3.5 shadow-2xl animate-in fade-in duration-150 text-slate-100 font-sans pointer-events-auto"
+        >
           <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
             <div className="flex items-center gap-1.5">
               <div className="p-1.5 rounded-lg bg-cyan-950/80 border border-cyan-700/60 text-cyan-300">
@@ -1339,6 +1391,13 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
             className="map-control-btn p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
           >
             <Compass className="w-4 h-4" />
+          </button>
+          <button
+            onClick={toggleFullscreen}
+            title={isFullscreen ? (isEn ? 'Exit Fullscreen' : 'Keluar Layar Penuh') : (isEn ? 'Fullscreen Map' : 'Layar Penuh')}
+            className="map-control-btn p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+          >
+            {isFullscreen ? <Minimize2 className="w-4 h-4 text-cyan-400" /> : <Maximize2 className="w-4 h-4" />}
           </button>
         </div>
 

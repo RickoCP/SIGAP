@@ -16,7 +16,11 @@ import {
   Layers, 
   ShieldCheck, 
   Send,
-  Maximize2
+  Maximize2,
+  Minimize2,
+  ZoomIn,
+  ZoomOut,
+  X
 } from 'lucide-react';
 import { Volunteer, SkillCategory, Disaster } from '../../types/index.ts';
 import { SEED_SKILLS } from '../../data/seedData.ts';
@@ -38,16 +42,103 @@ export const NationalVolunteerMap: React.FC<NationalVolunteerMapProps> = ({
   const { language } = useLanguage();
   const isEn = language === 'en';
 
+  const mapWrapperRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const clusterGroupRef = useRef<any>(null);
   const radiusLayerGroupRef = useRef<L.LayerGroup | null>(null);
 
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'available' | 'busy'>('all');
   const [selectedSkillCategory, setSelectedSkillCategory] = useState<string>('all');
   const [showRadius, setShowRadius] = useState<boolean>(true);
   const [selectedVolunteer, setSelectedVolunteer] = useState<Volunteer | null>(volunteers[0] || null);
+
+  // Fullscreen change listener & Escape key handler
+  useEffect(() => {
+    const handleFsChange = () => {
+      const isFs = Boolean(
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).mozFullScreenElement ||
+        (document as any).msFullscreenElement
+      );
+      setIsFullscreen(isFs);
+      setTimeout(() => mapInstanceRef.current?.invalidateSize(), 50);
+      setTimeout(() => mapInstanceRef.current?.invalidateSize(), 150);
+      setTimeout(() => mapInstanceRef.current?.invalidateSize(), 300);
+      setTimeout(() => mapInstanceRef.current?.invalidateSize(), 600);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        } else if ((document as any).webkitExitFullscreen) {
+          (document as any).webkitExitFullscreen();
+        }
+        setTimeout(() => mapInstanceRef.current?.invalidateSize(), 100);
+        setTimeout(() => mapInstanceRef.current?.invalidateSize(), 300);
+      }
+    };
+
+    const handleWindowResize = () => {
+      if (isFullscreen) {
+        mapInstanceRef.current?.invalidateSize();
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFsChange);
+    document.addEventListener('webkitfullscreenchange', handleFsChange);
+    document.addEventListener('mozfullscreenchange', handleFsChange);
+    document.addEventListener('MSFullscreenChange', handleFsChange);
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('resize', handleWindowResize);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+      document.removeEventListener('webkitfullscreenchange', handleFsChange);
+      document.removeEventListener('mozfullscreenchange', handleFsChange);
+      document.removeEventListener('MSFullscreenChange', handleFsChange);
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('resize', handleWindowResize);
+    };
+  }, [isFullscreen]);
+
+  const toggleFullscreen = () => {
+    const next = !isFullscreen;
+    setIsFullscreen(next);
+
+    if (!next) {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      } else if ((document as any).webkitExitFullscreen) {
+        (document as any).webkitExitFullscreen();
+      } else if ((document as any).mozCancelFullScreen) {
+        (document as any).mozCancelFullScreen();
+      } else if ((document as any).msExitFullscreen) {
+        (document as any).msExitFullscreen();
+      }
+    } else if (next && mapWrapperRef.current) {
+      const el = mapWrapperRef.current;
+      if (el.requestFullscreen) {
+        el.requestFullscreen().catch(() => {});
+      } else if ((el as any).webkitRequestFullscreen) {
+        (el as any).webkitRequestFullscreen();
+      } else if ((el as any).mozRequestFullScreen) {
+        (el as any).mozRequestFullScreen();
+      } else if ((el as any).msRequestFullscreen) {
+        (el as any).msRequestFullscreen();
+      }
+    }
+
+    setTimeout(() => mapInstanceRef.current?.invalidateSize(), 50);
+    setTimeout(() => mapInstanceRef.current?.invalidateSize(), 150);
+    setTimeout(() => mapInstanceRef.current?.invalidateSize(), 300);
+    setTimeout(() => mapInstanceRef.current?.invalidateSize(), 600);
+  };
 
   // Initialize Map
   useEffect(() => {
@@ -285,8 +376,81 @@ export const NationalVolunteerMap: React.FC<NationalVolunteerMapProps> = ({
       {/* Main Map + Volunteer Detail Sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Leaflet Map with Marker Clustering */}
-        <div className="lg:col-span-8 bg-slate-950 rounded-xl overflow-hidden border border-slate-800 relative isolate shadow-2xl h-[680px]">
-          <div ref={mapContainerRef} className="w-full h-full" />
+        <div 
+          ref={mapWrapperRef}
+          className={`bg-slate-950 overflow-hidden border border-slate-800 relative isolate shadow-2xl ${
+            isFullscreen 
+              ? 'sigap-fullscreen-fallback fixed inset-0 z-[9999] rounded-none !h-screen !w-screen !p-0 !m-0' 
+              : 'lg:col-span-8 rounded-xl h-[680px]'
+          }`}
+        >
+          <div ref={mapContainerRef} className="w-full h-full" style={{ width: '100%', height: '100%' }} />
+
+          {/* Floating Volunteer Quick Inspector in Fullscreen Mode */}
+          {isFullscreen && selectedVolunteer && (
+            <div className="absolute top-4 left-4 z-20 bg-slate-950/95 backdrop-blur-md p-4 rounded-xl border border-slate-700 text-xs text-slate-200 shadow-2xl max-w-sm space-y-2 pointer-events-auto">
+              <div className="flex items-start justify-between gap-3 pb-2 border-b border-slate-800">
+                <div className="flex items-center gap-2">
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-xs ${
+                    selectedVolunteer.status === 'available' ? 'bg-emerald-600' : 'bg-amber-600'
+                  }`}>
+                    {selectedVolunteer.name.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white text-xs">{selectedVolunteer.name}</h4>
+                    <p className="text-[11px] text-slate-400">{selectedVolunteer.city}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedVolunteer(null)}
+                  className="text-slate-400 hover:text-white p-1 cursor-pointer"
+                  title={isEn ? 'Close Details' : 'Tutup Detail'}
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div className="text-[11px] text-slate-300 flex items-center gap-2">
+                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                  selectedVolunteer.status === 'available' ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-amber-950 text-amber-300 border border-amber-800'
+                }`}>
+                  {selectedVolunteer.status === 'available' ? (isEn ? 'Ready Standby' : 'Tersedia Siaga') : (isEn ? 'On Duty' : 'Bertugas')}
+                </span>
+                <span>{selectedVolunteer.phone}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Top Right Tactical Map Controls */}
+          <div className="absolute top-4 right-4 z-20 pointer-events-none flex items-center gap-1.5">
+            <div className="flex items-center gap-0.5 bg-slate-950/92 backdrop-blur-md p-1 rounded-xl border border-slate-800 shadow-2xl pointer-events-auto">
+              <button
+                onClick={() => mapInstanceRef.current?.zoomIn()}
+                className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                title={isEn ? 'Zoom In' : 'Perbesar'}
+              >
+                <ZoomIn className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => mapInstanceRef.current?.zoomOut()}
+                className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                title={isEn ? 'Zoom Out' : 'Perkecil'}
+              >
+                <ZoomOut className="w-4 h-4" />
+              </button>
+            </div>
+
+            <button
+              onClick={toggleFullscreen}
+              className={`p-2 rounded-xl backdrop-blur-md border shadow-2xl transition cursor-pointer pointer-events-auto ${
+                isFullscreen
+                  ? 'bg-cyan-600 text-white border-cyan-400 ring-2 ring-cyan-300'
+                  : 'bg-slate-950/92 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-900'
+              }`}
+              title={isFullscreen ? (isEn ? 'Exit Fullscreen' : 'Keluar Layar Penuh') : (isEn ? 'Fullscreen Map' : 'Layar Penuh')}
+            >
+              {isFullscreen ? <Minimize2 className="w-4 h-4 text-white" /> : <Maximize2 className="w-4 h-4" />}
+            </button>
+          </div>
 
           {/* Map Floating Ribbon */}
           <div className="absolute bottom-4 left-4 z-20 bg-slate-950/90 backdrop-blur-md px-3 py-2 rounded-lg border border-slate-800 text-xs text-slate-300 shadow-xl flex items-center gap-4">

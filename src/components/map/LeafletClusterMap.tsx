@@ -15,6 +15,8 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize2,
+  Minimize2,
+  Compass,
   ChevronDown,
   ChevronUp,
   ShieldAlert
@@ -110,6 +112,46 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
     }
   }, [disasters, onSelectDisaster]);
 
+  const mapWrapperRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
+
+  // Fullscreen change listener
+  // Fullscreen change listener & Escape key handler
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+      setTimeout(() => mapInstanceRef.current?.invalidateSize(), 200);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+        setTimeout(() => mapInstanceRef.current?.invalidateSize(), 200);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFsChange);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isFullscreen]);
+
+  const toggleFullscreen = () => {
+    const next = !isFullscreen;
+    setIsFullscreen(next);
+    if (!next && document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    } else if (next && mapWrapperRef.current && mapWrapperRef.current.requestFullscreen) {
+      mapWrapperRef.current.requestFullscreen().catch(() => {});
+    }
+    setTimeout(() => {
+      mapInstanceRef.current?.invalidateSize();
+    }, 250);
+  };
+
   // Initialize Map
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -120,6 +162,7 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
       center: center,
       zoom: zoom,
       zoomControl: false,
+      closePopupOnClick: false // Prevents popups from closing on map clicks/pans!
     });
 
     // Humanitarian command center basemap: OpenStreetMap or Satellite Imagery
@@ -176,10 +219,12 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
     trackingLayerGroupRef.current = trackingGroup;
 
     mapInstanceRef.current = map;
+    setMapInstance(map);
 
     return () => {
       map.remove();
       mapInstanceRef.current = null;
+      setMapInstance(null);
     };
   }, []);
 
@@ -655,13 +700,16 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
   };
 
   return (
-    <div className={`relative isolate w-full ${heightClass} rounded-xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl`}>
+    <div 
+      ref={mapWrapperRef}
+      className={`relative isolate w-full ${isFullscreen ? 'sigap-fullscreen-fallback fixed inset-0 z-[9999] rounded-none !h-screen !w-screen !p-0 !m-0' : heightClass} rounded-xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl`}
+    >
       {/* Map DOM Container */}
-      <div ref={mapContainerRef} className="w-full h-full" />
+      <div ref={mapContainerRef} className="w-full h-full" style={{ width: '100%', height: '100%' }} />
 
       {/* NASA FIRMS Real-time Wildfire Hotspots Pulsing Layer (High-Performance Clustering & Bounds Filter) */}
       <FirmsLayer
-        map={mapInstanceRef.current}
+        map={mapInstance}
         enabled={firmsLayerEnabled}
         minFrp={firmsMinFrp}
         useClustering={firmsClustering}
@@ -672,7 +720,7 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
 
       {/* BNPB InaRISK Vulnerable Population Density & Resource Deployment Layer */}
       <InaRiskExposureLayer
-        map={mapInstanceRef.current}
+        map={mapInstance}
         enabled={inaRiskLayerEnabled}
         minVulnerability={inaRiskFilter}
         onZoneCountChange={(count, density) => {
@@ -837,10 +885,17 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
           </button>
           <button
             onClick={handleResetView}
-            className="p-1 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+            className="p-1 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer"
             title={isEn ? 'Reset Map View' : 'Reset Peta ke Titik Awal'}
           >
-            <Maximize2 className="w-4 h-4" />
+            <Compass className="w-4 h-4" />
+          </button>
+          <button
+            onClick={toggleFullscreen}
+            className="p-1 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition-colors cursor-pointer"
+            title={isFullscreen ? (isEn ? 'Exit Fullscreen' : 'Keluar Layar Penuh') : (isEn ? 'Fullscreen Map' : 'Layar Penuh')}
+          >
+            {isFullscreen ? <Minimize2 className="w-4 h-4 text-cyan-400" /> : <Maximize2 className="w-4 h-4" />}
           </button>
           <button
             onClick={handleZoomIn}

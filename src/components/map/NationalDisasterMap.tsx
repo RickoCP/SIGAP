@@ -13,6 +13,7 @@ import {
   Filter, 
   ChevronRight, 
   Maximize2,
+  Minimize2,
   Wind,
   Droplets,
   Layers,
@@ -20,12 +21,18 @@ import {
   ChevronUp,
   Radar,
   Siren,
-  BellRing
+  BellRing,
+  ZoomIn,
+  ZoomOut,
+  Search,
+  CloudRain,
+  X
 } from 'lucide-react';
 import { Disaster, IndonesiaRegion, MultiHazardIncident } from '../../types/index.ts';
 import { useLanguage } from '../../context/LanguageContext.tsx';
 import { getLocalizedDisaster } from '../../i18n/translations.ts';
 import { InaRiskExposureLayer } from './InaRiskExposureLayer.tsx';
+import { VERIFIED_GPM_IMERG_CELLS, getGpmIntensityColor } from '../../data/gpmImergData.ts';
 
 interface NationalDisasterMapProps {
   disasters: Disaster[];
@@ -44,6 +51,41 @@ const REGION_COORDINATES: Record<string, { center: [number, number]; zoom: numbe
   'Maluku-Papua': { center: [-3.2000, 134.0000], zoom: 6 },
 };
 
+const BASEMAP_TILES: Record<string, { name: string; nameId: string; icon: string; url: string; attribution: string; maxZoom?: number }> = {
+  osm: {
+    name: 'OpenStreetMap',
+    nameId: 'Peta Jalan (OSM)',
+    icon: '🗺️',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
+  },
+  satellite: {
+    name: 'ESRI Satellite',
+    nameId: 'Citra Satelit ESRI',
+    icon: '🛰️',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, USGS, NOAA',
+    maxZoom: 19
+  },
+  dark: {
+    name: 'ESRI Dark Gray',
+    nameId: 'Mode Taktis Gelap (ESRI)',
+    icon: '🌑',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+    maxZoom: 16
+  },
+  topo: {
+    name: 'Topography',
+    nameId: 'Topografi & Elevasi',
+    icon: '🏔️',
+    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, SRTM',
+    maxZoom: 17
+  }
+};
+
 export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
   disasters,
   onSelectDisaster,
@@ -52,21 +94,98 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
 }) => {
   const { language, t } = useLanguage();
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapWrapperRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
   const disasterLayerRef = useRef<L.LayerGroup | null>(null);
   const radiusLayerRef = useRef<L.LayerGroup | null>(null);
   const hazardLayerRef = useRef<L.LayerGroup | null>(null);
+  const gpmLayerRef = useRef<L.LayerGroup | null>(null);
 
+  // Markers cache to allow programmatic opening of popups and preventing unnecessary teardowns
+  const markersMapRef = useRef<Map<string, L.Marker>>(new Map());
+
+  // Stable callback refs to ensure marker click handlers never trigger layer reconstruction
+  const onSelectDisasterRef = useRef(onSelectDisaster);
+  onSelectDisasterRef.current = onSelectDisaster;
+
+  const onNavigateToTacticalMapRef = useRef(onNavigateToTacticalMap);
+  onNavigateToTacticalMapRef.current = onNavigateToTacticalMap;
+
+  const onNavigateToMultiHazardRef = useRef(onNavigateToMultiHazard);
+  onNavigateToMultiHazardRef.current = onNavigateToMultiHazard;
+
+  // Filter & Layer States
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
   const [selectedDisasterId, setSelectedDisasterId] = useState<string>(disasters[0]?.id || '');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [isLegendExpanded, setIsLegendExpanded] = useState<boolean>(true);
+
+  // Map Feature Toggles & Basemap Switcher
+  const [selectedBasemap, setSelectedBasemap] = useState<'osm' | 'satellite' | 'dark' | 'topo'>('osm');
+  const [showBasemapMenu, setShowBasemapMenu] = useState<boolean>(false);
+  const [showRadiusLayer, setShowRadiusLayer] = useState<boolean>(true);
+  const [showGpmLayer, setShowGpmLayer] = useState<boolean>(true);
+  const [showMultiHazardOverlay, setShowMultiHazardOverlay] = useState<boolean>(true);
+  const [showInaRiskExposure, setShowInaRiskExposure] = useState<boolean>(true);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
+
+  const basemapMenuRef = useRef<HTMLDivElement>(null);
 
   // Multi-Hazard Real-Time Incidents Sync State
   const [hazardIncidents, setHazardIncidents] = useState<MultiHazardIncident[]>([]);
-  const [showMultiHazardOverlay, setShowMultiHazardOverlay] = useState<boolean>(true);
-  const [showInaRiskExposure, setShowInaRiskExposure] = useState<boolean>(true);
+
+  // Close basemap menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (basemapMenuRef.current && !basemapMenuRef.current.contains(e.target as Node)) {
+        setShowBasemapMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Fullscreen change listener & Escape key handler
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const active = Boolean(document.fullscreenElement);
+      setIsFullscreen(active);
+      setTimeout(() => {
+        mapInstanceRef.current?.invalidateSize();
+      }, 250);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+        setTimeout(() => mapInstanceRef.current?.invalidateSize(), 200);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isFullscreen]);
+
+  const toggleFullscreen = () => {
+    const next = !isFullscreen;
+    setIsFullscreen(next);
+    if (!next && document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    } else if (next && mapWrapperRef.current && mapWrapperRef.current.requestFullscreen) {
+      mapWrapperRef.current.requestFullscreen().catch(() => {});
+    }
+    setTimeout(() => {
+      mapInstanceRef.current?.invalidateSize();
+    }, 250);
+  };
 
   // Poll Multi-Hazard incidents every 12 seconds so actions in Command Center auto-update here
   const fetchHazardIncidents = async () => {
@@ -105,6 +224,24 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
     return found || localizedDisasters[0] || null;
   }, [localizedDisasters, selectedDisasterId]);
 
+  // Filtered disasters with search support (memoized to prevent recreating layer on marker clicks)
+  const filteredDisasters = useMemo(() => {
+    return localizedDisasters.filter(d => {
+      if (selectedRegion !== 'all' && d.region !== selectedRegion) return false;
+      if (selectedType !== 'all' && d.type !== selectedType) return false;
+      if (selectedSeverity !== 'all' && d.severity !== selectedSeverity) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const titleMatch = (d.title && d.title.toLowerCase().includes(q)) || (d.titleEn && d.titleEn.toLowerCase().includes(q));
+        const provMatch = d.province && d.province.toLowerCase().includes(q);
+        const regionMatch = d.region && d.region.toLowerCase().includes(q);
+        const descMatch = d.description && d.description.toLowerCase().includes(q);
+        if (!titleMatch && !provMatch && !regionMatch && !descMatch) return false;
+      }
+      return true;
+    });
+  }, [localizedDisasters, selectedRegion, selectedType, selectedSeverity, searchQuery]);
+
   // Initialize National Map
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -115,16 +252,26 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
       zoom: 5,
       zoomControl: false,
       minZoom: 4,
-      maxZoom: 16
+      maxZoom: 18,
+      closePopupOnClick: false // Prevents popups from closing on map clicks/pans!
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 19,
+    // Add scale bar
+    L.control.scale({ imperial: false, metric: true, position: 'bottomright' }).addTo(map);
+
+    // Initial Basemap
+    const initialBasemap = BASEMAP_TILES[selectedBasemap] || BASEMAP_TILES.osm;
+    const tileLayer = L.tileLayer(initialBasemap.url, {
+      attribution: initialBasemap.attribution,
+      maxZoom: initialBasemap.maxZoom || 19,
     }).addTo(map);
+    tileLayerRef.current = tileLayer;
 
     const radiusGroup = L.layerGroup().addTo(map);
     radiusLayerRef.current = radiusGroup;
+
+    const gpmGroup = L.layerGroup().addTo(map);
+    gpmLayerRef.current = gpmGroup;
 
     const hazardGroup = L.layerGroup().addTo(map);
     hazardLayerRef.current = hazardGroup;
@@ -132,35 +279,62 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
     const layerGroup = L.layerGroup().addTo(map);
     disasterLayerRef.current = layerGroup;
     mapInstanceRef.current = map;
+    setMapInstance(map);
 
     return () => {
       map.remove();
       mapInstanceRef.current = null;
+      setMapInstance(null);
     };
   }, []);
+
+  // Update Basemap Tiles when selectedBasemap changes
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    if (tileLayerRef.current) {
+      map.removeLayer(tileLayerRef.current);
+    }
+
+    const config = BASEMAP_TILES[selectedBasemap] || BASEMAP_TILES.osm;
+    const newTile = L.tileLayer(config.url, {
+      attribution: config.attribution,
+      maxZoom: config.maxZoom || 19
+    }).addTo(map);
+    newTile.bringToBack();
+    tileLayerRef.current = newTile;
+  }, [selectedBasemap]);
 
   // Pan to selected region
   const handleRegionChange = (reg: string) => {
     setSelectedRegion(reg);
     const target = REGION_COORDINATES[reg] || REGION_COORDINATES.all;
-    mapInstanceRef.current?.flyTo(target.center, target.zoom, { duration: 1.5 });
+    mapInstanceRef.current?.flyTo(target.center, target.zoom, { duration: 1.2 });
   };
 
-  // Filtered disasters
-  const filteredDisasters = localizedDisasters.filter(d => {
-    if (selectedRegion !== 'all' && d.region !== selectedRegion) return false;
-    if (selectedType !== 'all' && d.type !== selectedType) return false;
-    if (selectedSeverity !== 'all' && d.severity !== selectedSeverity) return false;
-    return true;
-  });
+  // Zoom helpers
+  const handleZoomIn = () => {
+    mapInstanceRef.current?.zoomIn();
+  };
 
-  // Render Disaster Markers on National Map (Stable across selection to protect open popups)
+  const handleZoomOut = () => {
+    mapInstanceRef.current?.zoomOut();
+  };
+
+  const handleResetIndonesia = () => {
+    setSelectedRegion('all');
+    mapInstanceRef.current?.flyTo([-2.5489, 118.0149], 5, { duration: 1.2 });
+  };
+
+  // Render Disaster Markers on National Map (STABLE: Depends strictly on filteredDisasters and language, uses refs for callbacks so it NEVER clears layers when a point is clicked!)
   useEffect(() => {
     const map = mapInstanceRef.current;
     const layer = disasterLayerRef.current;
     if (!map || !layer) return;
 
     layer.clearLayers();
+    markersMapRef.current.clear();
 
     filteredDisasters.forEach(d => {
       const isFire = d.type === 'fire';
@@ -181,7 +355,7 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
           <div class="relative flex items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-125">
             <span class="absolute w-8 h-8 rounded-full" style="background-color: ${color}; opacity: 0.35;"></span>
             <div class="relative w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-xl border-2" 
-                 style="background-color: ${color}; border-color: rgba(255,255,255,0.8)">
+                 style="background-color: ${color}; border-color: rgba(255,255,255,0.85)">
               ${iconEmoji}
             </div>
             <div class="absolute -bottom-5 whitespace-nowrap bg-slate-950/90 text-[10px] font-bold px-1.5 py-0.5 rounded border border-slate-700 text-slate-200 shadow-md">
@@ -195,6 +369,7 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
       });
 
       const marker = L.marker([d.locationLat, d.locationLng], { icon: customIcon });
+      markersMapRef.current.set(d.id, marker);
 
       const severityBadge = d.severity === 'critical' 
         ? (language === 'id' ? 'KRITIS' : 'CRITICAL')
@@ -230,32 +405,35 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
       `, {
         maxWidth: 290,
         autoPan: true,
+        autoClose: true,
+        closeOnClick: false,
         autoPanPaddingTopLeft: L.point(20, 100),
         autoPanPaddingBottomRight: L.point(20, 90)
       });
 
       marker.on('click', () => {
         setSelectedDisasterId(d.id);
-        onSelectDisaster(d.id);
+        onSelectDisasterRef.current?.(d.id);
       });
 
       marker.on('popupopen', () => {
         const btn = document.getElementById(`popup-btn-${d.id}`);
         if (btn) {
-          btn.onclick = () => onNavigateToTacticalMap(d.id);
+          btn.onclick = () => onNavigateToTacticalMapRef.current?.(d.id);
         }
       });
 
       layer.addLayer(marker);
     });
-  }, [filteredDisasters, language, onSelectDisaster, onNavigateToTacticalMap]);
+  }, [filteredDisasters, language]);
 
-  // Render Hazard Radius Rings (Updates smoothly when selected disaster changes without destroying markers or popups)
+  // Render Hazard Radius Rings (Updates smoothly without destroying markers or popups)
   useEffect(() => {
     const radiusLayer = radiusLayerRef.current;
     if (!radiusLayer) return;
 
     radiusLayer.clearLayers();
+    if (!showRadiusLayer) return;
 
     filteredDisasters.forEach(d => {
       const isFire = d.type === 'fire';
@@ -274,7 +452,117 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
       });
       radiusLayer.addLayer(radiusCircle);
     });
-  }, [filteredDisasters, activeDisaster]);
+  }, [filteredDisasters, activeDisaster, showRadiusLayer]);
+
+  // Render NASA GPM IMERG Precipitation Overlays on National Map
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const layer = gpmLayerRef.current;
+    if (!map || !layer) return;
+
+    layer.clearLayers();
+    if (!showGpmLayer) return;
+
+    VERIFIED_GPM_IMERG_CELLS.forEach(cell => {
+      const colors = getGpmIntensityColor(cell.rateMmPerHour);
+      const isExtreme = cell.intensityLevel === 'EXTREME';
+      const isHeavy = cell.intensityLevel === 'HEAVY';
+
+      // 1. Concentric Footprint Circle
+      const radiusMeters = cell.footprintRadiusKm * 1000;
+      const footprintCircle = L.circle([cell.latitude, cell.longitude], {
+        radius: radiusMeters,
+        color: colors.stroke,
+        fillColor: colors.fill,
+        fillOpacity: isExtreme ? 0.28 : isHeavy ? 0.22 : 0.15,
+        weight: isExtreme ? 2 : 1.2,
+        dashArray: isExtreme ? undefined : '3, 4'
+      });
+      layer.addLayer(footprintCircle);
+
+      // 2. High Intensity Core for Extreme/Heavy
+      if (isExtreme || isHeavy) {
+        const coreCircle = L.circle([cell.latitude, cell.longitude], {
+          radius: radiusMeters * 0.45,
+          color: colors.stroke,
+          fillColor: colors.fill,
+          fillOpacity: isExtreme ? 0.42 : 0.32,
+          weight: 2
+        });
+        layer.addLayer(coreCircle);
+      }
+
+      // 3. Interactive Marker Badge
+      const customIcon = L.divIcon({
+        className: 'custom-gpm-marker',
+        html: `
+          <div class="relative flex items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-125">
+            ${isExtreme ? `<span class="absolute w-9 h-9 rounded-full animate-ping opacity-60" style="background-color: ${colors.fill}"></span>` : ''}
+            <div class="relative flex items-center gap-1 px-2 py-0.5 rounded-full text-white font-mono text-[9px] font-black shadow-xl border-2 whitespace-nowrap"
+                 style="background-color: ${colors.fill}; border-color: ${colors.stroke}">
+              <span>🌧️ ${cell.rateMmPerHour} mm/h</span>
+            </div>
+            <div class="absolute -bottom-4 whitespace-nowrap bg-slate-950/90 text-[8.5px] font-bold px-1 rounded border border-cyan-800 text-cyan-200 shadow-md">
+              ${cell.basinName}
+            </div>
+          </div>
+        `,
+        iconSize: [40, 24],
+        iconAnchor: [20, 12],
+        popupAnchor: [0, -14]
+      });
+
+      const marker = L.marker([cell.latitude, cell.longitude], { icon: customIcon });
+
+      marker.bindPopup(`
+        <div class="p-2.5 min-w-[240px] text-slate-900 font-sans">
+          <div class="flex items-center justify-between gap-1 mb-1">
+            <span class="text-[9px] font-black uppercase tracking-wider text-cyan-700 bg-cyan-100 px-1.5 py-0.5 rounded">
+              NASA GPM IMERG Precipitation
+            </span>
+            <span class="text-[9px] font-bold font-mono px-1.5 py-0.5 rounded ${
+              cell.floodRisk === 'CRITICAL_FLASH_FLOOD' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'
+            }">
+              ${cell.floodRisk.replace(/_/g, ' ')}
+            </span>
+          </div>
+          <h4 class="font-bold text-xs text-slate-900 leading-tight mb-1">
+            ${language === 'en' ? cell.locationNameEn : cell.locationName}
+          </h4>
+          <div class="text-[10px] text-slate-500 font-mono mb-2">
+            ${cell.basinName} • ${cell.province}
+          </div>
+          <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1.5 rounded text-center font-mono text-[10px] mb-2">
+            <div>
+              <span class="text-slate-500 text-[8px] block">${language === 'id' ? 'Intensitas' : 'Rate'}</span>
+              <strong class="text-cyan-700">${cell.rateMmPerHour} mm/h</strong>
+            </div>
+            <div>
+              <span class="text-slate-500 text-[8px] block">24h Acc</span>
+              <strong class="text-amber-700">${cell.accumulated24hMm} mm</strong>
+            </div>
+            <div>
+              <span class="text-slate-500 text-[8px] block">72h Acc</span>
+              <strong class="text-rose-700">${cell.accumulated72hMm} mm</strong>
+            </div>
+          </div>
+          <div class="text-[10.5px] text-slate-700 space-y-1 border-t pt-1.5">
+            <div><strong>🌊 ${language === 'id' ? 'Dampak Hilir:' : 'Downstream:'}</strong> ${language === 'en' ? cell.downstreamImpactEn : cell.downstreamImpact}</div>
+            <div class="text-slate-600"><strong>📋 ${language === 'id' ? 'Rekomendasi:' : 'Recommendation:'}</strong> ${language === 'en' ? cell.sarRecommendationEn : cell.sarRecommendation}</div>
+          </div>
+        </div>
+      `, {
+        maxWidth: 290,
+        autoPan: true,
+        autoClose: true,
+        closeOnClick: false,
+        autoPanPaddingTopLeft: L.point(20, 100),
+        autoPanPaddingBottomRight: L.point(20, 90)
+      });
+
+      layer.addLayer(marker);
+    });
+  }, [showGpmLayer, language]);
 
   // Render Multi-Hazard Incidents & EWS Overlay on National Map (Live synchronized with Command Center actions)
   useEffect(() => {
@@ -404,21 +692,22 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
       `, {
         maxWidth: 300,
         autoPan: true,
+        autoClose: true,
+        closeOnClick: false,
         autoPanPaddingTopLeft: L.point(20, 100),
         autoPanPaddingBottomRight: L.point(20, 90)
       });
 
       marker.on('popupopen', () => {
         const btn = document.getElementById(`popup-btn-hazard-${inc.id}`);
-        if (btn && onNavigateToMultiHazard) {
-          btn.onclick = () => onNavigateToMultiHazard(inc.id);
+        if (btn && onNavigateToMultiHazardRef.current) {
+          btn.onclick = () => onNavigateToMultiHazardRef.current?.(inc.id);
         }
       });
 
       layer.addLayer(marker);
     });
-  }, [hazardIncidents, showMultiHazardOverlay, language, onNavigateToMultiHazard]);
-
+  }, [hazardIncidents, showMultiHazardOverlay, language]);
 
   // Aggregate metrics
   const totalAffected = filteredDisasters.reduce((acc, d) => acc + d.affectedPeople, 0);
@@ -485,89 +774,153 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
         </div>
 
         {/* Filters Row */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 text-xs">
-          {/* Region Tabs */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-slate-400 font-medium mr-1">
-              {language === 'id' ? 'Wilayah:' : 'Region:'}
-            </span>
-            {[
-              { id: 'all', label: t.natMapAllIndonesia },
-              { id: 'Sumatera', label: t.natMapSumatra },
-              { id: 'Jawa', label: t.natMapJava },
-              { id: 'Kalimantan', label: t.natMapKalimantan },
-              { id: 'Sulawesi', label: t.natMapSulawesi },
-              { id: 'Bali-NusaTenggara', label: t.natMapBaliNusa }
-            ].map(reg => (
-              <button
-                key={reg.id}
-                onClick={() => handleRegionChange(reg.id)}
-                className={`px-2.5 py-1 rounded font-medium transition-colors ${
-                  selectedRegion === reg.id
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-slate-800/80 text-slate-300 hover:bg-slate-750 hover:text-white'
-                }`}
-              >
-                {reg.label}
-              </button>
-            ))}
+        <div className="flex flex-col gap-3 pt-3 text-xs">
+          {/* Top Line: Region Buttons + Search */}
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-slate-400 font-medium mr-1">
+                {language === 'id' ? 'Wilayah:' : 'Region:'}
+              </span>
+              {[
+                { id: 'all', label: t.natMapAllIndonesia },
+                { id: 'Sumatera', label: t.natMapSumatra },
+                { id: 'Jawa', label: t.natMapJava },
+                { id: 'Kalimantan', label: t.natMapKalimantan },
+                { id: 'Sulawesi', label: t.natMapSulawesi },
+                { id: 'Bali-NusaTenggara', label: t.natMapBaliNusa },
+                { id: 'Maluku-Papua', label: 'Maluku-Papua' }
+              ].map(reg => (
+                <button
+                  key={reg.id}
+                  onClick={() => handleRegionChange(reg.id)}
+                  className={`px-2.5 py-1 rounded font-medium transition-colors cursor-pointer ${
+                    selectedRegion === reg.id
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'bg-slate-800/80 text-slate-300 hover:bg-slate-750 hover:text-white'
+                  }`}
+                >
+                  {reg.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Quick Search on Map */}
+            <div className="relative flex-1 min-w-[200px] max-w-xs">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={language === 'id' ? 'Cari bencana, kota, provinsi...' : 'Search disaster, city, province...'}
+                className="w-full bg-slate-950/80 border border-slate-700/80 rounded-lg pl-8 pr-7 py-1 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* Type & Severity Selectors + Live Multi-Hazard Sync Toggle */}
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => setShowMultiHazardOverlay(!showMultiHazardOverlay)}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded border text-xs font-bold transition-all cursor-pointer ${
-                showMultiHazardOverlay
-                  ? 'bg-rose-950/80 border-rose-500/80 text-rose-300 shadow-md ring-1 ring-rose-500/40'
-                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
-              }`}
-              title={language === 'id' ? 'Aktifkan/Nonaktifkan Tampilan Insiden Multi-Hazard & EWS Real-Time' : 'Toggle Real-Time Multi-Hazard & EWS Incidents Overlay'}
-            >
-              <Siren className={`w-3.5 h-3.5 ${showMultiHazardOverlay ? 'text-rose-400 animate-pulse' : 'text-slate-400'}`} />
-              <span>
-                {language === 'id'
-                  ? `Multi-Hazard & EWS (${hazardIncidents.filter(i => i.responseWorkflow?.isCommunityEarlyWarningActive).length} Alarm Aktif)`
-                  : `Multi-Hazard & EWS (${hazardIncidents.filter(i => i.responseWorkflow?.isCommunityEarlyWarningActive).length} Alarms Active)`}
+          {/* Bottom Line: Layer Toggles & Dropdown Filters */}
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/80 pt-2.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-slate-400 font-medium mr-1 flex items-center gap-1">
+                <Layers className="w-3.5 h-3.5" />
+                <span>{language === 'id' ? 'Layer:' : 'Layers:'}</span>
               </span>
-            </button>
 
-            <button
-              onClick={() => setShowInaRiskExposure(!showInaRiskExposure)}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded border text-xs font-bold transition-all cursor-pointer ${
-                showInaRiskExposure
-                  ? 'bg-rose-950/80 border-rose-500/80 text-rose-300 shadow-md ring-1 ring-rose-500/40'
-                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
-              }`}
-              title={language === 'id' ? 'Aktifkan/Nonaktifkan Lapisan Kepadatan Warga Rentan BNPB InaRISK' : 'Toggle BNPB InaRISK Vulnerable Population Density Overlays'}
-            >
-              <ShieldAlert className={`w-3.5 h-3.5 ${showInaRiskExposure ? 'text-rose-400 animate-pulse' : 'text-slate-400'}`} />
-              <span>
-                {language === 'id' ? 'InaRISK Warga Rentan' : 'InaRISK Exposure'}
-              </span>
-            </button>
+              {/* Multi-Hazard & EWS Toggle */}
+              <button
+                onClick={() => setShowMultiHazardOverlay(!showMultiHazardOverlay)}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded border text-xs font-bold transition-all cursor-pointer ${
+                  showMultiHazardOverlay
+                    ? 'bg-rose-950/80 border-rose-500/80 text-rose-300 shadow-md ring-1 ring-rose-500/40'
+                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+                }`}
+                title={language === 'id' ? 'Aktifkan/Nonaktifkan Tampilan Insiden Multi-Hazard & EWS Real-Time' : 'Toggle Real-Time Multi-Hazard & EWS Incidents Overlay'}
+              >
+                <Siren className={`w-3.5 h-3.5 ${showMultiHazardOverlay ? 'text-rose-400 animate-pulse' : 'text-slate-400'}`} />
+                <span>
+                  {language === 'id'
+                    ? `Multi-Hazard & EWS (${hazardIncidents.filter(i => i.responseWorkflow?.isCommunityEarlyWarningActive).length} Alarm)`
+                    : `Multi-Hazard & EWS (${hazardIncidents.filter(i => i.responseWorkflow?.isCommunityEarlyWarningActive).length} Alarms)`}
+                </span>
+              </button>
 
-            <select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="bg-slate-800 text-slate-200 py-1 px-2.5 rounded border border-slate-700 focus:outline-none focus:border-blue-500 font-medium cursor-pointer"
-            >
-              <option value="all">{t.natMapAllTypes}</option>
-              <option value="fire">{t.natMapFire}</option>
-              <option value="flood">{t.natMapFlood}</option>
-              <option value="earthquake">{t.natMapEarthquake}</option>
-            </select>
+              {/* InaRISK Exposure Layer Toggle */}
+              <button
+                onClick={() => setShowInaRiskExposure(!showInaRiskExposure)}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded border text-xs font-bold transition-all cursor-pointer ${
+                  showInaRiskExposure
+                    ? 'bg-rose-950/80 border-rose-500/80 text-rose-300 shadow-md ring-1 ring-rose-500/40'
+                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+                }`}
+                title={language === 'id' ? 'Aktifkan/Nonaktifkan Lapisan Kepadatan Warga Rentan BNPB InaRISK' : 'Toggle BNPB InaRISK Vulnerable Population Density Overlays'}
+              >
+                <ShieldAlert className={`w-3.5 h-3.5 ${showInaRiskExposure ? 'text-rose-400 animate-pulse' : 'text-slate-400'}`} />
+                <span>
+                  {language === 'id' ? 'InaRISK Warga Rentan' : 'InaRISK Exposure'}
+                </span>
+              </button>
 
-            <select
-              value={selectedSeverity}
-              onChange={(e) => setSelectedSeverity(e.target.value)}
-              className="bg-slate-800 text-slate-200 py-1 px-2.5 rounded border border-slate-700 focus:outline-none focus:border-blue-500 font-medium cursor-pointer"
-            >
-              <option value="all">{t.natMapAllSeverities}</option>
-              <option value="critical">{t.natMapCritical}</option>
-              <option value="high">{t.natMapHigh}</option>
-              <option value="medium">{t.natMapMedium}</option>
-            </select>
+              {/* NASA GPM IMERG Precipitation Layer Toggle */}
+              <button
+                onClick={() => setShowGpmLayer(!showGpmLayer)}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded border text-xs font-bold transition-all cursor-pointer ${
+                  showGpmLayer
+                    ? 'bg-cyan-950/90 border-cyan-500/80 text-cyan-300 shadow-md ring-1 ring-cyan-500/40'
+                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+                }`}
+                title={language === 'id' ? 'Aktifkan/Nonaktifkan Curah Hujan Real-Time NASA GPM IMERG' : 'Toggle Real-Time NASA GPM IMERG Precipitation'}
+              >
+                <CloudRain className={`w-3.5 h-3.5 ${showGpmLayer ? 'text-cyan-400 animate-bounce' : 'text-slate-400'}`} />
+                <span>
+                  {language === 'id' ? `Curah Hujan GPM (${VERIFIED_GPM_IMERG_CELLS.length})` : `GPM Rain (${VERIFIED_GPM_IMERG_CELLS.length})`}
+                </span>
+              </button>
+
+              {/* Danger Radius Rings Toggle */}
+              <button
+                onClick={() => setShowRadiusLayer(!showRadiusLayer)}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded border text-xs font-medium transition-all cursor-pointer ${
+                  showRadiusLayer
+                    ? 'bg-slate-800 border-blue-500/80 text-blue-300'
+                    : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white'
+                }`}
+                title={language === 'id' ? 'Aktifkan/Nonaktifkan Cincin Radius Bahaya' : 'Toggle Danger Perimeter Rings'}
+              >
+                <span>⭕ {language === 'id' ? 'Radius Bahaya' : 'Danger Radius'}</span>
+              </button>
+            </div>
+
+            {/* Type & Severity Selectors */}
+            <div className="flex items-center gap-2">
+              <select
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                className="bg-slate-800 text-slate-200 py-1 px-2.5 rounded border border-slate-700 focus:outline-none focus:border-blue-500 font-medium cursor-pointer"
+              >
+                <option value="all">{t.natMapAllTypes}</option>
+                <option value="fire">{t.natMapFire}</option>
+                <option value="flood">{t.natMapFlood}</option>
+                <option value="earthquake">{t.natMapEarthquake}</option>
+              </select>
+
+              <select
+                value={selectedSeverity}
+                onChange={(e) => setSelectedSeverity(e.target.value)}
+                className="bg-slate-800 text-slate-200 py-1 px-2.5 rounded border border-slate-700 focus:outline-none focus:border-blue-500 font-medium cursor-pointer"
+              >
+                <option value="all">{t.natMapAllSeverities}</option>
+                <option value="critical">{t.natMapCritical}</option>
+                <option value="high">{t.natMapHigh}</option>
+                <option value="medium">{t.natMapMedium}</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -575,16 +928,102 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
       {/* Main Map + Sidebar Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Left: Full Map Container */}
-        <div className="lg:col-span-8 bg-slate-950 rounded-xl overflow-hidden border border-slate-800 relative isolate shadow-2xl h-[680px]">
-          <div ref={mapContainerRef} className="w-full h-full" />
+        <div 
+          ref={mapWrapperRef}
+          className={`lg:col-span-8 bg-slate-950 rounded-xl overflow-hidden border border-slate-800 relative isolate shadow-2xl ${
+            isFullscreen ? 'sigap-fullscreen-fallback fixed inset-0 z-[9999] rounded-none !h-screen !w-screen !p-0 !m-0' : 'h-[680px]'
+          }`}
+        >
+          <div ref={mapContainerRef} className="w-full h-full" style={{ width: '100%', height: '100%' }} />
+
+          {/* Floating Tactical Map Controls (Top Right) */}
+          <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 pointer-events-auto">
+            {/* Zoom & Navigation Controls */}
+            <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-lg p-1 shadow-lg flex flex-col gap-1">
+              <button
+                onClick={handleZoomIn}
+                title={language === 'id' ? 'Perbesar Peta' : 'Zoom In'}
+                className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer"
+              >
+                <ZoomIn className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleZoomOut}
+                title={language === 'id' ? 'Perkecil Peta' : 'Zoom Out'}
+                className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer"
+              >
+                <ZoomOut className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleResetIndonesia}
+                title={language === 'id' ? 'Pusatkan Seluruh Indonesia' : 'Reset to Indonesia Overview'}
+                className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer"
+              >
+                <Compass className="w-4 h-4" />
+              </button>
+              <button
+                onClick={toggleFullscreen}
+                title={isFullscreen ? (language === 'id' ? 'Keluar Layar Penuh' : 'Exit Fullscreen') : (language === 'id' ? 'Layar Penuh' : 'Fullscreen Map')}
+                className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer"
+              >
+                {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              </button>
+            </div>
+
+            {/* Basemap Switcher Menu Button */}
+            <div className="relative" ref={basemapMenuRef}>
+              <button
+                onClick={() => setShowBasemapMenu(!showBasemapMenu)}
+                title={language === 'id' ? 'Ganti Peta Dasar (Basemap)' : 'Switch Base Map Layer'}
+                className={`p-2 rounded-lg border shadow-lg backdrop-blur-md transition-all cursor-pointer flex items-center justify-center ${
+                  showBasemapMenu 
+                    ? 'bg-blue-600 border-blue-400 text-white shadow-blue-500/20' 
+                    : 'bg-slate-900/90 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <Layers className="w-4 h-4" />
+              </button>
+
+              {/* Basemap Selection Popup */}
+              {showBasemapMenu && (
+                <div className="absolute top-0 right-11 w-52 bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-xl p-2 shadow-2xl animate-in fade-in duration-150 z-30 space-y-1 text-xs">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 py-1 border-b border-slate-800">
+                    {language === 'id' ? 'Pilih Peta Dasar' : 'Base Map Tiles'}
+                  </div>
+                  {Object.entries(BASEMAP_TILES).map(([key, config]) => (
+                    <button
+                      key={key}
+                      onClick={() => {
+                        setSelectedBasemap(key as any);
+                        setShowBasemapMenu(false);
+                      }}
+                      className={`w-full text-left px-2 py-1.5 rounded-lg flex items-center justify-between transition-colors cursor-pointer ${
+                        selectedBasemap === key
+                          ? 'bg-blue-600/30 text-blue-300 border border-blue-500/60 font-bold'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <span>{config.icon}</span>
+                        <span>{language === 'id' ? config.nameId : config.name}</span>
+                      </span>
+                      {selectedBasemap === key && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* BNPB InaRISK Vulnerable Population Density & Resource Deployment Layer */}
           <InaRiskExposureLayer
-            map={mapInstanceRef.current}
+            map={mapInstance}
             enabled={showInaRiskExposure}
             onDeployResourcesToZone={(zone) => {
-              if (onNavigateToMultiHazard) {
-                onNavigateToMultiHazard(zone.id);
+              if (onNavigateToMultiHazardRef.current) {
+                onNavigateToMultiHazardRef.current(zone.id);
               }
             }}
           />
@@ -592,7 +1031,7 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
           {/* Floating Map Legend (Collapsible & Non-blocking) */}
           <div className="absolute bottom-4 left-4 z-20 pointer-events-auto">
             {isLegendExpanded ? (
-              <div className="bg-slate-950/90 backdrop-blur-md p-2.5 rounded-lg border border-slate-800 text-xs text-slate-300 shadow-xl space-y-1.5 min-w-[170px]">
+              <div className="bg-slate-950/92 backdrop-blur-md p-2.5 rounded-lg border border-slate-800 text-xs text-slate-300 shadow-xl space-y-1.5 min-w-[180px]">
                 <div className="flex items-center justify-between font-bold text-white text-[11px] uppercase tracking-wider mb-1 border-b border-slate-800 pb-1">
                   <span>{t.natMapLegendTitle}</span>
                   <button
@@ -619,18 +1058,38 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
                   <span className="w-4 h-4 rounded-full bg-orange-600 flex items-center justify-center text-[10px]">🌋</span>
                   <span>{language === 'id' ? 'Erupsi Gunung Api' : 'Volcanic Eruption'}</span>
                 </div>
-                <div className="flex items-center gap-2 pt-1 border-t border-slate-800">
-                  <span className="w-4 h-4 rounded-full bg-rose-600 flex items-center justify-center text-[10px] animate-pulse">🚨</span>
-                  <span className="font-bold text-rose-300">{language === 'id' ? 'EWS Sirine Aktif' : 'Active EWS Sirens'}</span>
-                </div>
-                <div className="flex items-center gap-2 pt-1 border-t border-slate-800">
-                  <span className="w-3.5 h-3.5 rounded-full bg-rose-600 flex items-center justify-center text-[8px] font-bold text-white">🛡️</span>
-                  <span className="font-bold text-rose-300">{language === 'id' ? 'InaRISK Warga Rentan' : 'InaRISK Exposure'}</span>
-                </div>
-                <div className="text-[10px] text-slate-400 pt-1 border-t border-slate-800 flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full border border-red-400 bg-red-400/20 inline-block"></span>
-                  <span>{t.natMapLegendRadius}</span>
-                </div>
+                {showMultiHazardOverlay && (
+                  <div className="flex items-center gap-2 pt-1 border-t border-slate-800">
+                    <span className="w-4 h-4 rounded-full bg-rose-600 flex items-center justify-center text-[10px] animate-pulse">🚨</span>
+                    <span className="font-bold text-rose-300">{language === 'id' ? 'EWS Sirine Aktif' : 'Active EWS Sirens'}</span>
+                  </div>
+                )}
+                {showInaRiskExposure && (
+                  <div className="flex items-center gap-2 pt-1 border-t border-slate-800">
+                    <span className="w-3.5 h-3.5 rounded-full bg-rose-600 flex items-center justify-center text-[8px] font-bold text-white">🛡️</span>
+                    <span className="font-bold text-rose-300">{language === 'id' ? 'InaRISK Warga Rentan' : 'InaRISK Exposure'}</span>
+                  </div>
+                )}
+                {showGpmLayer && (
+                  <div className="pt-1 border-t border-slate-800 space-y-1 text-[10px]">
+                    <div className="font-bold text-cyan-300 flex items-center gap-1">
+                      <CloudRain className="w-3 h-3 text-cyan-400" />
+                      <span>{language === 'id' ? 'Curah Hujan GPM IMERG:' : 'GPM Rain Rates:'}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1 font-mono text-[9px] text-slate-300 pl-1">
+                      <span className="text-purple-300 font-bold">• &gt;20 mm/h ({language === 'id' ? 'Ekstrem' : 'Extreme'})</span>
+                      <span className="text-orange-300">• 10-20 ({language === 'id' ? 'Lebat' : 'Heavy'})</span>
+                      <span className="text-blue-300">• 2.5-10 ({language === 'id' ? 'Sedang' : 'Mod'})</span>
+                      <span className="text-sky-300">• &lt;2.5 ({language === 'id' ? 'Ringan' : 'Light'})</span>
+                    </div>
+                  </div>
+                )}
+                {showRadiusLayer && (
+                  <div className="text-[10px] text-slate-400 pt-1 border-t border-slate-800 flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full border border-red-400 bg-red-400/20 inline-block"></span>
+                    <span>{t.natMapLegendRadius}</span>
+                  </div>
+                )}
               </div>
             ) : (
               <button
@@ -749,8 +1208,8 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
               {/* Action Buttons */}
               <div className="pt-2 space-y-2">
                 <button
-                  onClick={() => onNavigateToTacticalMap(activeDisaster.id)}
-                  className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-4 rounded-lg text-xs transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
+                  onClick={() => onNavigateToTacticalMapRef.current?.(activeDisaster.id)}
+                  className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-4 rounded-lg text-xs transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 cursor-pointer"
                 >
                   <Compass className="w-4 h-4" />
                   {t.natMapOpenTactical}
@@ -761,10 +1220,17 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
 
           {/* Active Disasters Quick List */}
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl">
-            <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">
-              {t.natMapMonitoredTitle} ({filteredDisasters.length})
-            </h4>
-            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                {t.natMapMonitoredTitle} ({filteredDisasters.length})
+              </h4>
+              {searchQuery && (
+                <span className="text-[10px] text-blue-400 bg-blue-950/80 border border-blue-800/60 px-1.5 py-0.5 rounded">
+                  {filteredDisasters.length} {language === 'id' ? 'ditemukan' : 'found'}
+                </span>
+              )}
+            </div>
+            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
               {filteredDisasters.map(d => {
                 const isSelected = activeDisaster?.id === d.id;
                 const isFire = d.type === 'fire';
@@ -774,11 +1240,18 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
                     key={d.id}
                     onClick={() => {
                       setSelectedDisasterId(d.id);
-                      mapInstanceRef.current?.flyTo([d.locationLat, d.locationLng], 9, { duration: 1.0 });
+                      onSelectDisasterRef.current?.(d.id);
+                      const targetMarker = markersMapRef.current.get(d.id);
+                      if (targetMarker && mapInstanceRef.current) {
+                        mapInstanceRef.current.flyTo([d.locationLat, d.locationLng], 8, { duration: 0.8 });
+                        setTimeout(() => {
+                          targetMarker.openPopup();
+                        }, 400);
+                      }
                     }}
                     className={`p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-2 ${
                       isSelected
-                        ? 'bg-blue-950/40 border-blue-600/80 shadow-md'
+                        ? 'bg-blue-950/60 border-blue-500 shadow-md ring-1 ring-blue-500/30'
                         : 'bg-slate-950/60 border-slate-800/80 hover:bg-slate-800/60'
                     }`}
                   >
@@ -797,6 +1270,11 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
                   </div>
                 );
               })}
+              {filteredDisasters.length === 0 && (
+                <div className="text-center py-6 text-slate-500 text-xs">
+                  {language === 'id' ? 'Tidak ada bencana yang cocok dengan filter / pencarian.' : 'No disasters match the current filter / search.'}
+                </div>
+              )}
             </div>
           </div>
         </div>

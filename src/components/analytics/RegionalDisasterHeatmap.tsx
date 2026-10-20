@@ -14,6 +14,7 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize2,
+  Minimize2,
   Wind
 } from 'lucide-react';
 import { 
@@ -43,17 +44,104 @@ export const RegionalDisasterHeatmap: React.FC<RegionalDisasterHeatmapProps> = (
   onSelectHeatPoint,
 }) => {
   const { language, t } = useLanguage();
+  const mapWrapperRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const heatLayerRef = useRef<any>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
 
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [activeDisasterType, setActiveDisasterType] = useState<HeatmapDisasterType>('all');
   const [selectedRegionFilter, setSelectedRegionFilter] = useState<string>('all');
   const [showPointMarkers, setShowPointMarkers] = useState<boolean>(true);
   const [heatRadius, setHeatRadius] = useState<number>(32);
   const [heatBlur, setHeatBlur] = useState<number>(20);
   const [activePoint, setActivePoint] = useState<HeatPoint | null>(null);
+
+  // Fullscreen change listener & Escape key handler
+  useEffect(() => {
+    const handleFsChange = () => {
+      const isFs = Boolean(
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).mozFullScreenElement ||
+        (document as any).msFullscreenElement
+      );
+      setIsFullscreen(isFs);
+      setTimeout(() => mapInstanceRef.current?.invalidateSize(), 50);
+      setTimeout(() => mapInstanceRef.current?.invalidateSize(), 150);
+      setTimeout(() => mapInstanceRef.current?.invalidateSize(), 300);
+      setTimeout(() => mapInstanceRef.current?.invalidateSize(), 600);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        } else if ((document as any).webkitExitFullscreen) {
+          (document as any).webkitExitFullscreen();
+        }
+        setTimeout(() => mapInstanceRef.current?.invalidateSize(), 100);
+        setTimeout(() => mapInstanceRef.current?.invalidateSize(), 300);
+      }
+    };
+
+    const handleWindowResize = () => {
+      if (isFullscreen) {
+        mapInstanceRef.current?.invalidateSize();
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFsChange);
+    document.addEventListener('webkitfullscreenchange', handleFsChange);
+    document.addEventListener('mozfullscreenchange', handleFsChange);
+    document.addEventListener('MSFullscreenChange', handleFsChange);
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('resize', handleWindowResize);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+      document.removeEventListener('webkitfullscreenchange', handleFsChange);
+      document.removeEventListener('mozfullscreenchange', handleFsChange);
+      document.removeEventListener('MSFullscreenChange', handleFsChange);
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('resize', handleWindowResize);
+    };
+  }, [isFullscreen]);
+
+  const toggleFullscreen = () => {
+    const next = !isFullscreen;
+    setIsFullscreen(next);
+
+    if (!next) {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      } else if ((document as any).webkitExitFullscreen) {
+        (document as any).webkitExitFullscreen();
+      } else if ((document as any).mozCancelFullScreen) {
+        (document as any).mozCancelFullScreen();
+      } else if ((document as any).msExitFullscreen) {
+        (document as any).msExitFullscreen();
+      }
+    } else if (next && mapWrapperRef.current) {
+      const el = mapWrapperRef.current;
+      if (el.requestFullscreen) {
+        el.requestFullscreen().catch(() => {});
+      } else if ((el as any).webkitRequestFullscreen) {
+        (el as any).webkitRequestFullscreen();
+      } else if ((el as any).mozRequestFullScreen) {
+        (el as any).mozRequestFullScreen();
+      } else if ((el as any).msRequestFullscreen) {
+        (el as any).msRequestFullscreen();
+      }
+    }
+
+    setTimeout(() => mapInstanceRef.current?.invalidateSize(), 50);
+    setTimeout(() => mapInstanceRef.current?.invalidateSize(), 150);
+    setTimeout(() => mapInstanceRef.current?.invalidateSize(), 300);
+    setTimeout(() => mapInstanceRef.current?.invalidateSize(), 600);
+  };
 
   // Initialize Leaflet Map
   useEffect(() => {
@@ -355,8 +443,47 @@ export const RegionalDisasterHeatmap: React.FC<RegionalDisasterHeatmapProps> = (
       </div>
 
       {/* Main Heatmap Container */}
-      <div className="relative isolate w-full h-[520px] rounded-xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950">
-        <div ref={mapContainerRef} className="w-full h-full" />
+      <div 
+        ref={mapWrapperRef}
+        className={`relative isolate w-full border border-slate-800 shadow-2xl bg-slate-950 ${
+          isFullscreen 
+            ? 'sigap-fullscreen-fallback fixed inset-0 z-[9999] rounded-none !h-screen !w-screen !p-0 !m-0' 
+            : 'h-[520px] rounded-xl overflow-hidden'
+        }`}
+      >
+        <div ref={mapContainerRef} className="w-full h-full" style={{ width: '100%', height: '100%' }} />
+
+        {/* Top Right Tactical Controls with Zoom and Fullscreen */}
+        <div className="absolute top-4 right-4 z-20 pointer-events-none flex items-center gap-1.5">
+          <div className="flex items-center gap-0.5 bg-slate-950/92 backdrop-blur-md p-1 rounded-xl border border-slate-800 shadow-2xl pointer-events-auto">
+            <button
+              onClick={() => mapInstanceRef.current?.zoomIn()}
+              className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+              title={language === 'id' ? 'Perbesar' : 'Zoom In'}
+            >
+              <ZoomIn className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => mapInstanceRef.current?.zoomOut()}
+              className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+              title={language === 'id' ? 'Perkecil' : 'Zoom Out'}
+            >
+              <ZoomOut className="w-4 h-4" />
+            </button>
+          </div>
+
+          <button
+            onClick={toggleFullscreen}
+            className={`p-2 rounded-xl backdrop-blur-md border shadow-2xl transition cursor-pointer pointer-events-auto ${
+              isFullscreen
+                ? 'bg-cyan-600 text-white border-cyan-400 ring-2 ring-cyan-300'
+                : 'bg-slate-950/92 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-900'
+            }`}
+            title={isFullscreen ? (language === 'id' ? 'Keluar Layar Penuh' : 'Exit Fullscreen') : (language === 'id' ? 'Layar Penuh' : 'Fullscreen Map')}
+          >
+            {isFullscreen ? <Minimize2 className="w-4 h-4 text-white" /> : <Maximize2 className="w-4 h-4" />}
+          </button>
+        </div>
 
         {/* Heat Gradient Legend */}
         <div className="absolute bottom-4 left-4 z-20 bg-slate-950/90 backdrop-blur-md p-3 rounded-lg border border-slate-800 text-xs text-slate-300 shadow-xl space-y-2 pointer-events-none sm:pointer-events-auto">

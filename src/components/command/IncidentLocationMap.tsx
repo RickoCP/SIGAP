@@ -6,6 +6,7 @@ import {
   ZoomIn, 
   ZoomOut, 
   Maximize2, 
+  Minimize2,
   Building2, 
   Hospital, 
   School, 
@@ -37,6 +38,7 @@ export const IncidentLocationMap: React.FC<IncidentLocationMapProps> = ({
   const isEn = language === 'en';
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapWrapperRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const epicenterLayerRef = useRef<L.LayerGroup | null>(null);
   const radiusLayerRef = useRef<L.LayerGroup | null>(null);
@@ -49,6 +51,42 @@ export const IncidentLocationMap: React.FC<IncidentLocationMapProps> = ({
   const [showFacilities, setShowFacilities] = useState<boolean>(true);
   const [showPolygon, setShowPolygon] = useState<boolean>(true);
   const [selectedFacility, setSelectedFacility] = useState<CriticalFacility | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+
+  // Fullscreen change listener & Escape key handler
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+      setTimeout(() => mapInstanceRef.current?.invalidateSize(), 200);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+        setTimeout(() => mapInstanceRef.current?.invalidateSize(), 200);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFsChange);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isFullscreen]);
+
+  const toggleFullscreen = () => {
+    const next = !isFullscreen;
+    setIsFullscreen(next);
+    if (!next && document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    } else if (next && mapWrapperRef.current && mapWrapperRef.current.requestFullscreen) {
+      mapWrapperRef.current.requestFullscreen().catch(() => {});
+    }
+    setTimeout(() => {
+      mapInstanceRef.current?.invalidateSize();
+    }, 250);
+  };
 
   const { centerLat, centerLng, radiusKm, polygon, administrativeArea, province } = incident.affectedArea;
   const isCritical = incident.priority === 'P1_CRITICAL';
@@ -64,7 +102,8 @@ export const IncidentLocationMap: React.FC<IncidentLocationMapProps> = ({
       center: [centerLat, centerLng],
       zoom: 11,
       zoomControl: false,
-      attributionControl: false
+      attributionControl: false,
+      closePopupOnClick: false
     });
 
     const tileUrl = tileLayerType === 'dark'
@@ -331,9 +370,12 @@ export const IncidentLocationMap: React.FC<IncidentLocationMapProps> = ({
   }, [incident, showRadius, showFacilities, showPolygon, centerLat, centerLng, radiusKm, mainColor, isCritical, isHigh, isEn, administrativeArea, province, polygon]);
 
   return (
-    <div className={`relative isolate w-full ${heightClass} rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl flex flex-col`}>
+    <div 
+      ref={mapWrapperRef}
+      className={`relative isolate w-full ${isFullscreen ? 'sigap-fullscreen-fallback fixed inset-0 z-[9999] rounded-none !h-screen !w-screen !p-0 !m-0' : heightClass} rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl flex flex-col`}
+    >
       {/* Map DOM Canvas */}
-      <div ref={mapContainerRef} className="w-full h-full" />
+      <div ref={mapContainerRef} className="w-full h-full" style={{ width: '100%', height: '100%' }} />
 
       {/* Top Map HUD Overlay */}
       <div className="absolute top-3 left-3 right-3 z-10 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
@@ -407,6 +449,13 @@ export const IncidentLocationMap: React.FC<IncidentLocationMapProps> = ({
             title={isEn ? 'Zoom Out' : 'Perkecil'}
           >
             <ZoomOut className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={toggleFullscreen}
+            className="p-1 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors cursor-pointer"
+            title={isFullscreen ? (isEn ? 'Exit Fullscreen' : 'Keluar Layar Penuh') : (isEn ? 'Fullscreen Map' : 'Layar Penuh')}
+          >
+            {isFullscreen ? <Minimize2 className="w-3.5 h-3.5 text-cyan-400" /> : <Maximize2 className="w-3.5 h-3.5" />}
           </button>
         </div>
       </div>
