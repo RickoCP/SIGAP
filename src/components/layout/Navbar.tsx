@@ -24,7 +24,8 @@ import {
   Menu,
   Siren,
   HeartHandshake,
-  BookOpen
+  BookOpen,
+  Radar
 } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext.tsx';
 import { useAuth } from '../../context/AuthContext.tsx';
@@ -43,6 +44,7 @@ export type NavTab =
   | 'volunteer-map'
   | 'readiness'
   | 'rewards'
+  | 'multi-hazard'
   | 'map'
   | 'disasters'
   | 'volunteers'
@@ -187,6 +189,16 @@ export const Navbar: React.FC<NavbarProps> = ({
       accentColor: 'red'
     },
     {
+      id: 'multi-hazard',
+      label: language === 'id' ? 'Pusat Komando Multi-Hazard' : 'Multi-Hazard Command Center',
+      shortLabel: language === 'id' ? 'Multi-Hazard' : 'Multi-Hazard',
+      icon: <Radar className="w-3.5 h-3.5 text-red-400 animate-spin-slow" />,
+      category: 'overview',
+      badge: language === 'id' ? 'AI Radar' : 'AI Radar',
+      badgeColor: 'bg-red-950 text-red-300 border-red-700/80 animate-pulse',
+      accentColor: 'red'
+    },
+    {
       id: 'early-warning',
       label: t.navEarlyWarning,
       shortLabel: language === 'id' ? 'EWS Publik' : 'EWS Alert',
@@ -297,9 +309,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <SigapLogo size="md" showEditButton={true} />
           <div className="flex flex-col min-w-0">
             <button
-              onClick={() => onTabChange('presentation')}
-              className="text-base sm:text-lg font-black tracking-tight text-white hover:text-blue-400 transition-colors whitespace-nowrap text-left leading-none"
-              title={language === 'id' ? 'Buka Halaman Presentasi Proyek SIGAP' : 'Open SIGAP Project Showcase'}
+              onClick={() => onTabChange('macro-map')}
+              className="text-base sm:text-lg font-black tracking-tight text-white hover:text-blue-400 transition-colors whitespace-nowrap text-left leading-none cursor-pointer"
+              title={language === 'id' ? 'Buka Peta Makro Bencana Nasional' : 'Open National Disaster Macro Map'}
             >
               {t.brandTitle}
             </button>
@@ -434,8 +446,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             onScroll={checkScrollState}
             className="flex-1 flex items-center overflow-x-auto no-scrollbar scroll-smooth touch-pan-x gap-1 py-1.5 px-0.5"
           >
-            {allTabs.map((tab) => {
-              const isActive = activeTab === tab.id;
+            {allTabs
+              .filter(tab => tab.id !== 'presentation' && tab.id !== 'documentation')
+              .map((tab) => {
+                const isActive = activeTab === tab.id;
               const isLocked = tab.requiredRole === 'coordinator' && !isCoordinator;
 
               // Color styles for active tab states
@@ -491,36 +505,36 @@ export const Navbar: React.FC<NavbarProps> = ({
             <ChevronRight className="w-4 h-4" />
           </button>
 
-          {/* Quick Dropdown Menu ("Semua Halaman ▾") */}
+          {/* Quick Dropdown Menu ("All Tabs ▾") */}
           <div className="relative shrink-0 ml-1.5" ref={dropdownMenuRef}>
             <button
               onClick={() => setIsDropdownMenuOpen(!isDropdownMenuOpen)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-bold text-slate-300 hover:text-white transition shadow-sm"
-              title={language === 'id' ? 'Daftar Cepat Semua Halaman SIGAP' : 'Quick Menu for All Pages'}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700/90 text-xs font-bold text-slate-200 hover:text-white transition shadow-sm"
+              title={language === 'id' ? 'Daftar Semua Tab (Termasuk Project Showcase & User Guide)' : 'All Tabs Menu (Including Project Showcase & User Guide)'}
             >
-              <Menu className="w-3.5 h-3.5 text-blue-400" />
-              <span className="hidden sm:inline text-[11px]">
-                {language === 'id' ? 'Semua Menu' : 'All Tabs'}
+              <Menu className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              <span className="text-[11px] font-bold whitespace-nowrap">
+                {language === 'id' ? 'Semua Tab' : 'All Tabs'}
               </span>
               <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isDropdownMenuOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {/* Dropdown Menu Modal Container */}
             {isDropdownMenuOpen && (
-              <div className="absolute right-0 top-full mt-2 w-64 bg-slate-900 border border-slate-700/80 rounded-2xl p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 space-y-2">
+              <div className="absolute right-0 top-full mt-2 w-72 bg-slate-900 border border-slate-700/80 rounded-2xl p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 space-y-2">
                 <div className="px-2.5 py-1.5 border-b border-slate-800 flex items-center justify-between">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                     {language === 'id' ? 'Navigasi Cepat SIGAP' : 'SIGAP Quick Navigation'}
                   </span>
                   <span className="text-[10px] text-blue-400 font-mono">
-                    {language === 'id' ? '11 Halaman' : '11 Tabs'}
+                    {allTabs.length} {language === 'id' ? 'Menu' : 'Tabs'}
                   </span>
                 </div>
 
                 <div className="space-y-1 max-h-80 overflow-y-auto pr-1">
-                  {/* Category 1: Utama & Publik */}
+                  {/* Category 1: Overview, Showcase & Guide */}
                   <div className="px-2 pt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    {language === 'id' ? 'Utama & Presentasi' : 'Overview & Showcase'}
+                    {language === 'id' ? 'Utama, Showcase & Panduan' : 'Overview, Showcase & Docs'}
                   </div>
                   {allTabs.filter(t => t.category === 'overview').map(tab => (
                     <button
@@ -530,11 +544,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                         activeTab === tab.id ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800'
                       }`}
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 truncate">
                         {tab.icon}
-                        <span>{tab.label}</span>
+                        <span className="truncate">{tab.label}</span>
                       </div>
-                      {activeTab === tab.id && <Check className="w-3.5 h-3.5 text-white" />}
+                      <div className="flex items-center gap-1.5 shrink-0 ml-1">
+                        {tab.badge && (
+                          <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold uppercase tracking-wider border ${tab.badgeColor || 'bg-slate-800 text-slate-300'}`}>
+                            {tab.badge}
+                          </span>
+                        )}
+                        {activeTab === tab.id && <Check className="w-3.5 h-3.5 text-white" />}
+                      </div>
                     </button>
                   ))}
 

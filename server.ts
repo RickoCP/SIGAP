@@ -26,12 +26,15 @@ import {
   HistoricalTrendAINarrative,
   DisasterDonation,
   EarlyWarningAlert,
-  CitizenSafetyReport
+  CitizenSafetyReport,
+  SituationReport
 } from './src/types/index.ts';
 import { INITIAL_SEED_DONATIONS } from './src/data/donationSeedData.ts';
 import { INITIAL_EARLY_WARNINGS, INITIAL_CITIZEN_REPORTS } from './src/data/earlyWarningSeedData.ts';
 import { getHistoricalDataForRegion, REGIONAL_HISTORICAL_DATA } from './src/data/historicalDisasterData.ts';
 import { calculateDistance } from './src/lib/geo.ts';
+import { MultiHazardEngine } from './src/adapters/multiHazardEngine.ts';
+import { VERIFIED_INARISK_EXPOSURE_ZONES } from './src/data/inaRiskExposureData.ts';
 
 dotenv.config();
 
@@ -71,6 +74,12 @@ const ai = new GoogleGenAI({
       'User-Agent': 'aistudio-build',
     },
   },
+});
+
+// Multi-Hazard Disaster Command Center Engine
+const hazardEngine = new MultiHazardEngine();
+hazardEngine.syncAllSources().catch(err => {
+  console.warn('[SIGAP] Initial multi-hazard sync warning:', err);
 });
 
 /* ==========================================================================
@@ -398,6 +407,26 @@ app.get('/api/early-warnings', (req, res) => {
   res.json(earlyWarnings);
 });
 
+app.post('/api/early-warnings', (req, res) => {
+  const newAlert: EarlyWarningAlert = {
+    ...req.body,
+    id: req.body.id || `ew-${Date.now()}`,
+    issuedAt: req.body.issuedAt || new Date().toISOString()
+  };
+  const existingIdx = earlyWarnings.findIndex(e => e.id === newAlert.id);
+  if (existingIdx >= 0) {
+    earlyWarnings[existingIdx] = newAlert;
+  } else {
+    earlyWarnings.unshift(newAlert);
+  }
+  res.status(201).json(newAlert);
+});
+
+app.delete('/api/early-warnings/:id', (req, res) => {
+  earlyWarnings = earlyWarnings.filter(e => e.id !== req.params.id);
+  res.json({ success: true, id: req.params.id });
+});
+
 app.get('/api/citizen-safety', (req, res) => {
   res.json(citizenSafetyReports);
 });
@@ -437,13 +466,349 @@ app.get('/api/stats', (req, res) => {
   });
 });
 
-// --- Reset Data ---
-app.post('/api/reset-data', (req, res) => {
-  disasters = JSON.parse(JSON.stringify(SEED_DISASTERS));
-  volunteers = JSON.parse(JSON.stringify(SEED_VOLUNTEERS));
-  tasks = JSON.parse(JSON.stringify(SEED_TASKS));
-  assignments = JSON.parse(JSON.stringify(SEED_ASSIGNMENTS));
-  res.json({ message: 'Data demo SIGAP berhasil direset' });
+// --- Multi-Hazard Command Center APIs ---
+app.get('/api/hazard/sources/health', async (req, res) => {
+  try {
+    const health = await hazardEngine.getSourcesHealth();
+    res.json(health);
+  } catch (error) {
+    console.error('[Hazard Health Error]', error);
+    res.status(500).json({ error: 'Failed to retrieve disaster sources health' });
+  }
+});
+
+app.get('/api/hazard/observations', (req, res) => {
+  const { source, hazardType, severityLevel } = req.query;
+  let obs = hazardEngine.getObservations();
+
+  if (source && typeof source === 'string' && source !== 'all') {
+    obs = obs.filter(o => o.source === source);
+  }
+  if (hazardType && typeof hazardType === 'string' && hazardType !== 'all') {
+    obs = obs.filter(o => o.hazardType === hazardType);
+  }
+  if (severityLevel && typeof severityLevel === 'string' && severityLevel !== 'all') {
+    obs = obs.filter(o => o.severityLevel === severityLevel);
+  }
+
+  res.json(obs);
+});
+
+app.get('/api/hazard/incidents', (req, res) => {
+  const { priority, hazardType } = req.query;
+  let incs = hazardEngine.getIncidents();
+
+  if (priority && typeof priority === 'string' && priority !== 'all') {
+    incs = incs.filter(i => i.priority === priority);
+  }
+  if (hazardType && typeof hazardType === 'string' && hazardType !== 'all') {
+    incs = incs.filter(i => i.hazardType === hazardType);
+  }
+
+  res.json(incs);
+});
+
+app.get('/api/hazard/incidents/:id', (req, res) => {
+  const inc = hazardEngine.getIncidentById(req.params.id);
+  if (!inc) return res.status(404).json({ error: 'Incident not found' });
+  res.json(inc);
+});
+
+// BNPB InaRISK Official Vulnerable Population Density & Exposure Zones
+app.get('/api/hazard/inarisk/exposure-zones', (req, res) => {
+  res.json(VERIFIED_INARISK_EXPOSURE_ZONES);
+});
+
+app.post('/api/hazard/sync', async (req, res) => {
+  try {
+    const result = await hazardEngine.syncAllSources();
+    res.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      ...result
+    });
+  } catch (error) {
+    console.error('[Hazard Sync Error]', error);
+    res.status(500).json({ error: 'Failed to synchronize disaster feeds' });
+  }
+});
+
+app.post('/api/hazard/incidents/:id/step', (req, res) => {
+  const { step, notes } = req.body;
+  const updated = hazardEngine.updateIncidentWorkflow(req.params.id, {
+    currentStep: step,
+    coordinatorActionNotes: notes
+  });
+  if (!updated) return res.status(404).json({ error: 'Incident not found' });
+  res.json(updated);
+});
+
+// AI Volunteer Matching for Multi-Hazard Incident
+app.post('/api/hazard/incidents/:id/match-volunteers', async (req, res) => {
+  const incident = hazardEngine.getIncidentById(req.params.id);
+  if (!incident) return res.status(404).json({ error: 'Incident not found' });
+
+  // Map incident hazard to relevant skill requirement
+  let skillCat = 'sar';
+  let skillName = 'Water Rescue';
+  if (incident.hazardType === 'WILDFIRE') {
+    skillCat = 'logistics';
+    skillName = 'Pemadam Kebakaran Hutan (Manggala Agni)';
+  } else if (incident.hazardType === 'VOLCANO') {
+    skillCat = 'medical';
+    skillName = 'Trauma Medic & Masker Gas';
+  } else if (incident.hazardType === 'EARTHQUAKE' || incident.hazardType === 'TSUNAMI') {
+    skillCat = 'sar';
+    skillName = 'Urban Search & Rescue (USAR)';
+  }
+
+  // Create temporary task-like evaluation
+  const mockTask: Task = {
+    id: `task-incident-${incident.id}`,
+    disasterId: incident.id,
+    title: `Respons Darurat Multi-Hazard: ${incident.title}`,
+    description: `Mobilisasi penanganan insiden prioritas ${incident.priority} (${incident.hazardType}) di ${incident.affectedArea.administrativeArea}. Estimasi ${incident.exposure.estimatedPopulation.toLocaleString()} jiwa terdampak.`,
+    requiredSkillCategory: skillCat as any,
+    requiredSkillName: skillName,
+    priority: 'urgent',
+    locationLat: incident.affectedArea.centerLat,
+    locationLng: incident.affectedArea.centerLng,
+    address: incident.affectedArea.administrativeArea,
+    volunteersNeeded: incident.priority === 'P1_CRITICAL' ? 12 : 6,
+    volunteersAssigned: 0,
+    status: 'pending',
+    createdAt: new Date().toISOString()
+  };
+
+  const mockDisaster: Disaster = {
+    id: incident.id,
+    title: incident.title,
+    titleEn: incident.titleEn,
+    type: incident.hazardType === 'WILDFIRE' ? 'fire' : incident.hazardType === 'EARTHQUAKE' ? 'earthquake' : incident.hazardType === 'VOLCANO' ? 'volcanic' : 'flood',
+    severity: incident.priority === 'P1_CRITICAL' ? 'critical' : 'high',
+    province: incident.affectedArea.province,
+    description: incident.title,
+    descriptionEn: incident.titleEn,
+    address: incident.affectedArea.administrativeArea,
+    locationLat: incident.affectedArea.centerLat,
+    locationLng: incident.affectedArea.centerLng,
+    affectedPeople: incident.exposure.estimatedPopulation,
+    affectedHouseholds: incident.exposure.households,
+    evacuationCenterCount: incident.exposure.criticalInfrastructureSummary.shelters || 2,
+    reportedAt: incident.createdAt,
+    status: 'active',
+    keyNeeds: [
+      'Personel Rescue Terlatih',
+      'Peralatan APD & Komunikasi HT',
+      'Dapur Umum & Ransum Darurat',
+      'Tenda Pengungsian Pleton'
+    ]
+  };
+
+  const recommendations = computeHeuristicRecommendations(mockDisaster, mockTask);
+  hazardEngine.updateIncidentWorkflow(incident.id, {
+    matchedVolunteersCount: recommendations.length,
+    currentStep: 4
+  });
+
+  res.json({
+    incidentId: incident.id,
+    matchedCount: recommendations.length,
+    recommendations
+  });
+});
+
+// AI SitRep Generator for Multi-Hazard Incident
+app.post('/api/hazard/incidents/:id/generate-sitrep', async (req, res) => {
+  const incident = hazardEngine.getIncidentById(req.params.id);
+  if (!incident) return res.status(404).json({ error: 'Incident not found' });
+
+  const sitRep: SituationReport = {
+    disasterId: incident.id,
+    timestamp: new Date().toISOString(),
+    executiveSummary: `Laporan Situasi Resmi Komando Penanggulangan Bencana Multi-Hazard SIGAP untuk insiden ${incident.title}. Tingkat risiko terhitung ${incident.riskScore}/100 dengan prioritas operasional ${incident.priority}. Estimasi populasi terdampak mencapai ${incident.exposure.estimatedPopulation.toLocaleString('id-ID')} jiwa (${incident.exposure.households.toLocaleString('id-ID')} KK), mencakup ${incident.exposure.vulnerablePersons.toLocaleString('id-ID')} warga kelompok rentan. Teridentifikasi ${incident.exposure.criticalInfrastructureSummary.hospitals + incident.exposure.criticalInfrastructureSummary.puskesmas} fasilitas kesehatan dan ${incident.exposure.criticalInfrastructureSummary.shelters} titik shelter penampungan di zona bahaya radius ${incident.affectedArea.radiusKm} km. Kondisi cuaca: ${incident.environmentalContext.weatherCondition} dengan akumulasi curah hujan GPM 72 jam ${incident.environmentalContext.gpmAccumulatedRainfall72hMm} mm.`,
+    urgentNeeds: [
+      `Mobilisasi regu tanggap darurat spesialis ${incident.hazardType}`,
+      `Aktivasi posko aju dan dapur umum kapasitas minimal ${(incident.exposure.vulnerablePersons * 2).toLocaleString('id-ID')} porsi/hari`,
+      'Penyediaan fasilitas air bersih (WASH) dan sanitasi darurat',
+      'Distribusi masker, selimut, terpal, dan paket makanan siap saji'
+    ],
+    operationalPriorities: [
+      `Fokus 0-6 Jam: Evakuasi prioritas kelompok rentan dalam radius ancaman ${incident.affectedArea.radiusKm} km`,
+      'Fokus 6-24 Jam: Stabilisasi logistik, pendaftaran pengungsi, dan pendirian tenda medis rujukan',
+      'Fokus 24-72 Jam: Pemulihan akses jalan/jembatan kritis dan sanitasi lingkungan'
+    ],
+    recommendedTeamAllocations: [
+      { role: `Regu Evakuasi & Penyelamatan (${incident.hazardType})`, count: 12, urgency: 'Sangat Mendesak' },
+      { role: 'Tim Medis Darurat & Paramedis Trauma', count: 8, urgency: 'Sangat Mendesak' },
+      { role: 'Tim Logistik & Dapur Lapangan', count: 14, urgency: 'Mendesak' },
+      { role: 'Tim Pendamping Psikososial & Anak', count: 6, urgency: 'Siaga' }
+    ],
+    governmentLiaisonNotes: `Sinkronisasi data dilakukan dengan Pusdalops BNPB, BPBD ${incident.affectedArea.province}, BASARNAS, dan Palang Merah Indonesia (PMI). Seluruh tindakan lapangan mematuhi standar SOP Tanggap Darurat Bencana Nasional.`
+  };
+
+  hazardEngine.updateIncidentWorkflow(incident.id, {
+    sitRep,
+    isSitRepGenerated: true,
+    currentStep: 5
+  });
+
+  res.json(sitRep);
+});
+
+// AI Emergency Broadcast for Multi-Hazard Incident
+app.post('/api/hazard/incidents/:id/generate-broadcast', async (req, res) => {
+  const incident = hazardEngine.getIncidentById(req.params.id);
+  if (!incident) return res.status(404).json({ error: 'Incident not found' });
+
+  const radiusKm = incident.affectedArea.radiusKm;
+  const nearbyVolunteers = volunteers.filter(v => {
+    const d = calculateDistance(
+      incident.affectedArea.centerLat,
+      incident.affectedArea.centerLng,
+      v.locationLat,
+      v.locationLng
+    );
+    return d <= Math.max(radiusKm * 1.5, 30) && v.status !== 'offline';
+  });
+
+  const broadcastText = `🚨 [SIGAP BROADCAST KOMANDO - ${incident.priority}] 🚨\n\nKepada seluruh Relawan & Unit Siaga dalam radius ${radiusKm} km:\n\nKejadian: ${incident.title}\nWilayah: ${incident.affectedArea.administrativeArea} (${incident.affectedArea.province})\nLevel Risiko: Skor ${incident.riskScore}/100\nEstimasi Warga Terdampak: ${incident.exposure.estimatedPopulation.toLocaleString('id-ID')} Jiwa\n\nKondisi Cuaca & Lingkungan:\n- Cuaca: ${incident.environmentalContext.weatherCondition}\n- Angin: ${incident.environmentalContext.windSpeedKmh} km/jam arah ${incident.environmentalContext.windDirection}\n- Curah Hujan GPM 24 Jam: ${incident.environmentalContext.gpmRainfallLast24hMm} mm\n\n📍 Posko Induk Komando: Titik Kumpul Kantor Camat / Puskesmas terdekat di ${incident.affectedArea.administrativeArea}\n🦺 Perlengkapan Wajib: Rompi Relawan, Sepatu Boots, APD/Masker, Headlamp, Jas Hujan, HT/Komunikasi.\n\nBagi relawan yang siap bergerak, segera buka aplikasi SIGAP Koordinator dan konfirmasi kehadiran. Utamakan keselamatan diri dan tim! Salam Tangguh.`;
+
+  const broadcast: BroadcastAlert = {
+    id: `bc-hazard-${Date.now()}`,
+    disasterId: incident.id,
+    title: `Siaran Darurat Multi-Hazard: ${incident.title}`,
+    message: broadcastText,
+    channel: 'whatsapp',
+    recipientCount: nearbyVolunteers.length || 15,
+    sentAt: new Date().toISOString(),
+    radiusKm
+  };
+
+  broadcasts.unshift(broadcast);
+
+  hazardEngine.updateIncidentWorkflow(incident.id, {
+    broadcast,
+    isBroadcastSent: true,
+    currentStep: 6
+  });
+
+  res.json(broadcast);
+});
+
+// Community Early Warning & Evacuation Activation for Multi-Hazard Incident
+app.post('/api/hazard/incidents/:id/activate-early-warning', (req, res) => {
+  const incident = hazardEngine.getIncidentById(req.params.id);
+  if (!incident) return res.status(404).json({ error: 'Incident not found' });
+
+  const shelterFacility = incident.exposure.facilities.find(f => f.type === 'shelter' || f.type === 'school') || {
+    id: `shelter-${incident.id}`,
+    name: `Posko Evakuasi Induk ${incident.affectedArea.administrativeArea}`,
+    type: 'shelter' as const,
+    latitude: incident.affectedArea.centerLat + 0.015,
+    longitude: incident.affectedArea.centerLng + 0.015,
+    capacity: 2500,
+    status: 'operational' as const,
+    distanceKm: Math.min(incident.affectedArea.radiusKm * 0.8, 4.5)
+  };
+
+  let hazardTypeDisaster: 'flood' | 'earthquake' | 'fire' | 'volcanic' | 'tsunami' | 'landslide' = 'flood';
+  if (incident.hazardType === 'WILDFIRE') hazardTypeDisaster = 'fire';
+  else if (incident.hazardType === 'VOLCANO') hazardTypeDisaster = 'volcanic';
+  else if (incident.hazardType === 'EARTHQUAKE') hazardTypeDisaster = 'earthquake';
+  else if (incident.hazardType === 'TSUNAMI') hazardTypeDisaster = 'tsunami';
+
+  const alertLevel = incident.priority === 'P1_CRITICAL' ? 'awas' : 'siaga';
+  const alertId = `ew-${incident.id}`;
+
+  const keyActionSteps = [
+    `Jauhi zona episentrum bahaya radius ${incident.affectedArea.radiusKm} km segera`,
+    'Bawa dokumen penting dan Tas Siaga Bencana (obat darurat, air minum, senter)',
+    `Menuju ke titik kumpul aman di: ${shelterFacility.name}`,
+    'Lakukan Safety Check-in di aplikasi untuk memastikan koordinat Anda tercatat oleh tim SAR',
+    'Patuhi instruksi resmi BPBD/Pusdalops dan jangan terpengaruh kabar burung/hoaks'
+  ];
+
+  const keyActionStepsEn = [
+    `Evacuate from danger perimeter radius ${incident.affectedArea.radiusKm} km immediately`,
+    'Bring vital documents and Emergency Go-Bag (meds, drinking water, flashlight)',
+    `Proceed to designated safe assembly point at: ${shelterFacility.name}`,
+    'Perform Safety Check-in on app so your position is logged by SAR response teams',
+    'Follow official instructions from local disaster authorities (BPBD)'
+  ];
+
+  const evacuationAdvice = alertLevel === 'awas'
+    ? `[STATUS AWAS TERTINGGI] ${incident.title}. Estimasi ${incident.exposure.estimatedPopulation.toLocaleString('id-ID')} jiwa dalam zona ancaman langsung radius ${incident.affectedArea.radiusKm} km. Segera evakuasi teratur menuju ${shelterFacility.name}!`
+    : `[STATUS SIAGA EVAKUASI] ${incident.title}. Warga di ${incident.affectedArea.administrativeArea} dihimbau waspada penuh dan bersiap mobilisasi ke posko rujukan aman terdekat.`;
+
+  const newAlert: EarlyWarningAlert = {
+    id: alertId,
+    disasterId: incident.id,
+    title: `${alertLevel === 'awas' ? 'AWAS' : 'SIAGA'}: ${incident.title}`,
+    titleEn: `${alertLevel === 'awas' ? 'RED ALERT' : 'WARNING'}: ${incident.titleEn || incident.title}`,
+    hazardType: hazardTypeDisaster,
+    alertLevel,
+    dangerRadiusKm: incident.affectedArea.radiusKm,
+    locationName: incident.affectedArea.administrativeArea,
+    province: incident.affectedArea.province,
+    locationLat: incident.affectedArea.centerLat,
+    locationLng: incident.affectedArea.centerLng,
+    soundAlarm: true,
+    evacuationAdvice,
+    evacuationAdviceEn: evacuationAdvice,
+    emergencyShelter: {
+      name: shelterFacility.name,
+      address: `${incident.affectedArea.administrativeArea}, ${incident.affectedArea.province}`,
+      capacity: shelterFacility.capacity || 2000,
+      currentOccupancy: Math.floor((shelterFacility.capacity || 2000) * 0.35),
+      lat: shelterFacility.latitude,
+      lng: shelterFacility.longitude
+    },
+    keyActionSteps,
+    keyActionStepsEn,
+    issuedAt: new Date().toISOString(),
+    sourceAuthority: `Pusdalops BNPB & Komando Multi-Hazard SIGAP (${incident.affectedArea.province})`
+  };
+
+  // Upsert into earlyWarnings array
+  const existingIndex = earlyWarnings.findIndex(e => e.id === alertId || e.disasterId === incident.id);
+  if (existingIndex >= 0) {
+    earlyWarnings[existingIndex] = newAlert;
+  } else {
+    earlyWarnings.unshift(newAlert);
+  }
+
+  // Update incident workflow
+  const updatedIncident = hazardEngine.updateIncidentWorkflow(incident.id, {
+    isCommunityEarlyWarningActive: true,
+    earlyWarningId: alertId,
+    communityEarlyWarningActivatedAt: new Date().toISOString(),
+    currentStep: 6
+  });
+
+  res.json({
+    success: true,
+    alert: newAlert,
+    incident: updatedIncident
+  });
+});
+
+// Deactivate Community Early Warning
+app.post('/api/hazard/incidents/:id/deactivate-early-warning', (req, res) => {
+  const incident = hazardEngine.getIncidentById(req.params.id);
+  if (!incident) return res.status(404).json({ error: 'Incident not found' });
+
+  const alertId = `ew-${incident.id}`;
+  earlyWarnings = earlyWarnings.filter(e => e.id !== alertId && e.disasterId !== incident.id);
+
+  const updatedIncident = hazardEngine.updateIncidentWorkflow(incident.id, {
+    isCommunityEarlyWarningActive: false
+  });
+
+  res.json({
+    success: true,
+    incident: updatedIncident
+  });
 });
 
 /* ==========================================================================

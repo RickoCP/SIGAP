@@ -68,12 +68,16 @@ export const PublicEarlyWarningView: React.FC<PublicEarlyWarningViewProps> = ({
   const [activeGuideTab, setActiveGuideTab] = useState<'earthquake' | 'flood' | 'tsunami' | 'fire' | 'volcanic'>('flood');
 
   useEffect(() => {
-    setAlerts(earlyWarningService.getAlerts());
-    const unsub = earlyWarningService.subscribeReports((reports) => {
+    earlyWarningService.fetchRemoteAlerts();
+    const unsubAlerts = earlyWarningService.subscribeAlerts((latestAlerts) => {
+      setAlerts(latestAlerts);
+    });
+    const unsubReports = earlyWarningService.subscribeReports((reports) => {
       setCitizenReports(reports);
     });
     return () => {
-      unsub();
+      unsubAlerts();
+      unsubReports();
       fieldAudio.stopEarlyWarningSiren();
     };
   }, []);

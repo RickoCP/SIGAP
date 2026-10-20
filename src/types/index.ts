@@ -553,3 +553,180 @@ export interface CitizenSafetyReport {
   reportedAt: string;
 }
 
+/* ==========================================================================
+   Multi-Hazard Disaster Command Center (NASA FIRMS, BMKG, GPM, InaRISK, MAGMA)
+   ========================================================================== */
+
+export type NormalizedHazardType =
+  | 'EARTHQUAKE'
+  | 'TSUNAMI'
+  | 'WILDFIRE'
+  | 'VOLCANO'
+  | 'FLOOD'
+  | 'FLASH_FLOOD'
+  | 'LANDSLIDE'
+  | 'EXTREME_WEATHER'
+  | 'DROUGHT'
+  | 'LIQUEFACTION';
+
+export type HazardSourceId =
+  | 'NASA_FIRMS'
+  | 'BMKG_GEMPA'
+  | 'BMKG_WEATHER'
+  | 'BMKG_WARNING'
+  | 'NASA_GPM'
+  | 'BNPB_INARISK'
+  | 'PVMBG_MAGMA';
+
+export interface SourceHealth {
+  source: HazardSourceId;
+  name: string;
+  nameEn: string;
+  status: 'ONLINE' | 'DEGRADED' | 'STANDBY' | 'OFFLINE';
+  latencyMs: number;
+  lastFetch: string;
+  recordsCount: number;
+  message?: string;
+  officialSourceUrl?: string;
+}
+
+export interface HazardObservation {
+  id: string;
+  source: HazardSourceId;
+  hazardType: NormalizedHazardType;
+  externalId: string;
+  timestamp: string;
+  latitude: number;
+  longitude: number;
+  administrativeArea: string;
+  province: string;
+  confidence?: 'low' | 'nominal' | 'high' | number;
+  severityLevel: 'advisory' | 'moderate' | 'high' | 'critical';
+  details: {
+    // NASA FIRMS
+    frp?: number;
+    brightness?: number;
+    brightT31?: number;
+    satellite?: string;
+    instrument?: string;
+    daynight?: 'D' | 'N';
+    // BMKG Gempa
+    magnitude?: number;
+    depthKm?: number;
+    potensiTsunami?: boolean;
+    feltMmi?: string;
+    shakemapUrl?: string;
+    // BMKG Weather & Warning
+    capEvent?: string;
+    capSeverity?: string;
+    capUrgency?: string;
+    capCertainty?: string;
+    capLifecycle?: 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | 'SUPERSEDED';
+    warningPolygon?: [number, number][];
+    rainfallForecastMm?: number;
+    windSpeedKmh?: number;
+    windDirection?: string;
+    humidityPct?: number;
+    temperatureC?: number;
+    // NASA GPM
+    rainfallRateMmH?: number;
+    rainfallAcc3hMm?: number;
+    rainfallAcc24hMm?: number;
+    rainfallAcc72hMm?: number;
+    // PVMBG MAGMA
+    volcanoName?: string;
+    activityLevel?: 'Level I (Normal)' | 'Level II (Waspada)' | 'Level III (Siaga)' | 'Level IV (Awas)';
+    dangerRadiusKm?: number;
+    recommendationText?: string;
+    krbZone?: string;
+    // BNPB InaRISK
+    inaRiskZone?: string;
+    vulnerabilityClass?: string;
+  };
+  rawPayload?: Record<string, unknown>;
+}
+
+export interface CriticalFacility {
+  id: string;
+  name: string;
+  type: 'hospital' | 'puskesmas' | 'school' | 'shelter' | 'bridge';
+  latitude: number;
+  longitude: number;
+  capacity?: number;
+  status: 'operational' | 'at_risk' | 'evacuated' | 'damaged';
+  distanceKm: number;
+}
+
+export interface MultiHazardIncident {
+  id: string;
+  title: string;
+  titleEn: string;
+  hazardType: NormalizedHazardType;
+  status: 'detecting' | 'active' | 'containment' | 'resolved';
+  priority: 'P1_CRITICAL' | 'P2_HIGH' | 'P3_MEDIUM' | 'P4_LOW';
+  riskScore: number; // 0 to 100
+  observationCount: number;
+  observations: HazardObservation[];
+  affectedArea: {
+    centerLat: number;
+    centerLng: number;
+    radiusKm: number;
+    polygon?: [number, number][];
+    administrativeArea: string;
+    province: string;
+  };
+  exposure: {
+    estimatedPopulation: number;
+    households: number;
+    vulnerablePersons: number; // Lansia & Anak-anak
+    facilities: CriticalFacility[];
+    criticalInfrastructureSummary: {
+      hospitals: number;
+      puskesmas: number;
+      schools: number;
+      shelters: number;
+      bridgesAtRisk: number;
+    };
+  };
+  environmentalContext: {
+    weatherCondition: string;
+    weatherConditionEn: string;
+    temperatureC: number;
+    windSpeedKmh: number;
+    windDirection: string;
+    humidityPct: number;
+    gpmRainfallLast24hMm: number;
+    gpmAccumulatedRainfall72hMm: number;
+    rainfallTrend: 'rising' | 'steady' | 'decreasing';
+  };
+  inaRiskContext: {
+    zoneClass: 'Rendah' | 'Sedang' | 'Tinggi' | 'Ekstrem';
+    vulnerabilityIndex: number; // 0 to 1
+    capacityScore: number; // 0 to 100
+    dominantThreat: string;
+  };
+  responseWorkflow: {
+    currentStep: 1 | 2 | 3 | 4 | 5 | 6; // 1: Detect, 2: Area & Exposure, 3: Risk & Priority, 4: Matching, 5: SitRep, 6: Broadcast
+    isSitRepGenerated: boolean;
+    isBroadcastSent: boolean;
+    matchedVolunteersCount: number;
+    sitRep?: SituationReport;
+    broadcast?: BroadcastAlert;
+    coordinatorActionNotes?: string;
+    isCommunityEarlyWarningActive?: boolean;
+    earlyWarningId?: string;
+    communityEarlyWarningActivatedAt?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DisasterSourceAdapter {
+  source: HazardSourceId;
+  hazardTypes: NormalizedHazardType[];
+  healthCheck(): Promise<SourceHealth>;
+  fetchLatest(): Promise<unknown[]>;
+  normalize(rawData: unknown[]): Promise<HazardObservation[]>;
+}
+
+

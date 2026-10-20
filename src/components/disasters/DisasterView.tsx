@@ -187,8 +187,10 @@ export const DisasterView: React.FC<DisasterViewProps> = ({
                 Status: <strong className="text-blue-400 uppercase">
                   {selectedDisaster.status === 'active' 
                     ? (language === 'id' ? 'Aktif' : 'Active') 
-                    : selectedDisaster.status === 'contained' 
-                    ? (language === 'id' ? 'Terkendali' : 'Contained') 
+                    : selectedDisaster.status === 'responding' 
+                    ? (language === 'id' ? 'Tahap Respons' : 'Responding') 
+                    : selectedDisaster.status === 'reported'
+                    ? (language === 'id' ? 'Dilaporkan' : 'Reported')
                     : (language === 'id' ? 'Selesai' : 'Resolved')}
                 </strong>
               </span>

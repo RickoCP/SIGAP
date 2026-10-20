@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet.markercluster';
 import { 
@@ -14,10 +14,15 @@ import {
   Layers,
   ZoomIn,
   ZoomOut,
-  Maximize2
+  Maximize2,
+  ChevronDown,
+  ChevronUp,
+  ShieldAlert
 } from 'lucide-react';
-import { Disaster, Volunteer, Task, Assignment, VolunteerTrackingTelemetry } from '../../types/index.ts';
+import { Disaster, Volunteer, Task, Assignment, VolunteerTrackingTelemetry, HazardObservation } from '../../types/index.ts';
 import { useLanguage } from '../../context/LanguageContext.tsx';
+import { FirmsLayer } from './FirmsLayer.tsx';
+import { InaRiskExposureLayer } from './InaRiskExposureLayer.tsx';
 
 interface LeafletClusterMapProps {
   disasters: Disaster[];
@@ -73,6 +78,37 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
   const [activeDisasterType, setActiveDisasterType] = useState<string>('all');
   const [tileLayerType, setTileLayerType] = useState<'dark' | 'standard'>('dark');
   const [mapRadiusEnabled, setMapRadiusEnabled] = useState<boolean>(showRadius);
+  const [firmsLayerEnabled, setFirmsLayerEnabled] = useState<boolean>(true);
+  const [firmsClustering, setFirmsClustering] = useState<boolean>(true);
+  const [firmsMinFrp, setFirmsMinFrp] = useState<number>(0);
+  const [firmsCount, setFirmsCount] = useState<number>(0);
+  const [visibleFirmsCount, setVisibleFirmsCount] = useState<number>(0);
+  const [highestFrp, setHighestFrp] = useState<number>(0);
+  const [isLegendExpanded, setIsLegendExpanded] = useState<boolean>(true);
+
+  // BNPB InaRISK Exposure Layer State
+  const [inaRiskLayerEnabled, setInaRiskLayerEnabled] = useState<boolean>(true);
+  const [inaRiskFilter, setInaRiskFilter] = useState<'ALL' | 'EKSTREM' | 'TINGGI'>('ALL');
+  const [inaRiskZoneCount, setInaRiskZoneCount] = useState<number>(0);
+  const [highestVulnerableDensity, setHighestVulnerableDensity] = useState<number>(0);
+
+  // Stable callbacks for FirmsLayer to prevent unneeded re-rendering cycles
+  const handleHotspotsLoaded = useCallback((count: number, maxFrp: number) => {
+    setFirmsCount(count);
+    setHighestFrp(maxFrp);
+  }, []);
+
+  const handleVisibleCountChange = useCallback((visible: number) => {
+    setVisibleFirmsCount(visible);
+  }, []);
+
+  const handleSelectHotspot = useCallback((h: HazardObservation) => {
+    // If there is an active wildfire in the disaster list, focus it
+    const fireDisaster = disasters.find(d => d.type === 'fire');
+    if (fireDisaster && onSelectDisaster) {
+      onSelectDisaster(fireDisaster.id);
+    }
+  }, [disasters, onSelectDisaster]);
 
   // Initialize Map
   useEffect(() => {
@@ -229,7 +265,12 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
         </div>
       `;
 
-      marker.bindPopup(popupHtml, { maxWidth: 300 });
+      marker.bindPopup(popupHtml, { 
+        maxWidth: 300,
+        autoPan: true,
+        autoPanPaddingTopLeft: L.point(20, 145),
+        autoPanPaddingBottomRight: L.point(20, 85)
+      });
 
       marker.on('popupopen', () => {
         const btn = document.getElementById(`btn-select-disaster-${d.id}`);
@@ -239,10 +280,6 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
             marker.closePopup();
           };
         }
-      });
-
-      marker.on('click', () => {
-        if (onSelectDisaster) onSelectDisaster(d.id);
       });
 
       disasterGroup.addLayer(marker);
@@ -333,7 +370,12 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
         </div>
       `;
 
-      marker.bindPopup(vPopup, { maxWidth: 280 });
+      marker.bindPopup(vPopup, { 
+        maxWidth: 280,
+        autoPan: true,
+        autoPanPaddingTopLeft: L.point(20, 145),
+        autoPanPaddingBottomRight: L.point(20, 85)
+      });
 
       marker.on('popupopen', () => {
         const btn = document.getElementById(`btn-view-volunteer-${v.id}`);
@@ -413,7 +455,12 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
         </div>
       `;
 
-      taskMarker.bindPopup(tPopup, { maxWidth: 290 });
+      taskMarker.bindPopup(tPopup, { 
+        maxWidth: 290,
+        autoPan: true,
+        autoPanPaddingTopLeft: L.point(20, 145),
+        autoPanPaddingBottomRight: L.point(20, 85)
+      });
 
       taskMarker.on('popupopen', () => {
         const btn = document.getElementById(`btn-match-task-${t.id}`);
@@ -558,7 +605,12 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
         </div>
       `;
 
-      marker.bindPopup(popupHtml, { maxWidth: 300 });
+      marker.bindPopup(popupHtml, { 
+        maxWidth: 300,
+        autoPan: true,
+        autoPanPaddingTopLeft: L.point(20, 145),
+        autoPanPaddingBottomRight: L.point(20, 85)
+      });
 
       marker.on('popupopen', () => {
         const followBtn = document.getElementById(`btn-follow-gps-${tel.volunteerId}`);
@@ -606,6 +658,36 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
     <div className={`relative isolate w-full ${heightClass} rounded-xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl`}>
       {/* Map DOM Container */}
       <div ref={mapContainerRef} className="w-full h-full" />
+
+      {/* NASA FIRMS Real-time Wildfire Hotspots Pulsing Layer (High-Performance Clustering & Bounds Filter) */}
+      <FirmsLayer
+        map={mapInstanceRef.current}
+        enabled={firmsLayerEnabled}
+        minFrp={firmsMinFrp}
+        useClustering={firmsClustering}
+        onSelectHotspot={handleSelectHotspot}
+        onHotspotsLoaded={handleHotspotsLoaded}
+        onVisibleCountChange={handleVisibleCountChange}
+      />
+
+      {/* BNPB InaRISK Vulnerable Population Density & Resource Deployment Layer */}
+      <InaRiskExposureLayer
+        map={mapInstanceRef.current}
+        enabled={inaRiskLayerEnabled}
+        minVulnerability={inaRiskFilter}
+        onZoneCountChange={(count, density) => {
+          setInaRiskZoneCount(count);
+          setHighestVulnerableDensity(density);
+        }}
+        onDeployResourcesToZone={(zone) => {
+          if (onSelectDisaster) {
+            const matchingDisaster = disasters.find(d => 
+              Math.hypot(d.locationLat - zone.centerLat, d.locationLng - zone.centerLng) < 1.2
+            );
+            if (matchingDisaster) onSelectDisaster(matchingDisaster.id);
+          }
+        }}
+      />
 
       {/* Top Controls Overlay */}
       <div className="absolute top-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
@@ -660,6 +742,89 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
 
         {/* Action Toggles */}
         <div className="flex items-center gap-2 pointer-events-auto bg-slate-950/80 backdrop-blur-md p-1.5 rounded-lg border border-slate-800 shadow-lg">
+          {/* NASA FIRMS Hotspot Pulsing Layer Toggle */}
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setFirmsLayerEnabled(!firmsLayerEnabled)}
+              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors flex items-center gap-1.5 ${
+                firmsLayerEnabled 
+                  ? 'bg-amber-950/90 text-amber-300 border border-amber-700/80 shadow-md' 
+                  : 'text-slate-400 hover:bg-slate-800'
+              }`}
+              title={isEn ? 'Toggle NASA FIRMS VIIRS Active Fire Hotspots' : 'Tampilkan Titik Api Satelit NASA FIRMS (VIIRS)'}
+            >
+              <Flame className={`w-3.5 h-3.5 ${firmsLayerEnabled ? 'text-amber-400 animate-pulse' : 'text-slate-400'}`} />
+              <span>{isEn ? 'NASA FIRMS' : 'Hotspot NASA'}</span>
+              {firmsCount > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[9px] font-bold">
+                  {visibleFirmsCount > 0 ? `${visibleFirmsCount}` : firmsCount}
+                </span>
+              )}
+            </button>
+
+            {firmsLayerEnabled && (
+              <>
+                <button
+                  onClick={() => setFirmsClustering(!firmsClustering)}
+                  className={`px-2 py-1 rounded text-[10px] font-semibold transition-colors flex items-center gap-1 ${
+                    firmsClustering 
+                      ? 'bg-blue-600/30 text-blue-300 border border-blue-500/50' 
+                      : 'bg-slate-800 text-slate-400 border border-slate-700'
+                  }`}
+                  title={isEn ? 'Switch between Fast Clusters (60fps) and Individual Hotspots' : 'Beralih antara Mode Klaster Cepat (60fps) dan Titik Pencar'}
+                >
+                  <span>{firmsClustering ? (isEn ? '⚡ Cluster 60fps' : '⚡ Klaster 60fps') : (isEn ? 'Points' : 'Pencar')}</span>
+                </button>
+
+                <select
+                  value={firmsMinFrp}
+                  onChange={(e) => setFirmsMinFrp(Number(e.target.value))}
+                  className="bg-slate-900 text-amber-300 text-[10px] py-1 px-1.5 rounded border border-amber-800/80 focus:outline-none"
+                  title={isEn ? 'Filter by Fire Radiative Power (MW)' : 'Filter Kekuatan Titik Api (MW)'}
+                >
+                  <option value="0">{isEn ? 'All FRP' : 'Semua FRP'}</option>
+                  <option value="15">{isEn ? '≥15 MW' : '≥15 MW'}</option>
+                  <option value="25">{isEn ? '≥25 MW' : '≥25 MW (Tinggi)'}</option>
+                  <option value="40">{isEn ? '≥40 MW' : '≥40 MW (Kritis)'}</option>
+                </select>
+              </>
+            )}
+          </div>
+
+          {/* BNPB InaRISK Vulnerable Population Density Overlay Toggle */}
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setInaRiskLayerEnabled(!inaRiskLayerEnabled)}
+              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors flex items-center gap-1.5 ${
+                inaRiskLayerEnabled 
+                  ? 'bg-rose-950/90 text-rose-300 border border-rose-700/80 shadow-md ring-1 ring-rose-500/40' 
+                  : 'text-slate-400 hover:bg-slate-800'
+              }`}
+              title={isEn ? 'Toggle BNPB InaRISK Vulnerable Population Density & Resource Deployment Overlays' : 'Tampilkan Lapisan Kepadatan Warga Rentan BNPB InaRISK untuk Prioritas Logistik'}
+            >
+              <ShieldAlert className={`w-3.5 h-3.5 ${inaRiskLayerEnabled ? 'text-rose-400 animate-pulse' : 'text-slate-400'}`} />
+              <span>{isEn ? 'InaRISK Exposure' : 'InaRISK BNPB'}</span>
+              {inaRiskLayerEnabled && inaRiskZoneCount > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full bg-rose-500/20 text-rose-300 font-mono text-[9px] font-bold">
+                  {inaRiskZoneCount} {isEn ? 'Zones' : 'Zona'}
+                </span>
+              )}
+            </button>
+
+            {inaRiskLayerEnabled && (
+              <select
+                value={inaRiskFilter}
+                onChange={(e) => setInaRiskFilter(e.target.value as any)}
+                className="bg-slate-900 text-rose-300 text-[10px] py-1 px-1.5 rounded border border-rose-800/80 focus:outline-none"
+                title={isEn ? 'Filter by Vulnerability Severity' : 'Filter Tingkat Kerentanan'}
+              >
+                <option value="ALL">{isEn ? 'All Levels' : 'Semua Level'}</option>
+                <option value="TINGGI">{isEn ? 'High+ (≥0.75)' : 'Tinggi+ (≥0.75)'}</option>
+                <option value="EKSTREM">{isEn ? 'Extreme Only (>0.85)' : 'Hanya Ekstrem (>0.85)'}</option>
+              </select>
+            )}
+          </div>
+
           <button
             onClick={() => setMapRadiusEnabled(!mapRadiusEnabled)}
             className={`px-2 py-1 rounded text-[11px] font-medium transition-colors flex items-center gap-1 ${
@@ -694,29 +859,67 @@ export const LeafletClusterMap: React.FC<LeafletClusterMapProps> = ({
         </div>
       </div>
 
-      {/* Legend Ribbon at Bottom */}
-      <div className="absolute bottom-3 left-3 z-20 bg-slate-950/85 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-[11px] text-slate-300 flex items-center gap-3 shadow-lg pointer-events-none sm:pointer-events-auto">
-        <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-full bg-red-500 border border-white inline-block"></span>
-          <span>{isEn ? 'Disaster Epicenter' : 'Episentrum Bencana'}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-          <span>{isEn ? 'Standby Volunteer' : 'Relawan Siaga'}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-md bg-blue-500 inline-block"></span>
-          <span>{isEn ? 'Open Task' : 'Tugas Terbuka'}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-4 h-4 rounded-full sigap-cluster-mixed inline-flex items-center justify-center text-[8px] font-bold">#</span>
-          <span>{isEn ? 'Clustered Group' : 'Klaster Terkelompok'}</span>
-        </div>
-        {isTrackingActive && (
-          <div className="flex items-center gap-1.5 text-cyan-300 font-bold border-l border-slate-700 pl-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping inline-block"></span>
-            <span>Live GPS Responders ({telemetryList.length})</span>
+      {/* Legend Ribbon at Bottom (Smart Collapsible & Non-blocking) */}
+      <div className="absolute bottom-3 left-3 z-10 pointer-events-auto">
+        {isLegendExpanded ? (
+          <div className="bg-slate-950/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-[11px] text-slate-300 flex flex-wrap items-center gap-3 shadow-2xl transition-all">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500 border border-white inline-block"></span>
+              <span>{isEn ? 'Disaster' : 'Bencana'}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+              <span>{isEn ? 'Volunteer' : 'Relawan'}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-md bg-blue-500 inline-block"></span>
+              <span>{isEn ? 'Task' : 'Tugas'}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-3.5 h-3.5 rounded-full sigap-cluster-mixed inline-flex items-center justify-center text-[7.5px] font-bold">#</span>
+              <span>{isEn ? 'Cluster' : 'Klaster'}</span>
+            </div>
+            {firmsLayerEnabled && firmsCount > 0 && (
+              <div className="flex items-center gap-1.5 text-amber-300 font-bold border-l border-slate-700 pl-2.5">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse inline-block"></span>
+                <span>{isEn ? 'NASA FIRMS' : 'Hotspot NASA'} ({visibleFirmsCount > 0 ? `${visibleFirmsCount} ${isEn ? 'in view' : 'di layar'}` : `${firmsCount}`})</span>
+              </div>
+            )}
+            {inaRiskLayerEnabled && inaRiskZoneCount > 0 && (
+              <div className="flex items-center gap-1.5 text-rose-300 font-bold border-l border-slate-700 pl-2.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-600 border border-white inline-block"></span>
+                <span>{isEn ? 'InaRISK Exposure' : 'InaRISK Rentan'} ({inaRiskZoneCount} {isEn ? 'Zones' : 'Zona'})</span>
+              </div>
+            )}
+            {isTrackingActive && telemetryList.length > 0 && (
+              <div className="flex items-center gap-1.5 text-cyan-300 font-bold border-l border-slate-700 pl-2.5">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse inline-block"></span>
+                <span>GPS ({telemetryList.length})</span>
+              </div>
+            )}
+            <button
+              onClick={() => setIsLegendExpanded(false)}
+              className="ml-1 p-0.5 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              title={isEn ? 'Collapse Legend' : 'Sembunyikan Legenda'}
+            >
+              <ChevronDown className="w-3.5 h-3.5" />
+            </button>
           </div>
+        ) : (
+          <button
+            onClick={() => setIsLegendExpanded(true)}
+            className="bg-slate-950/90 backdrop-blur-md px-2.5 py-1.5 rounded-lg border border-slate-800 text-[11px] font-medium text-slate-300 hover:text-white hover:bg-slate-900 transition-all shadow-xl flex items-center gap-1.5 cursor-pointer"
+            title={isEn ? 'Show Legend' : 'Tampilkan Legenda Peta'}
+          >
+            <span className="text-xs">🗺️</span>
+            <span>{isEn ? 'Legend' : 'Legenda'}</span>
+            {firmsLayerEnabled && firmsCount > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[9px] font-bold">
+                🔥 {visibleFirmsCount > 0 ? visibleFirmsCount : firmsCount}
+              </span>
+            )}
+            <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
+          </button>
         )}
       </div>
     </div>

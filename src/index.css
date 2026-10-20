@@ -59,6 +59,26 @@ body {
   border: 1px solid #334155 !important;
 }
 
+/* FIRMS Hotspot Popup Specific Styling */
+.firms-custom-popup .leaflet-popup-content-wrapper {
+  background: rgba(15, 23, 42, 0.96) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(245, 158, 11, 0.45) !important;
+  box-shadow: 0 25px 35px -5px rgba(0, 0, 0, 0.8), 0 0 20px rgba(245, 158, 11, 0.15) !important;
+}
+
+.firms-custom-popup .leaflet-popup-tip {
+  background: rgba(15, 23, 42, 0.96) !important;
+  border: 1px solid rgba(245, 158, 11, 0.45) !important;
+}
+
+.firms-custom-popup .leaflet-popup-content {
+  max-height: 420px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #475569 transparent;
+}
+
 .leaflet-popup-close-button {
   color: #94a3b8 !important;
   padding: 6px 8px !important;
@@ -114,4 +134,56 @@ body {
   background: transparent !important;
   border: none !important;
 }
+
+/* NASA FIRMS VIIRS Active Fire Hotspot Pulsing Animation */
+.firms-hotspot-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+@keyframes firms-pulse-wave {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.6);
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.firms-pulse-wave {
+  animation: firms-pulse-wave 2.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+}
+
+.firms-pulse-wave-delayed {
+  animation: firms-pulse-wave 2.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.9s infinite;
+}
+
+/* FIRMS Marker Cluster Styles */
+.custom-firms-cluster-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.firms-cluster-extreme {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.6), 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+}
+
+.firms-cluster-high {
+  background: linear-gradient(135deg, #f97316 0%, #c2410c 100%);
+  box-shadow: 0 0 16px rgba(249, 115, 22, 0.5), 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+}
+
+.firms-cluster-normal {
+  background: linear-gradient(135deg, #eab308 0%, #a16207 100%);
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.4), 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+}
+
+
 

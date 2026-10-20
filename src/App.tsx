@@ -27,6 +27,7 @@ import { ProjectPresentationView } from './components/presentation/ProjectPresen
 import { DocumentationView } from './components/docs/DocumentationView.tsx';
 import { FieldTaskToastContainer } from './components/notifications/FieldTaskToastContainer.tsx';
 import { PublicEarlyWarningView } from './components/earlywarning/PublicEarlyWarningView.tsx';
+import { MultiHazardCommandCenter } from './components/command/MultiHazardCommandCenter.tsx';
 import { DisasterDonationsView } from './components/donations/DisasterDonationsView.tsx';
 import { DonateModal } from './components/donations/DonateModal.tsx';
 import { useRealtimeTracking } from './hooks/useRealtimeTracking.ts';
@@ -477,6 +478,21 @@ export default function App() {
               setSelectedDisasterId(id);
               setActiveTab('map');
             }}
+            onNavigateToMultiHazard={(incidentId) => {
+              setActiveTab('multi-hazard');
+            }}
+          />
+        )}
+
+        {/* TAB MULTI-HAZARD: AI-Powered Multi-Hazard Disaster Command Center */}
+        {activeTab === 'multi-hazard' && (
+          <MultiHazardCommandCenter
+            onNavigateToDisaster={(id) => {
+              setSelectedDisasterId(id);
+              setActiveTab('map');
+            }}
+            onNavigateToVolunteers={() => setActiveTab('volunteers')}
+            onNavigateToEarlyWarning={() => setActiveTab('early-warning')}
           />
         )}
 

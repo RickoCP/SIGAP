@@ -60,8 +60,8 @@ export interface RadarLayerData {
 const weatherCache = new Map<string, { data: RealTimeWeatherData; expiresAt: number }>();
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
-// Translate WMO code to Indonesian description and condition
-export function interpretWmoCode(code: number, language: 'id' | 'en' = 'id'): { condition: string; icon: string; isSevere: boolean } {
+// Translate WMO code to description and condition
+export function interpretWmoCode(code: number, language: 'id' | 'en' = 'en'): { condition: string; icon: string; isSevere: boolean } {
   switch (code) {
     case 0:
       return { condition: language === 'id' ? 'Cerah Tanpa Awan' : 'Clear Sky', icon: '☀️', isSevere: false };
@@ -108,7 +108,7 @@ function evaluateTacticalHazards(
   windGusts: number,
   weatherCode: number,
   disasterType?: string,
-  language: 'id' | 'en' = 'id'
+  language: 'id' | 'en' = 'en'
 ): {
   hazardLevel: WeatherHazardLevel;
   hazardTitle: string;
@@ -214,7 +214,7 @@ export async function fetchRealTimeWeather(
   longitude: number,
   locationName: string = 'Lokasi Bencana',
   disasterType?: string,
-  language: 'id' | 'en' = 'id'
+  language: 'id' | 'en' = 'en'
 ): Promise<RealTimeWeatherData> {
   const cacheKey = `${latitude.toFixed(2)},${longitude.toFixed(2)}`;
   const now = Date.now();
@@ -332,7 +332,7 @@ function getFallbackTacticalWeather(
   longitude: number,
   locationName: string,
   disasterType?: string,
-  language: 'id' | 'en' = 'id'
+  language: 'id' | 'en' = 'en'
 ): RealTimeWeatherData {
   const isFlood = disasterType === 'flood';
   const isFire = disasterType === 'fire';
@@ -436,7 +436,7 @@ export async function fetchRainViewerRadar(): Promise<RadarLayerData> {
 // Batch fetch weather for multiple disaster points
 export async function batchFetchDisasterWeather(
   disasters: Disaster[],
-  language: 'id' | 'en' = 'id'
+  language: 'id' | 'en' = 'en'
 ): Promise<Map<string, RealTimeWeatherData>> {
   const results = new Map<string, RealTimeWeatherData>();
   

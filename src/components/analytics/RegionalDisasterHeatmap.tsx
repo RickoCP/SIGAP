@@ -151,7 +151,12 @@ export const RegionalDisasterHeatmap: React.FC<RegionalDisasterHeatmapProps> = (
             </div>
           `;
 
-          marker.bindPopup(popupHtml, { maxWidth: 280 });
+          marker.bindPopup(popupHtml, { 
+            maxWidth: 280,
+            autoPan: true,
+            autoPanPaddingTopLeft: L.point(20, 100),
+            autoPanPaddingBottomRight: L.point(20, 80)
+          });
 
           marker.on('click', () => {
             setActivePoint(p);
@@ -162,7 +167,7 @@ export const RegionalDisasterHeatmap: React.FC<RegionalDisasterHeatmapProps> = (
         });
       }
     }
-  }, [filteredPoints, activeDisasterType, heatRadius, heatBlur, showPointMarkers, activePoint, language]);
+  }, [filteredPoints, activeDisasterType, heatRadius, heatBlur, showPointMarkers, language]);
 
   // Pan to selected region
   const handleRegionZoom = (regionKey: string) => {

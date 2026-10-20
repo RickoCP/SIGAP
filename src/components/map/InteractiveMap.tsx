@@ -14,12 +14,17 @@ import {
   X,
   Sparkles,
   Network,
-  Maximize2
+  Maximize2,
+  ShieldAlert,
+  CloudRain,
+  Droplets
 } from 'lucide-react';
 import { Disaster, Volunteer, Task, Assignment } from '../../types/index.ts';
 import { calculateDistance } from '../../lib/geo.ts';
 import { GoogleMapsPlacesModal } from './GoogleMapsPlacesModal.tsx';
 import { useLanguage } from '../../context/LanguageContext.tsx';
+import { VERIFIED_INARISK_EXPOSURE_ZONES, getInaRiskDensityColor, InaRiskExposureZone } from '../../data/inaRiskExposureData.ts';
+import { VERIFIED_GPM_IMERG_CELLS, getGpmIntensityColor, GpmPrecipitationCell } from '../../data/gpmImergData.ts';
 
 interface InteractiveMapProps {
   disasters: Disaster[];
@@ -85,6 +90,14 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
   const [showDisasters, setShowDisasters] = useState<boolean>(true);
   const [showTasks, setShowTasks] = useState<boolean>(true);
   const [showRadius, setShowRadius] = useState<boolean>(true);
+  const [showInaRiskExposure, setShowInaRiskExposure] = useState<boolean>(true);
+  const [selectedInaRiskZone, setSelectedInaRiskZone] = useState<InaRiskExposureZone | null>(null);
+
+  // NASA GPM IMERG Precipitation Overlay States
+  const [showGpmImerg, setShowGpmImerg] = useState<boolean>(true);
+  const [gpmDisplayMode, setGpmDisplayMode] = useState<'rate' | 'acc24h'>('rate');
+  const [selectedGpmCell, setSelectedGpmCell] = useState<GpmPrecipitationCell | null>(null);
+
   const [clusteringEnabled, setClusteringEnabled] = useState<boolean>(true);
   const [activeVolunteerFilter, setActiveVolunteerFilter] = useState<'all' | 'available' | 'busy'>('all');
 
@@ -198,6 +211,8 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       onSelectLocation(coords.lat, coords.lng);
     } else {
       setHoveredItem(null);
+      setSelectedInaRiskZone(null);
+      setSelectedGpmCell(null);
     }
   };
 
@@ -410,6 +425,72 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
           </g>
         )}
 
+        {/* BNPB InaRISK Geographic Exposure Density Rings */}
+        {showInaRiskExposure && (
+          <g className="inarisk-exposure-density-rings pointer-events-none">
+            {VERIFIED_INARISK_EXPOSURE_ZONES.map(zone => {
+              const pt = latLngToPoint(zone.centerLat, zone.centerLng);
+              const radiusPx = (zone.radiusKm / 111) * Math.pow(2, zoom) * 256 / 360 * 18;
+              const colors = getInaRiskDensityColor(zone.vulnerableDensityPerKm2);
+              return (
+                <g key={`inarisk-svg-${zone.id}`}>
+                  <circle
+                    cx={pt.x}
+                    cy={pt.y}
+                    r={Math.max(22, radiusPx)}
+                    fill={colors.fill}
+                    fillOpacity={zone.vulnerabilityLevel === 'EKSTREM' ? 0.22 : 0.12}
+                    stroke={colors.stroke}
+                    strokeWidth="1.5"
+                    strokeDasharray="4,4"
+                  />
+                </g>
+              );
+            })}
+          </g>
+        )}
+
+        {/* NASA GPM IMERG Real-Time Precipitation Footprints & Isohyet Bands */}
+        {showGpmImerg && (
+          <g className="gpm-imerg-precipitation-bands pointer-events-none">
+            {VERIFIED_GPM_IMERG_CELLS.map(cell => {
+              const pt = latLngToPoint(cell.latitude, cell.longitude);
+              const radiusPx = (cell.footprintRadiusKm / 111) * Math.pow(2, zoom) * 256 / 360 * 18;
+              const colors = getGpmIntensityColor(cell.rateMmPerHour);
+              const isExtreme = cell.intensityLevel === 'EXTREME';
+              const isHeavy = cell.intensityLevel === 'HEAVY';
+
+              return (
+                <g key={`gpm-svg-${cell.id}`}>
+                  {/* Outer Footprint Halo */}
+                  <circle
+                    cx={pt.x}
+                    cy={pt.y}
+                    r={Math.max(26, radiusPx)}
+                    fill={colors.fill}
+                    fillOpacity={isExtreme ? 0.26 : isHeavy ? 0.20 : 0.14}
+                    stroke={colors.stroke}
+                    strokeWidth="1.5"
+                    strokeDasharray={isExtreme ? undefined : '3,3'}
+                  />
+                  {/* Concentric High-Intensity Core */}
+                  {(isExtreme || isHeavy) && (
+                    <circle
+                      cx={pt.x}
+                      cy={pt.y}
+                      r={Math.max(12, radiusPx * 0.48)}
+                      fill={colors.fill}
+                      fillOpacity={isExtreme ? 0.38 : 0.28}
+                      stroke={colors.stroke}
+                      strokeWidth="2"
+                    />
+                  )}
+                </g>
+              );
+            })}
+          </g>
+        )}
+
         {/* Live Tracking Trails & Destination Lines */}
         {isTrackingActive && (
           <g className="live-tracking-trails">
@@ -506,6 +587,106 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-slate-950/90 text-white border border-slate-700 rounded text-[9px] font-mono whitespace-nowrap shadow-md flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                   <span>{tel.speedKmh} km/h</span>
+                </div>
+              </div>
+            );
+          })}
+
+        {/* BNPB InaRISK Vulnerable Population Density Markers */}
+        {showInaRiskExposure &&
+          VERIFIED_INARISK_EXPOSURE_ZONES.map(zone => {
+            const { x, y } = latLngToPoint(zone.centerLat, zone.centerLng);
+            const colors = getInaRiskDensityColor(zone.vulnerableDensityPerKm2);
+            const isSelected = selectedInaRiskZone?.id === zone.id;
+
+            return (
+              <div
+                key={`inarisk-node-${zone.id}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedGpmCell(null);
+                  setSelectedInaRiskZone(isSelected ? null : zone);
+                }}
+                style={{
+                  transform: `translate(${x}px, ${y}px) translate(-50%, -50%)`,
+                }}
+                className={`interactive-marker absolute cursor-pointer transition-transform duration-150 ${
+                  isSelected ? 'z-40 scale-125' : 'z-25 hover:scale-110'
+                }`}
+                title={`BNPB InaRISK: ${isEn ? zone.nameEn : zone.name} (${zone.vulnerableDensityPerKm2.toLocaleString('id-ID')} jiwa/km²)`}
+              >
+                {zone.vulnerabilityLevel === 'EKSTREM' && (
+                  <div
+                    className="absolute -inset-2 rounded-full animate-ping opacity-60"
+                    style={{ backgroundColor: colors.fill }}
+                  />
+                )}
+                <div
+                  className="relative flex items-center gap-1 px-2 py-0.5 rounded-full text-white font-mono text-[9px] font-bold shadow-xl border-2 whitespace-nowrap"
+                  style={{ backgroundColor: colors.fill, borderColor: isSelected ? '#ffffff' : colors.stroke }}
+                >
+                  <ShieldAlert className="w-2.5 h-2.5" />
+                  <span>{zone.vulnerableDensityPerKm2.toLocaleString('id-ID')}</span>
+                  <span className="text-[7.5px] opacity-80">{isEn ? 'vuln/km²' : 'jiwa/km²'}</span>
+                </div>
+              </div>
+            );
+          })}
+
+        {/* NASA GPM IMERG Real-Time Rainfall Intensity & Flood Risk Markers */}
+        {showGpmImerg &&
+          VERIFIED_GPM_IMERG_CELLS.map(cell => {
+            const { x, y } = latLngToPoint(cell.latitude, cell.longitude);
+            const colors = getGpmIntensityColor(cell.rateMmPerHour);
+            const isSelected = selectedGpmCell?.id === cell.id;
+            const isExtreme = cell.intensityLevel === 'EXTREME';
+            const isHeavy = cell.intensityLevel === 'HEAVY';
+
+            return (
+              <div
+                key={`gpm-marker-${cell.id}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedInaRiskZone(null);
+                  setSelectedGpmCell(isSelected ? null : cell);
+                }}
+                style={{
+                  transform: `translate(${x}px, ${y}px) translate(-50%, -50%)`,
+                }}
+                className={`interactive-marker absolute cursor-pointer transition-transform duration-150 ${
+                  isSelected ? 'z-40 scale-125' : 'z-25 hover:scale-110'
+                }`}
+                title={`NASA GPM IMERG: ${isEn ? cell.locationNameEn : cell.locationName} (${cell.rateMmPerHour} mm/h · ${cell.basinName})`}
+              >
+                {isExtreme && (
+                  <div
+                    className="absolute -inset-2.5 rounded-full animate-ping opacity-75"
+                    style={{ backgroundColor: colors.fill }}
+                  />
+                )}
+                <div
+                  className="relative flex items-center gap-1.5 px-2 py-0.5 rounded-full text-white font-mono text-[9px] font-bold shadow-xl border-2 whitespace-nowrap"
+                  style={{
+                    backgroundColor: colors.fill,
+                    borderColor: isSelected ? '#38bdf8' : colors.stroke,
+                  }}
+                >
+                  <CloudRain className={`w-3 h-3 text-cyan-200 ${isExtreme || isHeavy ? 'animate-bounce' : ''}`} />
+                  <span>
+                    {gpmDisplayMode === 'rate'
+                      ? `${cell.rateMmPerHour} mm/h`
+                      : `${cell.accumulated24hMm} mm/24h`}
+                  </span>
+                  {cell.floodRisk === 'CRITICAL_FLASH_FLOOD' && (
+                    <span className="bg-red-950 text-red-200 text-[7.5px] px-1 py-0.2 rounded font-black tracking-tight border border-red-500/60 uppercase">
+                      {isEn ? 'FLASH FLOOD' : 'BANJIR BANDANG'}
+                    </span>
+                  )}
+                  {cell.floodRisk === 'FLOOD_WARNING' && (
+                    <span className="bg-amber-950 text-amber-200 text-[7.5px] px-1 py-0.2 rounded font-bold tracking-tight border border-amber-500/60 uppercase">
+                      {isEn ? 'ALERT' : 'WASPADA'}
+                    </span>
+                  )}
                 </div>
               </div>
             );
@@ -960,6 +1141,181 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
         </div>
       )}
 
+      {/* Selected InaRISK Exposure Zone Details Card */}
+      {selectedInaRiskZone && (
+        <div className="absolute top-16 right-4 z-30 w-80 bg-slate-900/98 backdrop-blur-md border border-rose-700/80 rounded-xl p-3 shadow-2xl animate-in fade-in duration-150 text-slate-100 font-sans pointer-events-auto">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
+            <div className="flex items-center gap-1.5">
+              <span className="text-base">🛡️</span>
+              <div>
+                <span className="text-[9px] font-black uppercase tracking-wider text-rose-400 block">
+                  BNPB InaRISK Official Exposure
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono">{selectedInaRiskZone.regionCode} · {selectedInaRiskZone.province}</span>
+              </div>
+            </div>
+            <button
+              onClick={() => setSelectedInaRiskZone(null)}
+              className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <h4 className="font-bold text-xs text-white leading-tight mb-1">
+            {isEn ? selectedInaRiskZone.nameEn : selectedInaRiskZone.name}
+          </h4>
+
+          <div className="grid grid-cols-2 gap-1.5 bg-slate-950/80 p-2 rounded-lg border border-slate-800 mb-2 font-mono text-center">
+            <div>
+              <span className="text-[9px] text-slate-400 block">{isEn ? 'Vuln Density' : 'Kepadatan Rentan'}</span>
+              <strong className="text-xs text-rose-400 font-bold">{selectedInaRiskZone.vulnerableDensityPerKm2.toLocaleString('id-ID')} {isEn ? 'vuln/km²' : 'jiwa/km²'}</strong>
+            </div>
+            <div>
+              <span className="text-[9px] text-slate-400 block">{isEn ? 'Vulnerable Population' : 'Total Warga Rentan'}</span>
+              <strong className="text-xs text-amber-400 font-bold">{selectedInaRiskZone.vulnerablePopulationTotal.toLocaleString('id-ID')} {isEn ? 'souls' : 'jiwa'}</strong>
+            </div>
+          </div>
+
+          <div className="bg-slate-950/90 p-2 rounded-lg border border-slate-800 mb-2">
+            <div className="flex items-center justify-between text-[10px] mb-1">
+              <span className="text-amber-400 font-bold">⚡ {isEn ? 'Deployment Priority' : 'Prioritas Logistik'}:</span>
+              <span className="text-[9px] bg-red-950 text-red-300 px-1.5 rounded font-bold">{selectedInaRiskZone.recommendations.priorityLevel}</span>
+            </div>
+            <p className="text-[10px] text-slate-300 leading-relaxed mb-1.5">
+              {isEn ? selectedInaRiskZone.recommendations.tacticalNoteEn : selectedInaRiskZone.recommendations.tacticalNote}
+            </p>
+            <div className="space-y-1">
+              {selectedInaRiskZone.recommendations.recommendedTeams.slice(0, 2).map((t, i) => (
+                <div key={i} className="flex justify-between items-center text-[9px] bg-slate-850 px-1.5 py-0.5 rounded text-slate-300">
+                  <span>• {isEn ? t.roleEn : t.role}</span>
+                  <span className="text-blue-400 font-bold">{t.count} {isEn ? 'Teams' : 'Regu'}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => {
+                handleZoom(2, { lat: selectedInaRiskZone.centerLat, lng: selectedInaRiskZone.centerLng });
+              }}
+              className="flex-1 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-bold text-center transition"
+            >
+              {isEn ? 'Center View on Zone' : 'Pusatkan ke Zona Ini'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Selected NASA GPM IMERG Precipitation Cell Details Card */}
+      {selectedGpmCell && (
+        <div className="absolute top-16 right-4 z-30 w-84 max-w-[calc(100vw-2rem)] bg-slate-900/98 backdrop-blur-md border border-cyan-500/80 rounded-xl p-3.5 shadow-2xl animate-in fade-in duration-150 text-slate-100 font-sans pointer-events-auto">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
+            <div className="flex items-center gap-1.5">
+              <div className="p-1.5 rounded-lg bg-cyan-950/80 border border-cyan-700/60 text-cyan-300">
+                <CloudRain className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-[9px] font-black uppercase tracking-wider text-cyan-400 block">
+                  NASA GPM IMERG Telemetry
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono">
+                  {selectedGpmCell.basinName} · {selectedGpmCell.province}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => setSelectedGpmCell(null)}
+              className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition"
+              title={isEn ? 'Close Card' : 'Tutup Kartu'}
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <h4 className="font-bold text-xs text-white leading-tight mb-2">
+            {isEn ? selectedGpmCell.locationNameEn : selectedGpmCell.locationName}
+          </h4>
+
+          {/* Real-time Precipitation Metrics */}
+          <div className="grid grid-cols-4 gap-1.5 bg-slate-950/80 p-2 rounded-lg border border-slate-800 mb-2 font-mono text-center">
+            <div>
+              <span className="text-[8px] text-slate-400 block">{isEn ? 'Rate' : 'Intensitas'}</span>
+              <strong className="text-xs text-cyan-300 font-bold">{selectedGpmCell.rateMmPerHour} <span className="text-[8px] font-normal">mm/h</span></strong>
+            </div>
+            <div>
+              <span className="text-[8px] text-slate-400 block">3h Acc</span>
+              <strong className="text-xs text-blue-300 font-bold">{selectedGpmCell.accumulated3hMm} <span className="text-[8px] font-normal">mm</span></strong>
+            </div>
+            <div>
+              <span className="text-[8px] text-slate-400 block">24h Acc</span>
+              <strong className="text-xs text-amber-300 font-bold">{selectedGpmCell.accumulated24hMm} <span className="text-[8px] font-normal">mm</span></strong>
+            </div>
+            <div>
+              <span className="text-[8px] text-slate-400 block">72h Acc</span>
+              <strong className="text-xs text-rose-300 font-bold">{selectedGpmCell.accumulated72hMm} <span className="text-[8px] font-normal">mm</span></strong>
+            </div>
+          </div>
+
+          {/* Risk Badges */}
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className={`text-[9px] px-2 py-0.5 rounded font-bold border ${
+              selectedGpmCell.floodRisk === 'CRITICAL_FLASH_FLOOD'
+                ? 'bg-red-950 text-red-200 border-red-700 animate-pulse'
+                : selectedGpmCell.floodRisk === 'FLOOD_WARNING'
+                ? 'bg-amber-950 text-amber-200 border-amber-700'
+                : 'bg-blue-950 text-blue-200 border-blue-700'
+            }`}>
+              ⚠️ {selectedGpmCell.floodRisk.replace(/_/g, ' ')}
+            </span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">
+              Landslide: {selectedGpmCell.landslideRisk}
+            </span>
+          </div>
+
+          {/* Downstream Hydrological Impact */}
+          <div className="bg-slate-950/90 p-2 rounded-lg border border-slate-800 mb-2 space-y-1.5">
+            <div>
+              <span className="text-[9px] font-bold text-amber-400 flex items-center gap-1">
+                <span>🌊</span>
+                <span>{isEn ? 'Downstream Hydrological Impact:' : 'Dampak Aliran Hilir / DAS:'}</span>
+              </span>
+              <p className="text-[10px] text-slate-300 leading-relaxed mt-0.5">
+                {isEn ? selectedGpmCell.downstreamImpactEn : selectedGpmCell.downstreamImpact}
+              </p>
+            </div>
+            <div className="pt-1 border-t border-slate-800/80">
+              <span className="text-[9px] font-bold text-cyan-400 flex items-center gap-1">
+                <span>📋</span>
+                <span>{isEn ? 'Flood Response Recommendation:' : 'Rekomendasi Siaga Banjir:'}</span>
+              </span>
+              <p className="text-[10px] text-slate-300 leading-relaxed mt-0.5">
+                {isEn ? selectedGpmCell.sarRecommendationEn : selectedGpmCell.sarRecommendation}
+              </p>
+            </div>
+          </div>
+
+          {/* Sensor & Telemetry Metadata */}
+          <div className="flex items-center justify-between text-[8.5px] text-slate-400 font-mono mb-2 px-1">
+            <span className="truncate max-w-[200px]" title={selectedGpmCell.satelliteSensor}>📡 {selectedGpmCell.satelliteSensor}</span>
+            <span>{new Date(selectedGpmCell.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} UTC</span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => {
+                handleZoom(2, { lat: selectedGpmCell.latitude, lng: selectedGpmCell.longitude });
+              }}
+              className="flex-1 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-[10px] font-bold text-center transition flex items-center justify-center gap-1"
+            >
+              <Compass className="w-3 h-3" />
+              {isEn ? 'Center View on Basin' : 'Pusatkan ke Cekungan DAS'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Floating Tactical Map Controls */}
       <div className="absolute top-4 right-4 flex flex-col gap-2 z-20 pointer-events-auto">
         <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-lg p-1 shadow-lg flex flex-col gap-1">
@@ -1044,6 +1400,61 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
             {isEn ? 'Tasks' : 'Tugas'} ({tasks.length})
           </button>
 
+          {/* BNPB InaRISK Exposure Layer Toggle */}
+          <button
+            onClick={() => setShowInaRiskExposure(!showInaRiskExposure)}
+            className={`px-2 py-1 rounded text-xs font-medium flex items-center gap-1 transition-colors ${
+              showInaRiskExposure
+                ? 'bg-rose-950/80 text-rose-200 border border-rose-800/80 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+            title={isEn ? 'Toggle BNPB InaRISK Vulnerable Population Density & Resource Deployment Overlays' : 'Tampilkan Lapisan Kepadatan Warga Rentan BNPB InaRISK'}
+          >
+            <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+            <span>{isEn ? 'InaRISK Exposure' : 'InaRISK BNPB'}</span>
+          </button>
+
+          {/* NASA GPM IMERG Precipitation Layer Toggle */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setShowGpmImerg(!showGpmImerg)}
+              className={`px-2 py-1 rounded text-xs font-medium flex items-center gap-1 transition-colors ${
+                showGpmImerg
+                  ? 'bg-cyan-950/90 text-cyan-200 border border-cyan-700/80 shadow-sm ring-1 ring-cyan-500/30'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title={isEn ? 'Toggle NASA GPM IMERG Real-Time Precipitation & Flood Monitoring Overlay' : 'Tampilkan Lapisan Curah Hujan Real-Time NASA GPM IMERG untuk Monitoring Banjir'}
+            >
+              <CloudRain className={`w-3.5 h-3.5 ${showGpmImerg ? 'text-cyan-400 animate-pulse' : 'text-slate-400'}`} />
+              <span>{isEn ? 'GPM Rain' : 'Hujan GPM'}</span>
+              {showGpmImerg && (
+                <span className="px-1 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-mono text-[9px] font-bold">
+                  {VERIFIED_GPM_IMERG_CELLS.length}
+                </span>
+              )}
+            </button>
+
+            {showGpmImerg && (
+              <div className="flex items-center bg-slate-950/90 border border-cyan-800/60 rounded px-1 py-0.5 text-[10px] text-cyan-300">
+                <button
+                  onClick={() => setGpmDisplayMode('rate')}
+                  className={`px-1 rounded transition-colors ${gpmDisplayMode === 'rate' ? 'bg-cyan-600 text-white font-bold' : 'text-slate-400 hover:text-white'}`}
+                  title={isEn ? 'Show Hourly Rainfall Intensity Rate (mm/h)' : 'Tampilkan Intensitas Hujan per Jam (mm/jam)'}
+                >
+                  {isEn ? 'Rate' : 'Intensitas'}
+                </button>
+                <span className="text-slate-600 mx-0.5">/</span>
+                <button
+                  onClick={() => setGpmDisplayMode('acc24h')}
+                  className={`px-1 rounded transition-colors ${gpmDisplayMode === 'acc24h' ? 'bg-cyan-600 text-white font-bold' : 'text-slate-400 hover:text-white'}`}
+                  title={isEn ? 'Show 24-hour Accumulated Rainfall (mm)' : 'Tampilkan Akumulasi Curah Hujan 24 Jam (mm)'}
+                >
+                  24h
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Marker Clustering Toggle */}
           <button
             onClick={() => setClusteringEnabled(!clusteringEnabled)}
@@ -1097,6 +1508,37 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
           </div>
         )}
       </div>
+
+      {/* GPM IMERG Precipitation Legend Bar (When GPM Layer is active) */}
+      {showGpmImerg && (
+        <div className="absolute bottom-11 right-4 z-20 flex items-center gap-2 bg-slate-900/95 backdrop-blur-md border border-cyan-800/80 rounded-lg px-2.5 py-1.5 text-[10px] text-slate-300 shadow-xl pointer-events-auto">
+          <span className="font-semibold text-cyan-400 flex items-center gap-1">
+            <CloudRain className="w-3.5 h-3.5 text-cyan-400" />
+            <span>GPM IMERG:</span>
+          </span>
+          <div className="flex items-center gap-2 font-mono text-[9px]">
+            <span className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-purple-600 ring-1 ring-purple-300" />
+              <span className="text-purple-300 font-bold">&gt;20 mm/h ({isEn ? 'Extreme' : 'Ekstrem'})</span>
+            </span>
+            <span className="text-slate-600">·</span>
+            <span className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-orange-600 ring-1 ring-orange-300" />
+              <span className="text-orange-300">10-20 ({isEn ? 'Heavy' : 'Lebat'})</span>
+            </span>
+            <span className="text-slate-600">·</span>
+            <span className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-blue-600 ring-1 ring-blue-300" />
+              <span className="text-blue-300">2.5-10 ({isEn ? 'Mod' : 'Sedang'})</span>
+            </span>
+            <span className="text-slate-600">·</span>
+            <span className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-sky-500 ring-1 ring-sky-300" />
+              <span className="text-sky-300">&lt;2.5 ({isEn ? 'Light' : 'Ringan'})</span>
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Bottom Map Info Footer */}
       <div className="absolute bottom-3 left-4 right-4 z-20 flex items-center justify-between pointer-events-none text-[11px] text-slate-400 font-mono">

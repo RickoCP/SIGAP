@@ -15,16 +15,23 @@ import {
   Maximize2,
   Wind,
   Droplets,
-  Layers
+  Layers,
+  ChevronDown,
+  ChevronUp,
+  Radar,
+  Siren,
+  BellRing
 } from 'lucide-react';
-import { Disaster, IndonesiaRegion } from '../../types/index.ts';
+import { Disaster, IndonesiaRegion, MultiHazardIncident } from '../../types/index.ts';
 import { useLanguage } from '../../context/LanguageContext.tsx';
 import { getLocalizedDisaster } from '../../i18n/translations.ts';
+import { InaRiskExposureLayer } from './InaRiskExposureLayer.tsx';
 
 interface NationalDisasterMapProps {
   disasters: Disaster[];
   onSelectDisaster: (id: string) => void;
   onNavigateToTacticalMap: (disasterId: string) => void;
+  onNavigateToMultiHazard?: (incidentId?: string) => void;
 }
 
 const REGION_COORDINATES: Record<string, { center: [number, number]; zoom: number }> = {
@@ -40,17 +47,52 @@ const REGION_COORDINATES: Record<string, { center: [number, number]; zoom: numbe
 export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
   disasters,
   onSelectDisaster,
-  onNavigateToTacticalMap
+  onNavigateToTacticalMap,
+  onNavigateToMultiHazard
 }) => {
   const { language, t } = useLanguage();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const disasterLayerRef = useRef<L.LayerGroup | null>(null);
+  const radiusLayerRef = useRef<L.LayerGroup | null>(null);
+  const hazardLayerRef = useRef<L.LayerGroup | null>(null);
 
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
   const [selectedDisasterId, setSelectedDisasterId] = useState<string>(disasters[0]?.id || '');
+  const [isLegendExpanded, setIsLegendExpanded] = useState<boolean>(true);
+
+  // Multi-Hazard Real-Time Incidents Sync State
+  const [hazardIncidents, setHazardIncidents] = useState<MultiHazardIncident[]>([]);
+  const [showMultiHazardOverlay, setShowMultiHazardOverlay] = useState<boolean>(true);
+  const [showInaRiskExposure, setShowInaRiskExposure] = useState<boolean>(true);
+
+  // Poll Multi-Hazard incidents every 12 seconds so actions in Command Center auto-update here
+  const fetchHazardIncidents = async () => {
+    try {
+      const res = await fetch('/api/hazard/incidents');
+      if (res.ok) {
+        const data: MultiHazardIncident[] = await res.json();
+        setHazardIncidents(data);
+      }
+    } catch (e) {
+      console.warn('Failed to load multi-hazard incidents for national map:', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchHazardIncidents();
+    const interval = setInterval(fetchHazardIncidents, 12000);
+    const handleSync = () => {
+      fetchHazardIncidents();
+    };
+    window.addEventListener('sigap:hazard-updated', handleSync);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('sigap:hazard-updated', handleSync);
+    };
+  }, []);
 
   // Localize disasters collection based on active language
   const localizedDisasters = useMemo(() => {
@@ -81,6 +123,12 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
       maxZoom: 19,
     }).addTo(map);
 
+    const radiusGroup = L.layerGroup().addTo(map);
+    radiusLayerRef.current = radiusGroup;
+
+    const hazardGroup = L.layerGroup().addTo(map);
+    hazardLayerRef.current = hazardGroup;
+
     const layerGroup = L.layerGroup().addTo(map);
     disasterLayerRef.current = layerGroup;
     mapInstanceRef.current = map;
@@ -106,7 +154,7 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
     return true;
   });
 
-  // Render Disaster Markers on National Map
+  // Render Disaster Markers on National Map (Stable across selection to protect open popups)
   useEffect(() => {
     const map = mapInstanceRef.current;
     const layer = disasterLayerRef.current;
@@ -117,7 +165,6 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
     filteredDisasters.forEach(d => {
       const isFire = d.type === 'fire';
       const isFlood = d.type === 'flood';
-      const isSelected = activeDisaster?.id === d.id;
 
       const color = d.severity === 'critical' ? '#ef4444' : d.severity === 'high' ? '#f97316' : '#eab308';
       const iconEmoji = isFire ? '🔥' : isFlood ? '🌊' : '⚠️';
@@ -131,10 +178,10 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
       const customIcon = L.divIcon({
         className: 'custom-disaster-marker',
         html: `
-          <div class="relative flex items-center justify-center cursor-pointer transition-transform duration-200 ${isSelected ? 'scale-125 z-50' : 'hover:scale-110'}">
-            <span class="absolute w-8 h-8 rounded-full ${isSelected ? 'animate-ping' : ''}" style="background-color: ${color}; opacity: 0.35;"></span>
+          <div class="relative flex items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-125">
+            <span class="absolute w-8 h-8 rounded-full" style="background-color: ${color}; opacity: 0.35;"></span>
             <div class="relative w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-xl border-2" 
-                 style="background-color: ${color}; border-color: ${isSelected ? '#ffffff' : 'rgba(255,255,255,0.7)'}">
+                 style="background-color: ${color}; border-color: rgba(255,255,255,0.8)">
               ${iconEmoji}
             </div>
             <div class="absolute -bottom-5 whitespace-nowrap bg-slate-950/90 text-[10px] font-bold px-1.5 py-0.5 rounded border border-slate-700 text-slate-200 shadow-md">
@@ -143,7 +190,8 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
           </div>
         `,
         iconSize: [32, 32],
-        iconAnchor: [16, 16]
+        iconAnchor: [16, 16],
+        popupAnchor: [0, -18]
       });
 
       const marker = L.marker([d.locationLat, d.locationLng], { icon: customIcon });
@@ -174,12 +222,17 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
           </div>
           <button 
             id="popup-btn-${d.id}"
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-[11px] transition"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-[11px] transition cursor-pointer shadow-sm"
           >
             ${openTacticalBtnLabel}
           </button>
         </div>
-      `);
+      `, {
+        maxWidth: 290,
+        autoPan: true,
+        autoPanPaddingTopLeft: L.point(20, 100),
+        autoPanPaddingBottomRight: L.point(20, 90)
+      });
 
       marker.on('click', () => {
         setSelectedDisasterId(d.id);
@@ -194,20 +247,178 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
       });
 
       layer.addLayer(marker);
+    });
+  }, [filteredDisasters, language, onSelectDisaster, onNavigateToTacticalMap]);
 
-      // Add hazard radius ring
+  // Render Hazard Radius Rings (Updates smoothly when selected disaster changes without destroying markers or popups)
+  useEffect(() => {
+    const radiusLayer = radiusLayerRef.current;
+    if (!radiusLayer) return;
+
+    radiusLayer.clearLayers();
+
+    filteredDisasters.forEach(d => {
+      const isFire = d.type === 'fire';
+      const isFlood = d.type === 'flood';
+      const isSelected = activeDisaster?.id === d.id;
+      const color = d.severity === 'critical' ? '#ef4444' : d.severity === 'high' ? '#f97316' : '#eab308';
       const radiusKm = isFire ? 15000 : isFlood ? 8000 : 25000;
+
       const radiusCircle = L.circle([d.locationLat, d.locationLng], {
         radius: radiusKm,
         color: color,
         fillColor: color,
-        fillOpacity: isSelected ? 0.12 : 0.05,
-        weight: isSelected ? 2 : 1,
-        dashArray: '4, 4'
+        fillOpacity: isSelected ? 0.16 : 0.05,
+        weight: isSelected ? 2.5 : 1,
+        dashArray: isSelected ? undefined : '4, 4'
       });
-      layer.addLayer(radiusCircle);
+      radiusLayer.addLayer(radiusCircle);
     });
-  }, [filteredDisasters, activeDisaster, language, onSelectDisaster, onNavigateToTacticalMap]);
+  }, [filteredDisasters, activeDisaster]);
+
+  // Render Multi-Hazard Incidents & EWS Overlay on National Map (Live synchronized with Command Center actions)
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const layer = hazardLayerRef.current;
+    if (!map || !layer) return;
+
+    layer.clearLayers();
+    if (!showMultiHazardOverlay) return;
+
+    hazardIncidents.forEach(inc => {
+      const isEwsActive = inc.responseWorkflow?.isCommunityEarlyWarningActive;
+      const isCritical = inc.priority === 'P1_CRITICAL';
+
+      let iconEmoji = '⚠️';
+      let mainColor = '#f97316';
+      if (inc.hazardType === 'VOLCANO') {
+        iconEmoji = '🌋';
+        mainColor = '#ea580c';
+      } else if (inc.hazardType === 'WILDFIRE') {
+        iconEmoji = '🔥';
+        mainColor = '#f59e0b';
+      } else if (inc.hazardType === 'EARTHQUAKE') {
+        iconEmoji = '⚡';
+        mainColor = '#e11d48';
+      } else if (inc.hazardType === 'TSUNAMI') {
+        iconEmoji = '🌊';
+        mainColor = '#06b6d4';
+      } else if (inc.hazardType === 'FLOOD' || inc.hazardType === 'FLASH_FLOOD') {
+        iconEmoji = '🌊';
+        mainColor = '#2563eb';
+      }
+
+      // 1. Draw danger geofence circle around the incident epicenter
+      const radiusMeters = (inc.affectedArea.radiusKm || 10) * 1000;
+      const dangerCircle = L.circle([inc.affectedArea.centerLat, inc.affectedArea.centerLng], {
+        radius: radiusMeters,
+        color: isEwsActive ? '#ef4444' : mainColor,
+        fillColor: isEwsActive ? '#ef4444' : mainColor,
+        fillOpacity: isEwsActive ? 0.22 : 0.08,
+        weight: isEwsActive ? 2.5 : 1.5,
+        dashArray: isEwsActive ? undefined : '5, 5'
+      });
+      layer.addLayer(dangerCircle);
+
+      // 2. Custom Marker with pulsing ping when Early Warning Siren is active
+      const markerHtml = isEwsActive
+        ? `
+          <div class="relative flex items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-125">
+            <span class="absolute w-10 h-10 rounded-full bg-rose-500 animate-ping opacity-75"></span>
+            <div class="relative w-9 h-9 rounded-full flex items-center justify-center text-base shadow-2xl border-2 border-white bg-rose-600 text-white font-bold">
+              🚨
+            </div>
+            <div class="absolute -bottom-5 whitespace-nowrap bg-rose-950/95 text-[9px] font-black px-1.5 py-0.5 rounded border border-rose-500 text-rose-200 shadow-xl animate-pulse">
+              ${language === 'id' ? 'EWS AKTIF' : 'EWS ACTIVE'} (${inc.priority.replace('_', ' ')})
+            </div>
+          </div>
+        `
+        : `
+          <div class="relative flex items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-125">
+            <span class="absolute w-8 h-8 rounded-full" style="background-color: ${mainColor}; opacity: 0.35;"></span>
+            <div class="relative w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-xl border-2 border-white" style="background-color: ${mainColor}">
+              ${iconEmoji}
+            </div>
+            <div class="absolute -bottom-5 whitespace-nowrap bg-slate-950/90 text-[9px] font-bold px-1.5 py-0.5 rounded border border-slate-700 text-slate-200 shadow-md">
+              ${inc.hazardType} (${inc.riskScore})
+            </div>
+          </div>
+        `;
+
+      const customIcon = L.divIcon({
+        className: 'custom-hazard-incident-marker',
+        html: markerHtml,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+        popupAnchor: [0, -20]
+      });
+
+      const marker = L.marker([inc.affectedArea.centerLat, inc.affectedArea.centerLng], { icon: customIcon });
+
+      const ewsStatusBadge = isEwsActive
+        ? `<span class="bg-rose-950 text-rose-300 border border-rose-600 text-[10px] font-black px-1.5 py-0.5 rounded animate-pulse">${language === 'id' ? '🚨 SIRINE & PERINGATAN WARGA AKTIF' : '🚨 PUBLIC SIREN & EWS ACTIVE'}</span>`
+        : `<span class="bg-slate-800 text-slate-300 text-[10px] font-bold px-1.5 py-0.5 rounded">${language === 'id' ? '⚪ Standby Komando' : '⚪ Command Standby'} (Step ${inc.responseWorkflow?.currentStep || 1}/6)</span>`;
+
+      const title = language === 'en' && inc.titleEn ? inc.titleEn : inc.title;
+      const openCommandCenterLabel = language === 'id' ? 'Buka Pusat Komando Multi-Hazard →' : 'Open Multi-Hazard Command Center →';
+
+      marker.bindPopup(`
+        <div class="p-2.5 min-w-[240px] text-slate-900 font-sans">
+          <div class="flex items-center justify-between gap-1.5 mb-1.5">
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase font-mono ${
+              isCritical ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
+            }">
+              ${inc.priority.replace('_', ' ')} • ${language === 'id' ? 'SKOR' : 'SCORE'} ${inc.riskScore}/100
+            </span>
+            <span class="text-[10px] text-slate-500 font-mono">Radius ${inc.affectedArea.radiusKm} km</span>
+          </div>
+
+          <h4 class="font-bold text-xs text-slate-900 leading-tight mb-1.5">${title}</h4>
+          
+          <div class="mb-2">
+            ${ewsStatusBadge}
+          </div>
+
+          <div class="space-y-1 text-[11px] text-slate-600 border-t border-slate-200 pt-1.5 mb-2.5">
+            <div class="flex justify-between">
+              <span>${language === 'id' ? 'Wilayah:' : 'Region:'}</span>
+              <strong class="text-slate-800">${inc.affectedArea.administrativeArea}</strong>
+            </div>
+            <div class="flex justify-between">
+              <span>${language === 'id' ? 'Warga Terpapar:' : 'Exposed Population:'}</span>
+              <strong class="text-slate-800">${inc.exposure.estimatedPopulation.toLocaleString('id-ID')} ${language === 'id' ? 'jiwa' : 'people'}</strong>
+            </div>
+            <div class="flex justify-between">
+              <span>${language === 'id' ? 'Kelompok Rentan:' : 'Vulnerable Persons:'}</span>
+              <strong class="text-amber-700">${inc.exposure.vulnerablePersons.toLocaleString('id-ID')} ${language === 'id' ? 'jiwa' : 'people'}</strong>
+            </div>
+          </div>
+
+          <button 
+            id="popup-btn-hazard-${inc.id}"
+            class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-1.5 px-2.5 rounded-lg text-xs transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <span>${openCommandCenterLabel}</span>
+          </button>
+        </div>
+      `, {
+        maxWidth: 300,
+        autoPan: true,
+        autoPanPaddingTopLeft: L.point(20, 100),
+        autoPanPaddingBottomRight: L.point(20, 90)
+      });
+
+      marker.on('popupopen', () => {
+        const btn = document.getElementById(`popup-btn-hazard-${inc.id}`);
+        if (btn && onNavigateToMultiHazard) {
+          btn.onclick = () => onNavigateToMultiHazard(inc.id);
+        }
+      });
+
+      layer.addLayer(marker);
+    });
+  }, [hazardIncidents, showMultiHazardOverlay, language, onNavigateToMultiHazard]);
+
 
   // Aggregate metrics
   const totalAffected = filteredDisasters.reduce((acc, d) => acc + d.affectedPeople, 0);
@@ -302,12 +513,44 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
             ))}
           </div>
 
-          {/* Type & Severity Selectors */}
-          <div className="flex items-center gap-2">
+          {/* Type & Severity Selectors + Live Multi-Hazard Sync Toggle */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setShowMultiHazardOverlay(!showMultiHazardOverlay)}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded border text-xs font-bold transition-all cursor-pointer ${
+                showMultiHazardOverlay
+                  ? 'bg-rose-950/80 border-rose-500/80 text-rose-300 shadow-md ring-1 ring-rose-500/40'
+                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+              }`}
+              title={language === 'id' ? 'Aktifkan/Nonaktifkan Tampilan Insiden Multi-Hazard & EWS Real-Time' : 'Toggle Real-Time Multi-Hazard & EWS Incidents Overlay'}
+            >
+              <Siren className={`w-3.5 h-3.5 ${showMultiHazardOverlay ? 'text-rose-400 animate-pulse' : 'text-slate-400'}`} />
+              <span>
+                {language === 'id'
+                  ? `Multi-Hazard & EWS (${hazardIncidents.filter(i => i.responseWorkflow?.isCommunityEarlyWarningActive).length} Alarm Aktif)`
+                  : `Multi-Hazard & EWS (${hazardIncidents.filter(i => i.responseWorkflow?.isCommunityEarlyWarningActive).length} Alarms Active)`}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setShowInaRiskExposure(!showInaRiskExposure)}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded border text-xs font-bold transition-all cursor-pointer ${
+                showInaRiskExposure
+                  ? 'bg-rose-950/80 border-rose-500/80 text-rose-300 shadow-md ring-1 ring-rose-500/40'
+                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+              }`}
+              title={language === 'id' ? 'Aktifkan/Nonaktifkan Lapisan Kepadatan Warga Rentan BNPB InaRISK' : 'Toggle BNPB InaRISK Vulnerable Population Density Overlays'}
+            >
+              <ShieldAlert className={`w-3.5 h-3.5 ${showInaRiskExposure ? 'text-rose-400 animate-pulse' : 'text-slate-400'}`} />
+              <span>
+                {language === 'id' ? 'InaRISK Warga Rentan' : 'InaRISK Exposure'}
+              </span>
+            </button>
+
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="bg-slate-800 text-slate-200 py-1 px-2.5 rounded border border-slate-700 focus:outline-none focus:border-blue-500 font-medium"
+              className="bg-slate-800 text-slate-200 py-1 px-2.5 rounded border border-slate-700 focus:outline-none focus:border-blue-500 font-medium cursor-pointer"
             >
               <option value="all">{t.natMapAllTypes}</option>
               <option value="fire">{t.natMapFire}</option>
@@ -318,7 +561,7 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
             <select
               value={selectedSeverity}
               onChange={(e) => setSelectedSeverity(e.target.value)}
-              className="bg-slate-800 text-slate-200 py-1 px-2.5 rounded border border-slate-700 focus:outline-none focus:border-blue-500 font-medium"
+              className="bg-slate-800 text-slate-200 py-1 px-2.5 rounded border border-slate-700 focus:outline-none focus:border-blue-500 font-medium cursor-pointer"
             >
               <option value="all">{t.natMapAllSeverities}</option>
               <option value="critical">{t.natMapCritical}</option>
@@ -335,27 +578,71 @@ export const NationalDisasterMap: React.FC<NationalDisasterMapProps> = ({
         <div className="lg:col-span-8 bg-slate-950 rounded-xl overflow-hidden border border-slate-800 relative isolate shadow-2xl h-[680px]">
           <div ref={mapContainerRef} className="w-full h-full" />
 
-          {/* Floating Map Legend */}
-          <div className="absolute bottom-4 left-4 z-20 bg-slate-950/90 backdrop-blur-md p-2.5 rounded-lg border border-slate-800 text-xs text-slate-300 shadow-xl space-y-1.5">
-            <div className="font-bold text-white text-[11px] uppercase tracking-wider mb-1">
-              {t.natMapLegendTitle}
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-4 h-4 rounded-full bg-red-600 flex items-center justify-center text-[10px]">🔥</span>
-              <span>{t.natMapLegendFire}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center text-[10px]">🌊</span>
-              <span>{t.natMapLegendFlood}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-4 h-4 rounded-full bg-amber-600 flex items-center justify-center text-[10px]">⚠️</span>
-              <span>{t.natMapLegendEarthquake}</span>
-            </div>
-            <div className="text-[10px] text-slate-400 pt-1 border-t border-slate-800 flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full border border-red-400 bg-red-400/20 inline-block"></span>
-              <span>{t.natMapLegendRadius}</span>
-            </div>
+          {/* BNPB InaRISK Vulnerable Population Density & Resource Deployment Layer */}
+          <InaRiskExposureLayer
+            map={mapInstanceRef.current}
+            enabled={showInaRiskExposure}
+            onDeployResourcesToZone={(zone) => {
+              if (onNavigateToMultiHazard) {
+                onNavigateToMultiHazard(zone.id);
+              }
+            }}
+          />
+
+          {/* Floating Map Legend (Collapsible & Non-blocking) */}
+          <div className="absolute bottom-4 left-4 z-20 pointer-events-auto">
+            {isLegendExpanded ? (
+              <div className="bg-slate-950/90 backdrop-blur-md p-2.5 rounded-lg border border-slate-800 text-xs text-slate-300 shadow-xl space-y-1.5 min-w-[170px]">
+                <div className="flex items-center justify-between font-bold text-white text-[11px] uppercase tracking-wider mb-1 border-b border-slate-800 pb-1">
+                  <span>{t.natMapLegendTitle}</span>
+                  <button
+                    onClick={() => setIsLegendExpanded(false)}
+                    className="p-0.5 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                    title={language === 'id' ? 'Sembunyikan Legenda' : 'Collapse Legend'}
+                  >
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded-full bg-red-600 flex items-center justify-center text-[10px]">🔥</span>
+                  <span>{t.natMapLegendFire}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center text-[10px]">🌊</span>
+                  <span>{t.natMapLegendFlood}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded-full bg-amber-600 flex items-center justify-center text-[10px]">⚠️</span>
+                  <span>{t.natMapLegendEarthquake}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded-full bg-orange-600 flex items-center justify-center text-[10px]">🌋</span>
+                  <span>{language === 'id' ? 'Erupsi Gunung Api' : 'Volcanic Eruption'}</span>
+                </div>
+                <div className="flex items-center gap-2 pt-1 border-t border-slate-800">
+                  <span className="w-4 h-4 rounded-full bg-rose-600 flex items-center justify-center text-[10px] animate-pulse">🚨</span>
+                  <span className="font-bold text-rose-300">{language === 'id' ? 'EWS Sirine Aktif' : 'Active EWS Sirens'}</span>
+                </div>
+                <div className="flex items-center gap-2 pt-1 border-t border-slate-800">
+                  <span className="w-3.5 h-3.5 rounded-full bg-rose-600 flex items-center justify-center text-[8px] font-bold text-white">🛡️</span>
+                  <span className="font-bold text-rose-300">{language === 'id' ? 'InaRISK Warga Rentan' : 'InaRISK Exposure'}</span>
+                </div>
+                <div className="text-[10px] text-slate-400 pt-1 border-t border-slate-800 flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full border border-red-400 bg-red-400/20 inline-block"></span>
+                  <span>{t.natMapLegendRadius}</span>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsLegendExpanded(true)}
+                className="bg-slate-950/90 backdrop-blur-md px-2.5 py-1.5 rounded-lg border border-slate-800 text-[11px] font-medium text-slate-300 hover:text-white hover:bg-slate-900 transition-all shadow-xl flex items-center gap-1.5 cursor-pointer"
+                title={language === 'id' ? 'Tampilkan Legenda Peta' : 'Show Map Legend'}
+              >
+                <span>🗺️</span>
+                <span>{t.natMapLegendTitle}</span>
+                <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
+              </button>
+            )}
           </div>
         </div>
 

@@ -117,10 +117,12 @@ class EarlyWarningService {
   private alerts: EarlyWarningAlert[] = [...INITIAL_EARLY_WARNINGS];
   private citizenReports: CitizenSafetyReport[] = [];
   private reportListeners: Array<(reports: CitizenSafetyReport[]) => void> = [];
+  private alertListeners: Array<(alerts: EarlyWarningAlert[]) => void> = [];
 
   constructor() {
     this.initCitizenReports();
     this.initFirestoreListener();
+    this.fetchRemoteAlerts();
   }
 
   private initCitizenReports() {
@@ -184,8 +186,58 @@ class EarlyWarningService {
     }
   }
 
+  public async fetchRemoteAlerts(): Promise<EarlyWarningAlert[]> {
+    try {
+      const res = await fetch('/api/early-warnings');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          this.alerts = data;
+          this.notifyAlertListeners();
+          return this.alerts;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch remote early warnings, using cache:', err);
+    }
+    return this.alerts;
+  }
+
   public getAlerts(): EarlyWarningAlert[] {
     return [...this.alerts];
+  }
+
+  public subscribeAlerts(callback: (alerts: EarlyWarningAlert[]) => void): () => void {
+    this.alertListeners.push(callback);
+    callback([...this.alerts]);
+    return () => {
+      this.alertListeners = this.alertListeners.filter(cb => cb !== callback);
+    };
+  }
+
+  private notifyAlertListeners() {
+    const list = [...this.alerts];
+    this.alertListeners.forEach(cb => cb(list));
+  }
+
+  public setAlerts(newAlerts: EarlyWarningAlert[]) {
+    this.alerts = newAlerts;
+    this.notifyAlertListeners();
+  }
+
+  public addOrUpdateAlert(alert: EarlyWarningAlert) {
+    const idx = this.alerts.findIndex(a => a.id === alert.id || (alert.disasterId && a.disasterId === alert.disasterId));
+    if (idx >= 0) {
+      this.alerts[idx] = alert;
+    } else {
+      this.alerts = [alert, ...this.alerts];
+    }
+    this.notifyAlertListeners();
+  }
+
+  public removeAlert(alertId: string) {
+    this.alerts = this.alerts.filter(a => a.id !== alertId && a.disasterId !== alertId);
+    this.notifyAlertListeners();
   }
 
   public getCitizenReports(): CitizenSafetyReport[] {
